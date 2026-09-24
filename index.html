@@ -998,7 +998,7 @@ store.load = async function() {
 
   // 尝试从 GitHub 拉取
   try {
-    const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now());
+    const resp = await fetch(REMOTE_DATA_URL);
     if (resp.ok) {
       const remoteData = await resp.json();
       if (Array.isArray(remoteData) && remoteData.length > 0) {
