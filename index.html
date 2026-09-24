@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>西医综合306病例速查</title>
+<style>
+/* ---------- 主题变量 ---------- */
+:root {
+  --bg: #ffffff;
+  --text: #1f1f1f;
+  --sub: #737373;
+  --title: #1a4db3;
+  --input-bg: #f5f5f5;
+  --input-fg: #1f1f1f;
+  --input-hint: #8c8c8c;
+  --panel: #ededed;
+  --btn-bg: #e6e6eb;
+  --btn-fg: #1f1f1f;
+  --divider: #d9d9d9;
+  --hl: #ff8800;
+  --overlay: rgba(0,0,0,0.45);
+  --font-scale: 1;
+}
+
+html[data-theme="dark"] {
+  --bg: #1c1c21;
+  --text: #e6e6e6;
+  --sub: #9e9e9e;
+  --title: #73b8ff;
+  --input-bg: #33333d;
+  --input-fg: #ebebeb;
+  --input-hint: #8c8c8c;
+  --panel: #2b2b36;
+  --btn-bg: #3d3d47;
+  --btn-fg: #ebebeb;
+  --divider: #4d4d57;
+  --hl: #ff8800;
+  --overlay: rgba(0,0,0,0.65);
+}
+
+/* ---------- 基础 ---------- */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", "Heiti SC", sans-serif;
+  font-size: calc(16px * var(--font-scale, 1));
+  background: var(--bg);
+  color: var(--text);
+  transition: background .15s ease, color .15s ease;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* ---------- 主界面 ---------- */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  padding: 8px;
+  gap: 6px;
+}
+
+.app-title {
+  flex: none;
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  font-size: 1.19em;
+  font-weight: 600;
+  color: var(--title);
+  letter-spacing: .5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-row {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  height: 44px;
+}
+
+.filter-row > * { flex: 1; min-width: 0; }
+
+select {
+  font-size: 0.875em;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 0 6px;
+  height: 100%;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) calc(50% - 2px),
+                       calc(100% - 9px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 24px;
+}
+
+select option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+input[type="text"], textarea {
+  font-size: 0.9375em;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 0 10px;
+  outline: none;
+  width: 100%;
+}
+
+textarea {
+  padding: 8px 10px;
+  resize: none;
+  line-height: 1.5;
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder { color: var(--input-hint); }
+
+#searchInput {
+  flex: none;
+  height: 42px;
+  font-size: 0.9375em;
+}
+
+.btn-row {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  height: 40px;
+}
+
+.btn {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875em;
+  padding: 6px 8px;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: filter .1s ease;
+}
+
+.btn:hover { filter: brightness(1.08); }
+.btn:active { filter: brightness(0.92); }
+
+#statLabel {
+  flex: none;
+  height: 22px;
+  line-height: 22px;
+  font-size: 0.8125em;
+  color: var(--sub);
+  padding-left: 2px;
+}
+
+#listScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#listLayout { display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
+
+.item-card {
+  display: flex;
+  height: 62px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.status-bar { width: 8px; flex: none; }
+
+.item-btn {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  text-align: left;
+  padding: 0 14px;
+  font-size: 1em;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: filter .1s ease;
+}
+
+.item-btn:hover { filter: brightness(1.1); }
+.item-btn:active { filter: brightness(0.9); }
+
+.empty-hint {
+  white-space: pre-line;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--sub);
+  font-size: 0.9375em;
+  line-height: 1.8;
+}
+
+/* ---------- 弹窗通用 ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 4px;
+  animation: fadeIn .12s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.popup {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  overflow: hidden;
+  max-height: 96vh;
+  max-width: 96vw;
+}
+
+.popup-lg {
+  width: 96vw;
+  max-width: 900px;
+  height: 94vh;
+}
+
+.popup-sm {
+  width: 88vw;
+  max-width: 460px;
+  max-height: 80vh;
+}
+
+.popup-title {
+  flex: none;
+  padding: 10px 14px;
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--title);
+  border-bottom: 1px solid var(--divider);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popup-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.popup-sm .popup-body { overflow-y: auto; }
+
+.popup-footer {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--divider);
+}
+
+.popup-footer .btn { min-height: 38px; }
+
+.confirm-msg {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 0.9375em;
+  word-break: break-word;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+/* ---------- 详情弹窗 ---------- */
+.detail-meta {
+  flex: none;
+  font-size: 0.8125em;
+  color: var(--sub);
+  line-height: 1.6;
+  word-break: break-word;
+  padding: 2px 0;
+}
+
+.detail-ctrl {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  height: 38px;
+}
+
+.detail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.field-row {
+  flex: none;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.field-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  min-height: 38px;
+}
+
+.field-toggle {
+  flex: none;
+  width: 64px;
+  font-size: 0.8125em;
+  padding: 5px 4px;
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  cursor: pointer;
+}
+
+.field-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375em;
+  font-weight: 600;
+  color: var(--title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.field-content {
+  padding: 0 10px 10px 10px;
+  font-size: 0.875em;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+}
+
+.hl {
+  color: var(--hl);
+  font-weight: 600;
+}
+
+.empty-note {
+  text-align: center;
+  padding: 40px 10px;
+  color: var(--sub);
+  font-size: 0.875em;
+}
+
+/* ---------- 编辑弹窗 ---------- */
+.edit-form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-right: 4px;
+}
+
+.edit-label {
+  font-size: 0.875em;
+  color: var(--text);
+  padding-top: 6px;
+  font-weight: 500;
+}
+
+.edit-input {
+  height: 44px;
+  flex: none;
+}
+
+.edit-textarea {
+  min-height: 110px;
+  flex: none;
+  font-size: 0.875em;
+}
+
+.edit-select {
+  height: 44px;
+  flex: none;
+}
+
+/* ---------- 导入弹窗 ---------- */
+.hint-text {
+  flex: none;
+  font-size: 0.875em;
+  color: var(--text);
+}
+
+.import-textarea {
+  flex: 1;
+  min-height: 120px;
+  font-size: 0.75em;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.import-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+}
+
+.row-label {
+  flex: none;
+  width: 38%;
+  font-size: 0.8125em;
+  color: var(--text);
+}
+
+.import-row .edit-select { flex: 1; height: 42px; }
+
+/* ---------- 导出弹窗 ---------- */
+.export-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+}
+
+.export-row .edit-select { flex: 1; height: 42px; }
+
+.export-info {
+  flex: none;
+  font-size: 0.8125em;
+  color: var(--sub);
+}
+
+.export-textarea {
+  flex: 1;
+  min-height: 120px;
+  font-size: 0.75em;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+/* ---------- 设置弹窗 ---------- */
+.settings-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+}
+
+.settings-row .row-label {
+  flex: none;
+  width: 38%;
+}
+
+.settings-row > .btn,
+.settings-row > .edit-select { flex: 1; height: 44px; }
+
+.font-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+}
+
+.font-wrap .btn { flex: 1; height: 44px; }
+
+.font-label {
+  flex: none;
+  width: 60px;
+  text-align: center;
+  font-size: 0.875em;
+  color: var(--text);
+}
+
+.settings-info {
+  flex: none;
+  white-space: pre-line;
+  font-size: 0.75em;
+  line-height: 1.7;
+  color: var(--sub);
+  padding: 8px 2px;
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--divider);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+
+/* ---------- 移动端适配 ---------- */
+@media (max-width: 520px) {
+  #app { padding: 6px; gap: 5px; }
+  .app-title { font-size: 1.05em; }
+  .popup-lg { width: 98vw; height: 96vh; max-width: none; }
+  .popup-sm { width: 92vw; }
+  .settings-row .row-label { width: 34%; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="app-title">考研西医综合 306 病例速查</div>
+
+  <!-- 行1：科目 | 系统 -->
+  <div class="filter-row">
+    <select id="subjectSel">
+      <option value="全部">全部</option>
+      <option value="内科学">内科学</option>
+      <option value="外科学">外科学</option>
+      <option value="生理学">生理学</option>
+      <option value="生物化学">生物化学</option>
+      <option value="病理学">病理学</option>
+      <option value="人文精神">人文精神</option>
+    </select>
+    <select id="systemSel"></select>
+  </div>
+
+  <!-- 行2：章节 -->
+  <div class="filter-row">
+    <select id="chapterSel"></select>
+  </div>
+
+  <!-- 搜索 -->
+  <input id="searchInput" type="text" placeholder="搜索病因、诊断、鉴别、治疗...">
+
+  <!-- 操作行 -->
+  <div class="btn-row">
+    <button class="btn" id="addBtn">＋ 新增</button>
+    <button class="btn" id="randomBtn">随机</button>
+    <button class="btn" id="starBtn">☆ 收藏</button>
+  </div>
+
+  <!-- 行4：状态 | 标签 | 排序 -->
+  <div class="btn-row">
+    <select id="statusSel">
+      <option value="全部">全部</option>
+      <option value="未看">未看</option>
+      <option value="需复习">需复习</option>
+      <option value="已掌握">已掌握</option>
+    </select>
+    <select id="tagSel"></select>
+    <select id="sortSel">
+      <option value="默认">默认</option>
+      <option value="频率高→低">频率高→低</option>
+      <option value="频率低→高">频率低→高</option>
+      <option value="标题">标题</option>
+    </select>
+  </div>
+
+  <!-- 统计 -->
+  <div id="statLabel"></div>
+
+  <!-- 列表 -->
+  <div id="listScroll">
+    <div id="listLayout"></div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="btn-row">
+    <button class="btn" id="importBtn">导入</button>
+    <button class="btn" id="exportBtn">导出</button>
+    <button class="btn" id="clearBtn">清空</button>
+    <button class="btn" id="settingsBtn">设置</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   常量
+   ========================================================= */
+const SUBJECTS = ["内科学", "外科学", "生理学", "生物化学", "病理学", "人文精神"];
+const FREQ_OPTIONS = ["", "★", "★★", "★★★", "★★★★", "★★★★★"];
+const STATUS_OPTIONS = ["未看", "需复习", "已掌握"];
+
+const STATUS_COLORS = {
+  "未看": "#999999",
+  "需复习": "#ff9933",
+  "已掌握": "#4dcc66",
+};
+
+const SUBJECT_COLORS = {
+  "内科学": "#d94747",
+  "外科学": "#8c47bf",
+  "生理学": "#338ce6",
+  "生物化学": "#33b366",
+  "病理学": "#f28c33",
+  "人文精神": "#737380",
+};
+
+const SORT_OPTIONS = ["默认", "频率高→低", "频率低→高", "标题"];
+
+// 系统关键词映射：按顺序匹配，命中第一个即归类
+const SYSTEM_KEYWORDS = [
+  ["呼吸系统", ["呼吸", "肺", "气管", "支气管", "胸腔", "哮喘", "COPD"]],
+  ["循环系统", ["循环", "心", "血管", "血压", "冠", "动脉", "静脉", "休克", "心衰"]],
+  ["消化系统", ["消化", "胃", "肠", "肝", "胆", "胰", "食管", "腹", "阑尾", "痔"]],
+  ["泌尿系统", ["泌尿", "肾", "尿", "膀胱", "前列腺", "透析"]],
+  ["血液系统", ["血液", "贫血", "白血", "淋巴", "凝血", "血小板", "紫癜"]],
+  ["内分泌系统", ["内分泌", "糖尿", "甲状腺", "垂体", "肾上腺", "肥胖", "代谢"]],
+  ["神经系统", ["神经", "脑", "脊髓", "颅", "癫痫", "头痛", "意识"]],
+  ["运动系统", ["骨", "关节", "肌肉", "运动", "骨折", "椎", "腱"]],
+  ["生殖系统", ["生殖", "妇科", "产科", "卵巢", "子宫", "妊娠", "分娩", "乳腺"]],
+  ["免疫系统", ["免疫", "风湿", "结缔组织", "红斑狼疮", "过敏", "变态反应"]],
+  ["外科总论", ["外科总论", "烧伤", "感染", "休克", "麻醉", "营养", "输血", "移植"]],
+  ["人文精神", ["伦理", "人文", "医患", "知情同意", "职业素养"]],
+];
+
+const FIELD_DEFS = [
+  ["etiology", "病因"],
+  ["pathogenesis", "发病机制"],
+  ["pathophysiology", "病理生理"],
+  ["manifestations", "临床表现"],
+  ["lab_tests", "实验室及其他检查"],
+  ["diagnosis", "诊断"],
+  ["differential", "鉴别诊断"],
+  ["complications", "并发症"],
+  ["treatment", "治疗与预防"],
+];
+
+const DATA_KEY = "kaoyan_data";
+const SETTINGS_KEY = "kaoyan_settings";
+const BACKUP_KEY = "kaoyan_backups";
+const BACKUP_PREFIX = "kaoyan_backup_";
+const MAX_BACKUPS = 5;
+
+const EMPTY_HINT =
+  "暂无数据\n\n" +
+  "点击底部「导入」粘贴 JSON 数组，\n" +
+  "或点「＋新增」逐条录入。\n\n" +
+  "也可把 kaoyan_data.json 放在应用同目录，\n" +
+  "首次启动时自动载入。";
+
+const SETTINGS_DEFAULTS = {
+  dark: false,
+  font_scale: 1.0,
+  subject: "全部",
+  system: "全部",
+  chapter: "全部",
+  status: "全部",
+  tag: "全部",
+  sort: "默认",
+  starred_only: false,
+  scroll_y: 1.0,
+};
+
+const SAMPLE_JSON =
+  '[\n' +
+  '  {\n' +
+  '    "title": "病例名称",\n' +
+  '    "subject": "内科学",\n' +
+  '    "chapter": "呼吸系统",\n' +
+  '    "frequency": "★★★★★",\n' +
+  '    "tags": ["高频", "易混淆"],\n' +
+  '    "etiology": "...",\n' +
+  '    "pathogenesis": "...",\n' +
+  '    "pathophysiology": "...",\n' +
+  '    "manifestations": "...",\n' +
+  '    "lab_tests": "...",\n' +
+  '    "diagnosis": "...",\n' +
+  '    "differential": "...",\n' +
+  '    "complications": "...",\n' +
+  '    "treatment": "..."\n' +
+  '  }\n' +
+  ']';
+
+/* =========================================================
+   工具函数
+   ========================================================= */
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined && text !== null) e.textContent = text;
+  return e;
+}
+
+function $(sel) { return document.querySelector(sel); }
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlight(text, keyword) {
+  const src = String(text == null ? "" : text);
+  if (!keyword) return escapeHtml(src);
+  try {
+    const re = new RegExp(escapeRegExp(keyword), "gi");
+    let out = "";
+    let last = 0;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      out += escapeHtml(src.slice(last, m.index));
+      out += '<span class="hl">' + escapeHtml(m[0]) + "</span>";
+      last = m.index + m[0].length;
+      if (m[0].length === 0) re.lastIndex++;
+    }
+    out += escapeHtml(src.slice(last));
+    return out;
+  } catch (e) {
+    return escapeHtml(src);
+  }
+}
+
+function genId() {
+  let s = "";
+  for (let i = 0; i < 8; i++) {
+    s += Math.floor(Math.random() * 16).toString(16);
+  }
+  return s;
+}
+
+function starCount(item) {
+  const m = String(item.frequency || "").match(/★/g);
+  return m ? m.length : 0;
+}
+
+function detectSystem(item) {
+  const text = [
+    item.chapter || "",
+    item.title || "",
+    (item.tags || []).join(" "),
+  ].join(" ");
+  for (let i = 0; i < SYSTEM_KEYWORDS.length; i++) {
+    const name = SYSTEM_KEYWORDS[i][0];
+    const kws = SYSTEM_KEYWORDS[i][1];
+    for (let j = 0; j < kws.length; j++) {
+      if (text.indexOf(kws[j]) !== -1) return name;
+    }
+  }
+  return "其他";
+}
+
+function withCount(name, count) {
+  return name + " (" + count + ")";
+}
+
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + day;
+}
+
+function normalizeItem(raw) {
+  const item = {
+    id: String(raw.id || genId()),
+    title: String(raw.title || "").trim(),
+    subject: String(raw.subject || "").trim() || SUBJECTS[0],
+    chapter: String(raw.chapter || "").trim(),
+    frequency: String(raw.frequency || "").trim(),
+    starred: !!raw.starred,
+    status: String(raw.status || "未看").trim() || "未看",
+    tags: [],
+  };
+
+  if (STATUS_OPTIONS.indexOf(item.status) === -1) item.status = "未看";
+
+  const rawTags = raw.tags || [];
+  if (Array.isArray(rawTags)) {
+    item.tags = rawTags.map(t => String(t).trim()).filter(Boolean);
+  } else if (typeof rawTags === "string") {
+    item.tags = rawTags.split(/[,，;；]/).map(t => t.trim()).filter(Boolean);
+  }
+
+  for (let i = 0; i < FIELD_DEFS.length; i++) {
+    const key = FIELD_DEFS[i][0];
+    item[key] = String(raw[key] == null ? "" : raw[key]).trim();
+  }
+  return item;
+}
+
+function parseJsonList(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    return { items: null, err: "JSON 解析失败：" + e.message, warnings: [] };
+  }
+  if (!Array.isArray(parsed)) {
+    return { items: null, err: "顶层必须是数组 [ ... ]", warnings: [] };
+  }
+
+  const items = [];
+  const warnings = [];
+  const seenTitles = {};
+
+  for (let i = 0; i < parsed.length; i++) {
+    const obj = parsed[i];
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      return { items: null, err: "第 " + (i + 1) + " 项不是对象", warnings: [] };
+    }
+    const title = String(obj.title == null ? "" : obj.title).trim();
+    if (!title) {
+      return { items: null, err: "第 " + (i + 1) + " 项缺少 title", warnings: [] };
+    }
+    if (Object.prototype.hasOwnProperty.call(seenTitles, title)) {
+      warnings.push("导入内容中「" + title + "」重复");
+    } else {
+      seenTitles[title] = i;
+    }
+
+    const item = normalizeItem(obj);
+    let filled = 0;
+    for (let k = 0; k < FIELD_DEFS.length; k++) {
+      if (item[FIELD_DEFS[k][0]]) filled++;
+    }
+    if (filled === 0) {
+      warnings.push("「" + title + "」九大字段均为空");
+    } else if (filled < 4) {
+      warnings.push("「" + title + "」仅填写 " + filled + "/9 个字段");
+    }
+    if (item.title.length < 3) {
+      warnings.push("「" + title + "」标题过短");
+    }
+    items.push(item);
+  }
+
+  return { items: items, err: null, warnings: warnings };
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) { /* 降级 */ }
+
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.top = "-9999px";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  if (!ok) throw new Error("浏览器不允许复制");
+  return true;
+}
+
+/* =========================================================
+   全局状态
+   ========================================================= */
+const state = {
+  dark: false,
+  fontScale: 1.0,
+  subject: "全部",
+  system: "全部",
+  chapter: "全部",
+  status: "全部",
+  tag: "全部",
+  sort: "默认",
+  starredOnly: false,
+  scrollY: 1.0,
+  search: "",
+};
+
+/* =========================================================
+   设置存储
+   ========================================================= */
+function loadSettings() {
+  let data = Object.assign({}, SETTINGS_DEFAULTS);
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      const loaded = JSON.parse(raw);
+      if (loaded && typeof loaded === "object" && !Array.isArray(loaded)) {
+        for (const k in SETTINGS_DEFAULTS) {
+          if (Object.prototype.hasOwnProperty.call(loaded, k)) {
+            data[k] = loaded[k];
+          }
+        }
+      }
+    }
+  } catch (e) { /* 忽略 */ }
+
+  state.dark = !!data.dark;
+  state.fontScale = Number(data.font_scale) || 1.0;
+  state.subject = data.subject || "全部";
+  state.system = data.system || "全部";
+  state.chapter = data.chapter || "全部";
+  state.status = data.status || "全部";
+  state.tag = data.tag || "全部";
+  state.sort = data.sort || "默认";
+  state.starredOnly = !!data.starred_only;
+  state.scrollY = typeof data.scroll_y === "number" ? data.scroll_y : 1.0;
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+      dark: state.dark,
+      font_scale: state.fontScale,
+      subject: state.subject,
+      system: state.system,
+      chapter: state.chapter,
+      status: state.status,
+      tag: state.tag,
+      sort: state.sort,
+      starred_only: state.starredOnly,
+      scroll_y: state.scrollY,
+    }));
+  } catch (e) { /* 忽略 */ }
+}
+
+/* =========================================================
+   数据存储
+   ========================================================= */
+const REMOTE_DATA_URL =
+  "https://raw.githubusercontent.com/你的用户名/仓库名/main/data/cases.json";
+
+store.load = async function() {
+  // 先从本地读
+  let localData = [];
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        localData = parsed.map(normalizeItem);
+      }
+    }
+  } catch (e) {}
+
+  // 尝试从 GitHub 拉取
+  try {
+    const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now());
+    if (resp.ok) {
+      const remoteData = await resp.json();
+      if (Array.isArray(remoteData) && remoteData.length > 0) {
+        this.data = remoteData.map(normalizeItem);
+        localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
+        return;
+      }
+    }
+  } catch (e) {}
+
+  // 远程失败则用本地数据
+  this.data = localData;
+},
+
+  save(withBackup) {
+    if (withBackup === undefined) withBackup = true;
+    try {
+      localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
+    } catch (e) { /* 忽略 */ }
+    if (withBackup) this.backup();
+  },
+
+  clear() {
+    this.data = [];
+    this.save();
+  },
+
+  backup() {
+    try {
+      const today = formatDate(new Date());
+      const key = BACKUP_PREFIX + today;
+      const backups = this.getBackups();
+      if (!Object.prototype.hasOwnProperty.call(backups, key)) {
+        backups[key] = JSON.parse(JSON.stringify(this.data));
+        const keys = Object.keys(backups).sort();
+        while (keys.length > MAX_BACKUPS) {
+          delete backups[keys.shift()];
+        }
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+      }
+    } catch (e) { /* 忽略 */ }
+  },
+
+  getBackups() {
+    try {
+      const raw = localStorage.getItem(BACKUP_KEY);
+      if (raw) {
+        const b = JSON.parse(raw);
+        if (b && typeof b === "object" && !Array.isArray(b)) return b;
+      }
+    } catch (e) { /* 忽略 */ }
+    return {};
+  },
+
+  backupCount() {
+    return Object.keys(this.getBackups()).length;
+  },
+
+  clearBackups() {
+    try { localStorage.removeItem(BACKUP_KEY); } catch (e) { /* 忽略 */ }
+  },
+
+  importFromText(text, mode, subjectOverride) {
+    const parsed = parseJsonList(text);
+    if (parsed.err) return { ok: false, msg: parsed.err, warnings: [] };
+
+    const items = parsed.items;
+    const warnings = parsed.warnings.slice();
+
+    if (subjectOverride) {
+      for (let i = 0; i < items.length; i++) {
+        items[i].subject = subjectOverride;
+      }
+    }
+
+    const existingTitles = {};
+    for (let i = 0; i < this.data.length; i++) {
+      existingTitles[this.data[i].title] = true;
+    }
+    for (let i = 0; i < items.length; i++) {
+      if (existingTitles[items[i].title]) {
+        warnings.push("「" + items[i].title + "」与现有数据标题重复");
+      }
+    }
+
+    if (mode === "replace") {
+      this.data = items;
+    } else {
+      const existingIds = {};
+      for (let i = 0; i < this.data.length; i++) {
+        existingIds[this.data[i].id] = true;
+      }
+      for (let i = 0; i < items.length; i++) {
+        if (existingIds[items[i].id]) {
+          items[i].id = genId();
+        }
+        existingIds[items[i].id] = true;
+      }
+      this.data = this.data.concat(items);
+    }
+
+    this.save();
+    const msg = "已" + (mode === "replace" ? "替换为" : "追加") + " " + items.length + " 条";
+    return { ok: true, msg: msg, warnings: warnings };
+  },
+
+  exportText(subject) {
+    let data = this.data;
+    if (subject && subject !== "全部") {
+      data = data.filter(d => d.subject === subject);
+    }
+    return JSON.stringify(data, null, 2);
+  },
+};
+
+/* =========================================================
+   主题 / 字号
+   ========================================================= */
+function applyTheme() {
+  document.documentElement.setAttribute("data-theme", state.dark ? "dark" : "light");
+  document.documentElement.style.setProperty("--font-scale", String(state.fontScale));
+}
+
+function toggleDark() {
+  state.dark = !state.dark;
+  saveSettings();
+  applyTheme();
+}
+
+function setFontScale(value) {
+  state.fontScale = clamp(Number(value) || 1.0, 0.85, 1.35);
+  saveSettings();
+  applyTheme();
+}
+
+function setSort(value) {
+  state.sort = value;
+  saveSettings();
+  render();
+}
+
+/* =========================================================
+   通用弹窗
+   ========================================================= */
+function confirmPopup(text, onYes, yesText, title) {
+  if (yesText === undefined) yesText = "确定";
+  if (title === undefined) title = "提示";
+
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-sm");
+  pop.appendChild(el("div", "popup-title", title));
+
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "confirm-msg", text));
+  pop.appendChild(body);
+
+  const footer = el("div", "popup-footer");
+
+  if (typeof onYes === "function") {
+    const no = el("button", "btn", "取消");
+    const yes = el("button", "btn", yesText);
+    no.addEventListener("click", () => ov.remove());
+    yes.addEventListener("click", () => { ov.remove(); onYes(); });
+    footer.appendChild(no);
+    footer.appendChild(yes);
+  } else {
+    const ok = el("button", "btn", "知道了");
+    ok.addEventListener("click", () => ov.remove());
+    footer.appendChild(ok);
+  }
+
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+  return ov;
+}
+
+/* =========================================================
+   详情弹窗
+   ========================================================= */
+function makeFieldRow(name, content, keyword) {
+  const row = el("div", "field-row");
+
+  const header = el("div", "field-header");
+  const toggle = el("button", "field-toggle", "显示");
+  const labelEl = el("div", "field-label", name);
+  header.appendChild(toggle);
+  header.appendChild(labelEl);
+  row.appendChild(header);
+
+  const bodyEl = el("div", "field-content");
+  bodyEl.innerHTML = highlight(content, keyword);
+  bodyEl.style.display = "none";
+  row.appendChild(bodyEl);
+
+  let visible = false;
+
+  function apply(v) {
+    visible = !!v;
+    toggle.textContent = visible ? "隐藏" : "显示";
+    bodyEl.style.display = visible ? "block" : "none";
+  }
+
+  toggle.addEventListener("click", () => apply(!visible));
+  row._setVisible = apply;
+  return row;
+}
+
+function itemToPlainText(item) {
+  const lines = [item.title || ""];
+  let meta = "科目：" + (item.subject || "");
+  if (item.chapter) meta += "  章节：" + item.chapter;
+  meta += "  系统：" + detectSystem(item);
+  if (item.frequency) meta += "  " + item.frequency;
+  lines.push(meta);
+  if (item.tags && item.tags.length) {
+    lines.push("标签：" + item.tags.join("、"));
+  }
+  lines.push("");
+  for (let i = 0; i < FIELD_DEFS.length; i++) {
+    const key = FIELD_DEFS[i][0];
+    const name = FIELD_DEFS[i][1];
+    const val = String(item[key] == null ? "" : item[key]).trim();
+    if (val) {
+      lines.push("【" + name + "】");
+      lines.push(val);
+      lines.push("");
+    }
+  }
+  return lines.join("\n");
+}
+
+function showDetail(item) {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", item.title || "病例详情"));
+
+  const body = el("div", "popup-body");
+
+  // 元信息
+  const metaLines = ["科目：" + (item.subject || "")];
+  if (item.chapter) metaLines.push("章节：" + item.chapter);
+  metaLines.push("系统：" + detectSystem(item));
+  if (item.frequency) metaLines.push(item.frequency);
+  metaLines.push("状态：" + (item.status || "未看"));
+  if (item.starred) metaLines.push("★ 已收藏");
+  if (item.tags && item.tags.length) metaLines.push("标签：" + item.tags.join("、"));
+
+  const meta = el("div", "detail-meta", metaLines.join("  |  "));
+  body.appendChild(meta);
+
+  // 控制行
+  const ctrl = el("div", "detail-ctrl");
+  const showAll = el("button", "btn", "全部展开");
+  const hideAll = el("button", "btn", "全部收起");
+  ctrl.appendChild(showAll);
+  ctrl.appendChild(hideAll);
+  body.appendChild(ctrl);
+
+  // 字段区
+  const scroll = el("div", "detail-scroll");
+  const rows = [];
+  let hasContent = false;
+
+  for (let i = 0; i < FIELD_DEFS.length; i++) {
+    const key = FIELD_DEFS[i][0];
+    const name = FIELD_DEFS[i][1];
+    const val = String(item[key] == null ? "" : item[key]).trim();
+    if (!val) continue;
+    hasContent = true;
+    const row = makeFieldRow(name, val, state.search);
+    rows.push(row);
+    scroll.appendChild(row);
+  }
+
+  if (!hasContent) {
+    scroll.appendChild(el("div", "empty-note", "该条目尚未填写具体内容"));
+  }
+
+  showAll.addEventListener("click", () => rows.forEach(r => r._setVisible(true)));
+  hideAll.addEventListener("click", () => rows.forEach(r => r._setVisible(false)));
+
+  body.appendChild(scroll);
+  pop.appendChild(body);
+
+  // 底部按钮
+  const footer = el("div", "popup-footer");
+  const closeBtn = el("button", "btn", "关闭");
+  const copyBtn = el("button", "btn", "复制");
+  const editBtn = el("button", "btn", "编辑");
+  const delBtn = el("button", "btn", "删除");
+
+  closeBtn.addEventListener("click", () => ov.remove());
+
+  copyBtn.addEventListener("click", () => {
+    copyText(itemToPlainText(item))
+      .then(() => confirmPopup("已复制本条到剪贴板"))
+      .catch(err => confirmPopup("复制失败：" + err.message));
+  });
+
+  editBtn.addEventListener("click", () => {
+    ov.remove();
+    openEdit(item);
+  });
+
+  delBtn.addEventListener("click", () => {
+    ov.remove();
+    confirmDelete(item);
+  });
+
+  footer.appendChild(closeBtn);
+  footer.appendChild(copyBtn);
+  footer.appendChild(editBtn);
+  footer.appendChild(delBtn);
+  pop.appendChild(footer);
+
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
+   编辑弹窗
+   ========================================================= */
+function openEdit(item) {
+  const isNew = !item;
+  const src = item ? JSON.parse(JSON.stringify(item)) : {};
+
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", isNew ? "新增病例" : "编辑病例"));
+
+  const body = el("div", "popup-body");
+  const form = el("div", "edit-form");
+
+  function addLabel(text) {
+    form.appendChild(el("div", "edit-label", text));
+  }
+
+  function addText(value, multiline) {
+    let inp;
+    if (multiline) {
+      inp = document.createElement("textarea");
+      inp.className = "edit-textarea";
+    } else {
+      inp = document.createElement("input");
+      inp.className = "edit-input";
+      inp.type = "text";
+    }
+    inp.value = value || "";
+    form.appendChild(inp);
+    return inp;
+  }
+
+  function addSelect(values, current, labeler) {
+    const sel = document.createElement("select");
+    sel.className = "edit-select";
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i];
+      const o = document.createElement("option");
+      o.value = v;
+      o.textContent = labeler ? labeler(v) : v;
+      sel.appendChild(o);
+    }
+    sel.value = current;
+    form.appendChild(sel);
+    return sel;
+  }
+
+  // 标题
+  addLabel("标题 *");
+  const titleInput = addText(src.title || "");
+
+  // 科目
+  addLabel("科目");
+  const subjValues = SUBJECTS.slice();
+  const curSubj = src.subject || SUBJECTS[0];
+  if (subjValues.indexOf(curSubj) === -1) subjValues.push(curSubj);
+  const subjectSel = addSelect(subjValues, curSubj);
+
+  // 章节
+  addLabel("章节（用于系统自动归类）");
+  const chapterInput = addText(src.chapter || "");
+
+  // 出现频率
+  addLabel("出现频率");
+  const freqValues = FREQ_OPTIONS.slice();
+  const curFreq = src.frequency || "";
+  if (curFreq && freqValues.indexOf(curFreq) === -1) freqValues.push(curFreq);
+  const freqSel = addSelect(freqValues, curFreq, v => (v === "" ? "（未设置）" : v));
+
+  // 复习状态
+  addLabel("复习状态");
+  const statusSel = addSelect(STATUS_OPTIONS, src.status || "未看");
+
+  // 标签
+  addLabel("标签（逗号分隔）");
+  const tagsInput = addText((src.tags || []).join("，"));
+
+  // 收藏
+  addLabel("收藏（1=收藏，0=不收藏）");
+  const starredInput = addText(src.starred ? "1" : "0");
+
+  // 九大字段
+  const inputs = {};
+  for (let i = 0; i < FIELD_DEFS.length; i++) {
+    const key = FIELD_DEFS[i][0];
+    const name = FIELD_DEFS[i][1];
+    addLabel(name);
+    inputs[key] = addText(src[key] || "", true);
+  }
+
+  body.appendChild(form);
+  pop.appendChild(body);
+
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const saveBtn = el("button", "btn", "保存");
+
+  cancelBtn.addEventListener("click", () => ov.remove());
+
+  saveBtn.addEventListener("click", () => {
+    const title = titleInput.value.trim();
+    if (!title) {
+      confirmPopup("标题不能为空");
+      return;
+    }
+
+    const starredText = starredInput.value.trim();
+    const data = {
+      id: src.id || genId(),
+      title: title,
+      subject: subjectSel.value.trim() || SUBJECTS[0],
+      chapter: chapterInput.value.trim(),
+      frequency: freqSel.value,
+      status: statusSel.value,
+      starred: ["1", "true", "True", "是", "y", "Y"].indexOf(starredText) !== -1,
+      tags: tagsInput.value.split(/[,，;；]/).map(t => t.trim()).filter(Boolean),
+    };
+    for (let i = 0; i < FIELD_DEFS.length; i++) {
+      const key = FIELD_DEFS[i][0];
+      data[key] = inputs[key].value.trim();
+    }
+
+    saveItem(data);
+    ov.remove();
+  });
+
+  footer.appendChild(cancelBtn);
+  footer.appendChild(saveBtn);
+  pop.appendChild(footer);
+
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+
+  setTimeout(() => titleInput.focus(), 60);
+}
+
+/* =========================================================
+   导入弹窗
+   ========================================================= */
+function openImport() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "导入数据"));
+
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "hint-text", "粘贴 JSON 数组（格式与导出结果一致）"));
+
+  const ta = document.createElement("textarea");
+  ta.className = "import-textarea";
+  ta.placeholder = SAMPLE_JSON;
+  ta.spellcheck = false;
+  body.appendChild(ta);
+
+  const row = el("div", "import-row");
+  row.appendChild(el("div", "row-label", "统一指定科目"));
+  const overrideSel = document.createElement("select");
+  overrideSel.className = "edit-select";
+  const overrideValues = ["保持原值"].concat(SUBJECTS);
+  for (let i = 0; i < overrideValues.length; i++) {
+    const o = document.createElement("option");
+    o.value = overrideValues[i];
+    o.textContent = overrideValues[i];
+    overrideSel.appendChild(o);
+  }
+  row.appendChild(overrideSel);
+  body.appendChild(row);
+
+  pop.appendChild(body);
+
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const appendBtn = el("button", "btn", "追加");
+  const replaceBtn = el("button", "btn", "替换全部");
+
+  cancelBtn.addEventListener("click", () => ov.remove());
+
+  function doImport(mode) {
+    const text = ta.value.trim();
+    if (!text) {
+      confirmPopup("请先粘贴 JSON 内容");
+      return;
+    }
+    const override = overrideSel.value === "保持原值" ? null : overrideSel.value;
+    const result = store.importFromText(text, mode, override);
+
+    if (!result.ok) {
+      confirmPopup(result.msg);
+      return;
+    }
+
+    ov.remove();
+    render();
+
+    if (result.warnings.length) {
+      const shown = result.warnings.slice(0, 8).join("\n");
+      const extra = result.warnings.length > 8
+        ? "\n…… 共 " + result.warnings.length + " 条提示"
+        : "";
+      confirmPopup(result.msg + "\n\n注意：\n" + shown + extra);
+    } else {
+      confirmPopup(result.msg);
+    }
+  }
+
+  appendBtn.addEventListener("click", () => doImport("append"));
+  replaceBtn.addEventListener("click", () => doImport("replace"));
+
+  footer.appendChild(cancelBtn);
+  footer.appendChild(appendBtn);
+  footer.appendChild(replaceBtn);
+  pop.appendChild(footer);
+
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+
+  setTimeout(() => ta.focus(), 60);
+}
+
+/* =========================================================
+   导出弹窗
+   ========================================================= */
+function openExport() {
+  if (!store.data.length) {
+    confirmPopup("当前没有数据可导出");
+    return;
+  }
+
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "导出数据"));
+
+  const body = el("div", "popup-body");
+
+  const subjRow = el("div", "export-row");
+  subjRow.appendChild(el("div", "row-label", "导出科目"));
+  const subjSel = document.createElement("select");
+  subjSel.className = "edit-select";
+  const subjValues = ["全部"].concat(SUBJECTS);
+  for (let i = 0; i < subjValues.length; i++) {
+    const o = document.createElement("option");
+    o.value = subjValues[i];
+    o.textContent = subjValues[i];
+    subjSel.appendChild(o);
+  }
+  subjRow.appendChild(subjSel);
+  body.appendChild(subjRow);
+
+  const infoLabel = el("div", "export-info");
+  body.appendChild(infoLabel);
+
+  const ta = document.createElement("textarea");
+  ta.className = "export-textarea";
+  ta.readOnly = true;
+  ta.spellcheck = false;
+  body.appendChild(ta);
+
+  function refresh() {
+    const text = store.exportText(subjSel.value);
+    ta.value = text;
+    let count = 0;
+    try { count = JSON.parse(text).length; } catch (e) { count = 0; }
+    infoLabel.textContent = "当前将导出 " + count + " 条";
+  }
+
+  subjSel.addEventListener("change", refresh);
+  refresh();
+
+  pop.appendChild(body);
+
+  const footer = el("div", "popup-footer");
+  const closeBtn = el("button", "btn", "关闭");
+  const copyBtn = el("button", "btn", "复制全部");
+
+  closeBtn.addEventListener("click", () => ov.remove());
+  copyBtn.addEventListener("click", () => {
+    copyText(ta.value)
+      .then(() => confirmPopup("已复制到剪贴板"))
+      .catch(err => confirmPopup("复制失败：" + err.message));
+  });
+
+  footer.appendChild(closeBtn);
+  footer.appendChild(copyBtn);
+  pop.appendChild(footer);
+
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
+   设置弹窗
+   ========================================================= */
+function openSettings() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "设置"));
+
+  const body = el("div", "popup-body");
+
+  function addRow(labelText, widget) {
+    const r = el("div", "settings-row");
+    r.appendChild(el("div", "row-label", labelText));
+    r.appendChild(widget);
+    body.appendChild(r);
+  }
+
+  // 深色模式
+  const darkBtn = el("button", "btn", state.dark ? "关闭深色模式" : "开启深色模式");
+  darkBtn.addEventListener("click", () => {
+    ov.remove();
+    toggleDark();
+  });
+  addRow("深色模式", darkBtn);
+
+  // 字号
+  const fontWrap = el("div", "font-wrap");
+  const minus = el("button", "btn", "A-");
+  const plus = el("button", "btn", "A+");
+  const fontLabel = el("div", "font-label", Math.round(state.fontScale * 100) + "%");
+
+  minus.addEventListener("click", () => {
+    setFontScale(state.fontScale - 0.05);
+    fontLabel.textContent = Math.round(state.fontScale * 100) + "%";
+  });
+  plus.addEventListener("click", () => {
+    setFontScale(state.fontScale + 0.05);
+    fontLabel.textContent = Math.round(state.fontScale * 100) + "%";
+  });
+
+  fontWrap.appendChild(minus);
+  fontWrap.appendChild(fontLabel);
+  fontWrap.appendChild(plus);
+  addRow("字号", fontWrap);
+
+  // 排序
+  const sortSel = document.createElement("select");
+  sortSel.className = "edit-select";
+  for (let i = 0; i < SORT_OPTIONS.length; i++) {
+    const o = document.createElement("option");
+    o.value = SORT_OPTIONS[i];
+    o.textContent = SORT_OPTIONS[i];
+    sortSel.appendChild(o);
+  }
+  sortSel.value = state.sort;
+  sortSel.addEventListener("change", () => setSort(sortSel.value));
+  addRow("排序方式", sortSel);
+
+  // 备份
+  const backupBtn = el("button", "btn", "清理备份（当前 " + store.backupCount() + " 份）");
+  backupBtn.addEventListener("click", () => {
+    store.clearBackups();
+    backupBtn.textContent = "清理备份（当前 0 份）";
+    confirmPopup("备份已清理");
+  });
+  addRow("自动备份", backupBtn);
+
+  // 说明
+  const info = el("div", "settings-info",
+    "数据保存在浏览器本地存储中，清除浏览器数据时一并清除。\n" +
+    "每天首次修改会自动生成一份备份，最多保留 5 份。\n\n" +
+    "系统分类根据章节名、标题、标签中的关键词自动推断。\n\n" +
+    "仅供考研复习参考，请以当年考试大纲和最新教材为准。"
+  );
+  body.appendChild(info);
+
+  pop.appendChild(body);
+
+  const footer = el("div", "popup-footer");
+  const closeBtn = el("button", "btn", "关闭");
+  closeBtn.addEventListener("click", () => ov.remove());
+  footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
+   过滤与列表
+   ========================================================= */
+function scopeBySubject() {
+  let data = store.data;
+  if (state.subject !== "全部") {
+    data = data.filter(d => d.subject === state.subject);
+  }
+  return data;
+}
+
+function updateSelectOptions(sel, values) {
+  const cur = Array.prototype.map.call(sel.options, o => o.value).join("\u0001");
+  const nxt = values.map(v => v.value).join("\u0001");
+  if (cur !== nxt) {
+    sel.innerHTML = "";
+    for (let i = 0; i < values.length; i++) {
+      const o = document.createElement("option");
+      o.value = values[i].value;
+      o.textContent = values[i].label;
+      sel.appendChild(o);
+    }
+  }
+}
+
+function rebuildSystemValues() {
+  const base = scopeBySubject();
+  const counts = {};
+  for (let i = 0; i < base.length; i++) {
+    const s = detectSystem(base[i]);
+    counts[s] = (counts[s] || 0) + 1;
+  }
+  const names = Object.keys(counts).sort();
+
+  const values = [{ value: "全部", label: "全部" }];
+  for (let i = 0; i < names.length; i++) {
+    values.push({ value: names[i], label: withCount(names[i], counts[names[i]]) });
+  }
+
+  const sel = document.getElementById("systemSel");
+  updateSelectOptions(sel, values);
+
+  if (state.system !== "全部" && names.indexOf(state.system) === -1) {
+    state.system = "全部";
+    saveSettings();
+  }
+  sel.value = state.system;
+}
+
+function rebuildChapterValues() {
+  let base = scopeBySubject();
+  if (state.system !== "全部") {
+    base = base.filter(d => detectSystem(d) === state.system);
+  }
+
+  const counts = {};
+  for (let i = 0; i < base.length; i++) {
+    const ch = String(base[i].chapter || "").trim();
+    const key = ch || "（未填章节）";
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  const names = Object.keys(counts).sort();
+
+  const values = [{ value: "全部", label: "全部" }];
+  for (let i = 0; i < names.length; i++) {
+    values.push({ value: names[i], label: withCount(names[i], counts[names[i]]) });
+  }
+
+  const sel = document.getElementById("chapterSel");
+  updateSelectOptions(sel, values);
+
+  if (state.chapter !== "全部" && names.indexOf(state.chapter) === -1) {
+    state.chapter = "全部";
+    saveSettings();
+  }
+  sel.value = state.chapter;
+}
+
+function rebuildTagValues() {
+  const set = {};
+  for (let i = 0; i < store.data.length; i++) {
+    const tags = store.data[i].tags || [];
+    for (let j = 0; j < tags.length; j++) set[tags[j]] = true;
+  }
+  const names = Object.keys(set).sort();
+
+  const values = [{ value: "全部", label: "全部" }];
+  for (let i = 0; i < names.length; i++) {
+    values.push({ value: names[i], label: names[i] });
+  }
+
+  const sel = document.getElementById("tagSel");
+  updateSelectOptions(sel, values);
+
+  if (state.tag !== "全部" && names.indexOf(state.tag) === -1) {
+    state.tag = "全部";
+    saveSettings();
+  }
+  sel.value = state.tag;
+}
+
+function getFiltered() {
+  let data = store.data.slice();
+
+  if (state.subject !== "全部") {
+    data = data.filter(d => d.subject === state.subject);
+  }
+  if (state.system !== "全部") {
+    data = data.filter(d => detectSystem(d) === state.system);
+  }
+  if (state.chapter !== "全部") {
+    if (state.chapter === "（未填章节）") {
+      data = data.filter(d => !String(d.chapter || "").trim());
+    } else {
+      data = data.filter(d => d.chapter === state.chapter);
+    }
+  }
+  if (state.status !== "全部") {
+    data = data.filter(d => d.status === state.status);
+  }
+  if (state.tag !== "全部") {
+    data = data.filter(d => (d.tags || []).indexOf(state.tag) !== -1);
+  }
+  if (state.starredOnly) {
+    data = data.filter(d => d.starred);
+  }
+  if (state.search) {
+    const kw = state.search.toLowerCase();
+    data = data.filter(d => JSON.stringify(d).toLowerCase().indexOf(kw) !== -1);
+  }
+
+  if (state.sort === "频率高→低") {
+    data.sort((a, b) => starCount(b) - starCount(a));
+  } else if (state.sort === "频率低→高") {
+    data.sort((a, b) => starCount(a) - starCount(b));
+  } else if (state.sort === "标题") {
+    data.sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""), "zh"));
+  }
+
+  return data;
+}
+
+function makeItemCard(item) {
+  const card = el("div", "item-card");
+
+  const bar = el("div", "status-bar");
+  bar.style.background = STATUS_COLORS[item.status] || "#999999";
+  card.appendChild(bar);
+
+  const btn = el("button", "item-btn");
+  const prefix = item.starred ? "★ " : "";
+  btn.textContent = prefix + item.title + "  |  " + (item.subject || "");
+  btn.style.background = SUBJECT_COLORS[item.subject] || "#595959";
+  btn.addEventListener("click", () => showDetail(item));
+  card.appendChild(btn);
+
+  return card;
+}
+
+function renderList() {
+  const scroller = document.getElementById("listScroll");
+  const list = document.getElementById("listLayout");
+  const prevTop = scroller.scrollTop;
+
+  list.innerHTML = "";
+  const filtered = getFiltered();
+
+  if (!filtered.length) {
+    const hint = store.data.length ? "没有匹配的条目" : EMPTY_HINT;
+    list.appendChild(el("div", "empty-hint", hint));
+  } else {
+    for (let i = 0; i < filtered.length; i++) {
+      list.appendChild(makeItemCard(filtered[i]));
+    }
+  }
+
+  const total = store.data.length;
+  let starred = 0;
+  for (let i = 0; i < store.data.length; i++) {
+    if (store.data[i].starred) starred++;
+  }
+  document.getElementById("statLabel").textContent =
+    "显示 " + filtered.length + " / 共 " + total + " 条  ·  收藏 " + starred;
+
+  scroller.scrollTop = prevTop;
+}
+
+function render() {
+  rebuildSystemValues();
+  rebuildChapterValues();
+  rebuildTagValues();
+  renderList();
+}
+
+/* =========================================================
+   增删改
+   ========================================================= */
+function saveItem(data) {
+  let found = false;
+  for (let i = 0; i < store.data.length; i++) {
+    if (store.data[i].id === data.id) {
+      store.data[i] = data;
+      found = true;
+      break;
+    }
+  }
+  if (!found) store.data.push(data);
+  store.save();
+  render();
+}
+
+function confirmDelete(item) {
+  confirmPopup("确定删除「" + (item.title || "") + "」？", function () {
+    store.data = store.data.filter(it => it.id !== item.id);
+    store.save();
+    render();
+  }, "删除");
+}
+
+function randomPick() {
+  const pool = getFiltered();
+  if (!pool.length) {
+    confirmPopup("当前筛选下没有可抽取的条目");
+    return;
+  }
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  showDetail(item);
+}
+
+function confirmClear() {
+  if (!store.data.length) {
+    confirmPopup("当前没有数据");
+    return;
+  }
+  confirmPopup("将清空全部数据，确定吗？", function () {
+    store.clear();
+    render();
+  }, "清空");
+}
+
+/* =========================================================
+   滚动位置
+   ========================================================= */
+function saveScroll() {
+  const s = document.getElementById("listScroll");
+  if (!s) return;
+  const max = s.scrollHeight - s.clientHeight;
+  state.scrollY = max > 0 ? 1 - (s.scrollTop / max) : 1.0;
+  saveSettings();
+}
+
+function restoreScroll() {
+  const s = document.getElementById("listScroll");
+  if (!s) return;
+  const max = s.scrollHeight - s.clientHeight;
+  if (max > 0) {
+    const y = clamp(Number(state.scrollY) || 1.0, 0, 1);
+    s.scrollTop = (1 - y) * max;
+  }
+}
+
+/* =========================================================
+   事件绑定
+   ========================================================= */
+function bindEvents() {
+  // 科目
+  document.getElementById("subjectSel").addEventListener("change", function (e) {
+    state.subject = e.target.value;
+    // 科目切换时系统与章节重置，避免出现互斥组合
+    state.system = "全部";
+    state.chapter = "全部";
+    saveSettings();
+    render();
+  });
+
+  // 系统
+  document.getElementById("systemSel").addEventListener("change", function (e) {
+    state.system = e.target.value;
+    state.chapter = "全部";
+    saveSettings();
+    render();
+  });
+
+  // 章节
+  document.getElementById("chapterSel").addEventListener("change", function (e) {
+    state.chapter = e.target.value;
+    saveSettings();
+    render();
+  });
+
+  // 状态
+  document.getElementById("statusSel").addEventListener("change", function (e) {
+    state.status = e.target.value;
+    saveSettings();
+    render();
+  });
+
+  // 标签
+  document.getElementById("tagSel").addEventListener("change", function (e) {
+    state.tag = e.target.value;
+    saveSettings();
+    render();
+  });
+
+  // 排序
+  document.getElementById("sortSel").addEventListener("change", function (e) {
+    setSort(e.target.value);
+  });
+
+  // 搜索
+  document.getElementById("searchInput").addEventListener("input", function (e) {
+    state.search = e.target.value.trim();
+    render();
+  });
+
+  // 新增
+  document.getElementById("addBtn").addEventListener("click", function () {
+    openEdit(null);
+  });
+
+  // 随机
+  document.getElementById("randomBtn").addEventListener("click", randomPick);
+
+  // 收藏筛选
+  document.getElementById("starBtn").addEventListener("click", function () {
+    state.starredOnly = !state.starredOnly;
+    saveSettings();
+    this.textContent = state.starredOnly ? "★ 收藏" : "☆ 收藏";
+    render();
+  });
+
+  // 导入
+  document.getElementById("importBtn").addEventListener("click", openImport);
+
+  // 导出
+  document.getElementById("exportBtn").addEventListener("click", openExport);
+
+  // 清空
+  document.getElementById("clearBtn").addEventListener("click", confirmClear);
+
+  // 设置
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+
+  // 滚动位置记忆
+  let scrollTimer = null;
+  document.getElementById("listScroll").addEventListener("scroll", function () {
+    if (scrollTimer) clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(saveScroll, 350);
+  }, { passive: true });
+
+  // 离开页面时保存
+  window.addEventListener("beforeunload", saveScroll);
+  window.addEventListener("pagehide", saveScroll);
+}
+
+/* =========================================================
+   初始化
+   ========================================================= */
+async function init() {
+  loadSettings();
+  applyTheme();
+  await store.load();     // 这里加 await
+  bindEvents();
+  document.getElementById("starBtn").textContent = state.starredOnly ? "★ 收藏" : "☆ 收藏";
+  document.getElementById("sortSel").value = state.sort;
+  document.getElementById("statusSel").value = state.status;
+  document.getElementById("subjectSel").value = state.subject;
+  render();
+  requestAnimationFrame(() => {
+    restoreScroll();
+    setTimeout(restoreScroll, 120);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
