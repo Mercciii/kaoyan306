@@ -1,0 +1,20 @@
+{
+  "name": "西医综合306病例速查",
+  "short_name": "306病例",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a4db3",
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/gh/Mercciii/kaoyan306@main/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/gh/Mercciii/kaoyan306@main/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
