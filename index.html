@@ -979,8 +979,9 @@ function saveSettings() {
 /* =========================================================
    数据存储
    ========================================================= */
+// 将原来的 raw.githubusercontent.com 链接替换为：
 const REMOTE_DATA_URL =
-  "https://raw.githubusercontent.com/Mercciii/kaoyan306/main/data/cases.json";
+  "https://cdn.jsdelivr.net/gh/Mercciii/kaoyan306@main/data/cases.json";
 
 store.load = async function() {
   // 先从本地读
