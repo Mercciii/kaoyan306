@@ -3462,6 +3462,7 @@ function openQuiz(pool, opts) {
   const closeBtn = el("button", "btn", "退出");
   footer.appendChild(starBtn); footer.appendChild(doubtBtn); footer.appendChild(skipBtn);
   footer.appendChild(submitBtn); footer.appendChild(nextBtn); footer.appendChild(closeBtn);
+  pop.appendChild(body);
   pop.appendChild(footer);
 
   let answered = false;
