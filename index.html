@@ -649,19 +649,21 @@ const ABBR_MAP = {
 
 const FIELD_SCHEMAS = {
   "内科学": [
-    ["overview", "概述"], ["etiology", "病因"], ["pathogenesis", "发病机制"],
-    ["pathophysiology", "病理生理"], ["classification", "分类"], ["typing", "分型"],
-    ["staging", "分期"], ["manifestations", "临床表现"], ["lab_tests", "实验室及其他检查"],
-    ["diagnosis", "诊断"], ["differential", "鉴别诊断"], ["complications", "并发症"],
-    ["treatment", "治疗"], ["prevention", "预防"], ["prognosis", "预后"],
-  ],
+  ["overview", "概述"], ["epidemiology", "流行病学"], ["etiology", "病因"],
+  ["pathogenesis", "发病机制"], ["pathology", "病理"], ["pathophysiology", "病理生理"],
+  ["classification", "分类"], ["typing", "分型"],
+  ["staging", "分期"], ["manifestations", "临床表现"], ["lab_tests", "实验室及其他检查"],
+  ["diagnosis", "诊断"], ["differential", "鉴别诊断"], ["complications", "并发症"],
+  ["treatment", "治疗"], ["prevention", "预防"], ["prognosis", "预后"],
+],
   "外科学": [
-    ["overview", "概述"], ["etiology", "病因"], ["pathogenesis", "发病机制"],
-    ["pathophysiology", "病理生理"], ["classification", "分类"], ["typing", "分型"],
-    ["staging", "分期"], ["manifestations", "临床表现"], ["lab_tests", "实验室及其他检查"],
-    ["diagnosis", "诊断"], ["differential", "鉴别诊断"], ["complications", "并发症"],
-    ["treatment", "治疗"], ["prevention", "预防"], ["prognosis", "预后"],
-  ],
+  ["overview", "概述"], ["epidemiology", "流行病学"], ["etiology", "病因"],
+  ["pathogenesis", "发病机制"], ["pathology", "病理"], ["pathophysiology", "病理生理"],
+  ["classification", "分类"], ["typing", "分型"],
+  ["staging", "分期"], ["manifestations", "临床表现"], ["lab_tests", "实验室及其他检查"],
+  ["diagnosis", "诊断"], ["differential", "鉴别诊断"], ["complications", "并发症"],
+  ["treatment", "治疗"], ["prevention", "预防"], ["prognosis", "预后"],
+],
   "生理学": [
     ["overview", "概述"], ["phys_basic", "基本概念"], ["phys_mechanism", "发生机制"],
     ["phys_regulation", "调节因素"], ["phys_factors", "影响因素"],
@@ -739,8 +741,15 @@ const SAMPLE_JSON =
   '    "status": "未看",\n' +
   '    "tags": ["高频"],\n' +
   '    "overview": "以持续气流受限为特征的疾病。",\n' +
+  '    "epidemiology": "40 岁以上人群患病率约 13.7%，男性高于女性，吸烟者显著增高。",\n' +
   '    "etiology": "吸烟是最重要病因。",\n' +
-  '    "treatment": "支气管扩张剂为主。"\n' +
+  '    "pathogenesis": "气道与肺实质慢性炎症，蛋白酶-抗蛋白酶失衡。",\n' +
+  '    "pathology": "小气道狭窄、肺泡壁破坏融合，形成肺气肿。",\n' +
+  '    "pathophysiology": "持续气流受限，肺过度充气，通气/血流比例失调。",\n' +
+  '    "manifestations": "慢性咳嗽、咳痰、活动后气促，晚期出现呼吸衰竭。",\n' +
+  '    "diagnosis": "吸入支气管扩张剂后 FEV1/FVC < 70%。",\n' +
+  '    "complications": "慢性呼吸衰竭、自发性气胸、慢性肺源性心脏病。",\n' +
+  '    "treatment": "支气管扩张剂为主，急性加重期抗感染、必要时氧疗。"\n' +
   '  },\n' +
   '  {\n' +
   '    "title": "急性心肌梗死（时间线示例）",\n' +
@@ -749,11 +758,15 @@ const SAMPLE_JSON =
   '    "frequency": "★★★★★",\n' +
   '    "status": "未看",\n' +
   '    "tags": ["高频"],\n' +
+  '    "epidemiology": "欧美国家年发病率约 1/1000，我国近年发病率持续上升。",\n' +
+  '    "etiology": "冠状动脉粥样硬化斑块破裂继发血栓形成。",\n' +
+  '    "pathology": "心肌凝固性坏死，中性粒细胞浸润，后期肉芽组织机化。",\n' +
   '    "manifestations": "@0-1h | 突发胸骨后压榨样疼痛\\n@1-2h | 大汗、恶心\\n@2-6h | 心律失常、心衰",\n' +
+  '    "complications": "心律失常、心力衰竭、心源性休克、乳头肌功能失调。",\n' +
   '    "treatment": "@急诊 | $$阿司匹林$$负荷\\n@90min内 | 直接 PCI"\n' +
   '  }\n' +
   ']';
-
+  
 /* =========================================================
    基础工具
    ========================================================= */
@@ -3833,7 +3846,7 @@ function openSettings() {
     "数据保存在浏览器本地存储中，清除浏览器数据时一并清除。\n" +
     "每天首次修改会自动生成一份备份，最多保留 5 份。\n\n" +
     "每科字段模板（内/外科已按临床思维排序）：\n" +
-    "  · 内科学 / 外科学：概述 → 病因 → 发病机制 → 病理生理 → 分类 → 分型 → 分期 → 临床表现 → 实验室及其他检查 → 诊断 → 鉴别诊断 → 并发症 → 治疗 → 预防 → 预后\n" +
+    "  · 内科学 / 外科学：概述 → 流行病学 → 病因 → 发病机制 → 病理 → 病理生理 → 分类 → 分型 → 分期 → 临床表现 → 实验室及其他检查 → 诊断 → 鉴别诊断 → 并发症 → 治疗 → 预防 → 预后\n" +
     "  · 生理学：概述 → 基本概念 → 发生机制 → 调节因素 → 影响因素 → 实验现象/指标 → 临床联系 → 小结\n" +
     "  · 生物化学：概述 → 代谢途径 → 关键酶/限速酶 → 辅酶/辅因子 → 调节方式 → 能量计算 → 抑制剂/药物 → 临床意义 → 小结\n" +
     "  · 病理学：概述 → 病因 → 发病机制 → 大体变化 → 镜下变化 → 免疫组化/特殊染色 → 临床病理联系 → 结局与转归 → 鉴别诊断\n" +
