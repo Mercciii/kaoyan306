@@ -308,7 +308,8 @@ html[data-theme=dark] .ai-info-warn { color:#ff6b6b; }
       <option value="外科学">外科学</option>
       <option value="生理学">生理学</option>
       <option value="生物化学">生物化学</option>
-      <option value="病理学">病理学</option>
+      <option value="病理学总论">病理学总论</option>
+      <option value="病理学各论">病理学各论</option>
       <option value="人文精神">人文精神</option>
     </select>
     <select id="chapterSel"></select>
@@ -390,11 +391,15 @@ html[data-theme=dark] .ai-info-warn { color:#ff6b6b; }
 /* =========================================================
    常量
    ========================================================= */
-const SUBJECTS = ["内科学", "外科学", "生理学", "生物化学", "病理学", "人文精神"];
+const SUBJECTS = ["内科学", "外科学", "生理学", "生物化学", "病理学总论", "病理学各论", "人文精神"];
 const FREQ_OPTIONS = ["", "★", "★★", "★★★", "★★★★", "★★★★★"];
 const STATUS_OPTIONS = ["未看", "需复习", "已掌握"];
 const STATUS_COLORS = { "未看":"#999999", "需复习":"#ff9933", "已掌握":"#4dcc66" };
-const SUBJECT_COLORS = { "内科学":"#d94747", "外科学":"#8c47bf", "生理学":"#338ce6", "生物化学":"#33b366", "病理学":"#f28c33", "人文精神":"#737380" };
+const SUBJECT_COLORS = {
+  "内科学":"#d94747", "外科学":"#8c47bf", "生理学":"#338ce6",
+  "生物化学":"#33b366", "病理学总论":"#f5a623", "病理学各论":"#d97719",
+  "人文精神":"#737380",
+};
 const SORT_OPTIONS = ["默认", "频率高→低", "频率低→高", "标题", "ID升序", "ID降序"];
 const QUIZ_TYPES = { single:"单选", multiple:"多选", judge:"判断", B:"B型题", A3:"病例串题" };
 
@@ -425,12 +430,43 @@ const ABBR_MAP = {
   "MRI":"磁共振成像","CT":"计算机断层扫描","PET":"正电子发射断层扫描",
 };
 
+/* =========================================================
+   字段模板
+   - 病理学拆分为：病理学总论（总论模板）+ 病理学各论（各论模板，仅增加不删减）
+   ========================================================= */
 const FIELD_SCHEMAS = {
   "内科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "外科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "生理学": [["overview","概述"],["phys_basic","基本概念"],["phys_mechanism","发生机制"],["phys_regulation","调节因素"],["phys_factors","影响因素"],["phys_experiment","实验现象 / 指标"],["phys_clinical","临床联系"],["phys_summary","小结"]],
   "生物化学": [["overview","概述"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_summary","小结"]],
-  "病理学": [["overview","概述"],["patho_etiology","病因"],["patho_mechanism","发病机制"],["patho_gross","大体变化"],["patho_micro","镜下变化"],["patho_ihc","免疫组化 / 特殊染色"],["patho_clinical","临床病理联系"],["patho_outcome","结局与转归"],["patho_differential","鉴别诊断"]],
+  /* 病理学总论：概念定义 / 分类分型 / 病因机制 / 基本病理变化 / 结局转归 / 临床病理联系 / 易混概念辨析 / 高频考点 */
+  "病理学总论": [
+    ["general_concept","概念与定义"],
+    ["general_classification","分类与分型"],
+    ["general_etiology_mechanism","病因与发生机制"],
+    ["general_pathology","基本病理变化"],
+    ["general_outcome","结局与转归"],
+    ["general_clinical","临床病理联系"],
+    ["general_confusion","易混概念辨析"],
+    ["general_keypoints","高频考点 / 记忆口诀"],
+  ],
+  /* 病理学各论：原有字段全部保留 + 新增（分类分型 / 好发部位人群 / 分子病理 / 并发症 / 高频考点） */
+  "病理学各论": [
+    ["overview","概述"],
+    ["patho_classification","分类与分型"],
+    ["patho_etiology","病因"],
+    ["patho_mechanism","发病机制"],
+    ["patho_location","好发部位与人群"],
+    ["patho_gross","大体变化"],
+    ["patho_micro","镜下变化"],
+    ["patho_ihc","免疫组化 / 特殊染色"],
+    ["patho_molecular","分子病理"],
+    ["patho_clinical","临床病理联系"],
+    ["patho_complications","并发症"],
+    ["patho_outcome","结局与转归"],
+    ["patho_differential","鉴别诊断"],
+    ["patho_keypoints","高频考点 / 易错点"],
+  ],
   "人文精神": [["overview","概述"],["hum_principle","核心原则"],["hum_scenario","典型情景"],["hum_regulation","法规条款"],["hum_ethics","伦理要点"],["hum_exam","考点提示"]],
 };
 
@@ -482,14 +518,12 @@ function genId() { let s = ""; for (let i = 0; i < 8; i++) s += Math.floor(Math.
 /* =========================================================
    ID 自动编号
    病例：{科目码}{科目名}-{系统码}{系统名}-{3位序号}
-        例：04内科学-01呼吸系统疾病-001
    题库：Q{科目码}{科目名}-{系统码}{系统名}-{题型码}-{4位序号}
-        例：Q04内科学-01呼吸系统疾病-S-0001
-   JSON 自带 id 则保留原值不覆盖。
    ========================================================= */
 const SUBJECT_CODE_MAP = {
-  "生理学":"01", "生物化学":"02", "病理学":"03",
+  "生理学":"01", "生物化学":"02", "病理学总论":"03",
   "内科学":"04", "外科学":"05", "人文精神":"06",
+  "病理学各论":"07",
 };
 const SYSTEM_CODE_MAP = {
   "内科学": [
@@ -512,6 +546,30 @@ const SYSTEM_CODE_MAP = {
     { keys:["泌尿外科","前列腺","膀胱","肾结石","尿路"], code:"07", name:"泌尿外科疾病" },
     { keys:["骨科","骨折","关节","脊柱","椎间盘"], code:"08", name:"骨科疾病" },
   ],
+  "病理学总论": [
+    { keys:["细胞和组织的适应与损伤","适应与损伤","适应和损伤"], code:"01", name:"细胞和组织的适应与损伤" },
+    { keys:["损伤的修复","修复"], code:"02", name:"损伤的修复" },
+    { keys:["局部血液循环障碍","局部血液循环","血液循环障碍"], code:"03", name:"局部血液循环障碍" },
+    { keys:["炎症"], code:"04", name:"炎症" },
+    { keys:["免疫性疾病","免疫"], code:"05", name:"免疫性疾病" },
+    { keys:["肿瘤"], code:"06", name:"肿瘤" },
+    { keys:["环境和营养性疾病","环境","营养"], code:"07", name:"环境和营养性疾病" },
+    { keys:["遗传性疾病和儿童疾病","遗传性疾病","遗传"], code:"08", name:"遗传性疾病和儿童疾病" },
+  ],
+  "病理学各论": [
+    { keys:["心血管系统疾病","心血管"], code:"09", name:"心血管系统疾病" },
+    { keys:["呼吸系统疾病","呼吸系统"], code:"10", name:"呼吸系统疾病" },
+    { keys:["消化系统疾病","消化系统"], code:"11", name:"消化系统疾病" },
+    { keys:["淋巴造血系统疾病","淋巴造血"], code:"12", name:"淋巴造血系统疾病" },
+    { keys:["泌尿系统疾病","泌尿系统"], code:"13", name:"泌尿系统疾病" },
+    { keys:["生殖系统和乳腺疾病","生殖系统","乳腺"], code:"14", name:"生殖系统和乳腺疾病" },
+    { keys:["内分泌系统疾病","内分泌"], code:"15", name:"内分泌系统疾病" },
+    { keys:["神经系统疾病","神经系统"], code:"16", name:"神经系统疾病" },
+    { keys:["骨关节和软组织疾病","骨关节","软组织"], code:"17", name:"骨关节和软组织疾病" },
+    { keys:["传染病"], code:"18", name:"传染病" },
+    { keys:["寄生虫病"], code:"19", name:"寄生虫病" },
+    { keys:["病理学诊断与研究技术","病理学诊断","研究技术"], code:"20", name:"病理学诊断与研究技术" },
+  ],
 };
 
 /* 每个科目的章节白名单：AI 生成与下拉选择都以此为准 */
@@ -520,7 +578,8 @@ const CHAPTER_WHITELIST = {
   "外科学": ["外科学总论","神经外科疾病","颈部和乳腺外科疾病","胸部外科疾病","心脏与血管外科疾病","腹部外科疾病","泌尿外科疾病","骨科疾病"],
   "生理学": ["绪论","细胞的基本功能","血液","血液循环","呼吸","消化和吸收","能量代谢与体温","尿的生成和排出","感觉器官的功能","神经系统的功能","内分泌","生殖"],
   "生物化学": ["蛋白质的结构与功能","核酸的结构与功能","酶","糖代谢","脂质代谢","氨基酸代谢","核苷酸代谢","生物氧化","物质代谢的联系与调节","DNA的生物合成","RNA的生物合成","蛋白质的生物合成","基因表达调控","细胞信号转导","血液生化","肝生化","维生素"],
-  "病理学": ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","肿瘤","心血管系统疾病","呼吸系统疾病","消化系统疾病","淋巴造血系统疾病","泌尿系统疾病","生殖系统疾病","传染病","寄生虫病"],
+  "病理学总论": ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"],
+  "病理学各论": ["心血管系统疾病","呼吸系统疾病","消化系统疾病","淋巴造血系统疾病","泌尿系统疾病","生殖系统和乳腺疾病","内分泌系统疾病","神经系统疾病","骨关节和软组织疾病","传染病","寄生虫病","病理学诊断与研究技术"],
   "人文精神": ["医学伦理","医学心理","卫生法规","医患沟通"],
 };
 const CHAPTER_OTHER = "其他";
@@ -1420,7 +1479,12 @@ const questionStore = {
 
 /* =========================================================
    数据迁移（一次性）
+   1) 外科学基础 → 外科学总论
+   2) 旧 Q<subjCode><subj>-<type>-<seq> 补上章节维度
+   3) 病理学 → 病理学总论 / 病理学各论（按章节归类）
    ========================================================= */
+const PATHO_GENERAL_CHAPTERS = ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"];
+
 function migrateAllData() {
   let changedCases = false;
   let changedQuestions = false;
@@ -1448,6 +1512,24 @@ function migrateAllData() {
       d.id = newId;
       d.chapter = newChapter;
       changedCases = true;
+    }
+  }
+
+  /* 病理学拆分迁移：subject "病理学" → "病理学总论" / "病理学各论" */
+  for (let i = 0; i < store.data.length; i++) {
+    const d = store.data[i];
+    if (d.subject === "病理学") {
+      const isGeneral = PATHO_GENERAL_CHAPTERS.indexOf(d.chapter) !== -1;
+      d.subject = isGeneral ? "病理学总论" : "病理学各论";
+      changedCases = true;
+    }
+  }
+  for (let i = 0; i < questionStore.data.length; i++) {
+    const q = questionStore.data[i];
+    if (q.subject === "病理学") {
+      const isGeneral = PATHO_GENERAL_CHAPTERS.indexOf(q.chapter) !== -1;
+      q.subject = isGeneral ? "病理学总论" : "病理学各论";
+      changedQuestions = true;
     }
   }
 
@@ -1794,6 +1876,29 @@ function buildCasePrompt(subject) {
   const chapterLine = chapters.length
     ? '    "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapters.join(" / ") + '",'
     : '    "chapter": "所属章节",';
+  const extra = subject === "病理学总论"
+    ? [
+        "【病理学总论特别说明】",
+        "本章为总论，研究对象是“基本病理过程”而非具体疾病。",
+        "  · 概念与定义：写清本质特征、核心要素；",
+        "  · 分类与分型：按什么标准划分、各型名称与判断依据；",
+        "  · 病因与发生机制：分子 / 细胞 / 血流动力学等层面；",
+        "  · 基本病理变化：形态学规律（大体与镜下概括性描述）；",
+        "  · 结局与转归：吸收、机化、钙化、蔓延、慢性化等；",
+        "  · 临床病理联系：全身反应、典型症状、实验室改变；",
+        "  · 易混概念辨析：与相邻概念（如凋亡 vs 坏死、渗出 vs 漏出）的对照；",
+        "  · 高频考点 / 记忆口诀：金标准、关键词、口诀。",
+      ].join("\n")
+    : subject === "病理学各论"
+      ? [
+          "【病理学各论特别说明】",
+          "本章为各论，研究对象是具体疾病。",
+          "  · 分类与分型、好发部位与人群必须写全；",
+          "  · 镜下变化要写清特征性结构（细胞形态、排列方式、特殊小体）；",
+          "  · 免疫组化 / 特殊染色、分子病理要写明具体标记物与意义；",
+          "  · 并发症、鉴别诊断、高频考点 / 易错点务必分点列出。",
+        ].join("\n")
+      : "";
   return [
     "你是考研西医综合 306 的病例数据整理助手。",
     "请把用户提供的医学资料整理成一个 JSON 数组，每个元素代表一个疾病/病例条目。",
@@ -1813,6 +1918,7 @@ function buildCasePrompt(subject) {
     "",
     "字段含义：" + fieldNames + "。",
     "",
+    extra ? extra + "\n" : "",
     "硬性要求：",
     "【章节约束】chapter 必须从上面给出的列表中逐字选择，禁止自创、简称或改写；无法归类时填 \"" + CHAPTER_OTHER + "\"。",
     "【格式约定】",
@@ -3039,7 +3145,7 @@ function openEdit(item) {
     syncCurrentToDraft();
     fieldsContainer.innerHTML = ""; fieldInputs = {};
     const fields = getFieldsForSubject(subject);
-    const hint = el("div", "subject-hint", "当前科目：" + subject + "，共 " + fields.length + " 个字段。" + (subject === "内科学" || subject === "外科学" ? "（含分类 / 分型 / 分期）" : "（切换科目不会丢失其他科字段已填内容）"));
+    const hint = el("div", "subject-hint", "当前科目：" + subject + "，共 " + fields.length + " 个字段。" + (subject === "内科学" || subject === "外科学" ? "（含分类 / 分型 / 分期）" : subject === "病理学总论" ? "（总论模板：概念 / 分类 / 机制 / 变化 / 转归 / 辨析）" : subject === "病理学各论" ? "（各论模板：含分类分型、好发部位、分子病理、并发症）" : "（切换科目不会丢失其他科字段已填内容）"));
     fieldsContainer.appendChild(hint);
     for (let i = 0; i < fields.length; i++) {
       const key = fields[i][0], name = fields[i][1];
@@ -4696,7 +4802,7 @@ function openQuizPicker() {
     state.quizScope = scSel.value; state.quizMode = "exam";
     saveSettings();
     ov.remove();
-    const ratios = { "生理学": 0.14, "生物化学": 0.12, "病理学": 0.12, "内科学": 0.30, "外科学": 0.23, "人文精神": 0.09 };
+    const ratios = { "生理学": 0.14, "生物化学": 0.12, "病理学总论": 0.06, "病理学各论": 0.06, "内科学": 0.30, "外科学": 0.23, "人文精神": 0.09 };
     const total = 180;
     const pool = [];
     for (const sj in ratios) {
@@ -5178,7 +5284,7 @@ function updateBackToTop() {
    ========================================================= */
 const RECORD_SURNAMES = ["张", "王", "李", "赵", "刘", "陈", "杨", "黄", "周", "吴", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗"];
 const RECORD_JOBS = ["退休工人", "教师", "公司职员", "农民", "货车司机", "公务员", "个体经营者", "护士", "厨师", "建筑工人", "家庭主妇"];
-const CN_NUM = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
+const CN_NUM = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八"];
 
 function openBigRecord() {
   const pool = getFiltered();
@@ -5289,6 +5395,15 @@ function openSettings() {
     "【数据保存】\n" +
     "病例与题库均保存在浏览器本地存储中，清除浏览器数据时一并清除。\n" +
     "每次修改自动生成备份（最多 5 份）。\n\n" +
+    "【病理学拆分说明】\n" +
+    "  病理学 → 拆为「病理学总论」与「病理学各论」两个科目。\n" +
+    "  · 总论模板字段：概念与定义 / 分类与分型 / 病因与发生机制 /\n" +
+    "    基本病理变化 / 结局与转归 / 临床病理联系 / 易混概念辨析 /\n" +
+    "    高频考点 · 记忆口诀。\n" +
+    "  · 各论模板字段：原有 9 个字段全部保留，另增加\n" +
+    "    分类与分型 / 好发部位与人群 / 分子病理 / 并发症 /\n" +
+    "    高频考点 · 易错点。\n" +
+    "  旧数据中 subject=病理学的条目会自动按章节迁移。\n\n" +
     "【ID 自动编号】\n" +
     "  病例：{科目码}{科目名}-{系统码}{系统名}-{3位序号}\n" +
     "        例：04内科学-01呼吸系统疾病-001\n" +
