@@ -4082,21 +4082,40 @@ function openAiImport(target) {
   fileIn.addEventListener("change", () => {
     const files = Array.from(fileIn.files || []);
     if (!files.length) return;
-    for (const f of files) {
-      fileQueue.push({
-        id: genId(),
-        file: f,
-        name: f.name,
-        status: "pending",
-        text: "",
-        jsonItems: null,
-        jsonText: "",
-        error: "",
-      });
+
+    /* 补丁 2：队列里还有未导入的文件时，先问要不要清空 */
+    const stale = fileQueue.filter(f => f.status !== "success");
+    const doAdd = () => {
+      fileQueue.length = 0;
+      for (const f of files) {
+        fileQueue.push({
+          id: genId(),
+          file: f,
+          name: f.name,
+          status: "pending",
+          text: "",
+          jsonItems: null,
+          jsonText: "",
+          error: "",
+        });
+      }
+      fileInfo.textContent = "共 " + fileQueue.length + " 个文件";
+      renderQueue();
+      fileIn.value = "";
+    };
+
+    if (stale.length) {
+      confirmPopup(
+        "队列里还有 " + stale.length + " 个未导入的文件：\n" +
+        stale.map(f => "  · " + f.name).join("\n") +
+        "\n\n选择新文件将清空这些旧文件。是否继续？",
+        doAdd,
+        "清空并添加",
+        "替换文件队列"
+      );
+    } else {
+      doAdd();
     }
-    fileInfo.textContent = "共 " + fileQueue.length + " 个文件";
-    renderQueue();
-    fileIn.value = "";
   });
 
   body.appendChild(form);
@@ -4152,6 +4171,13 @@ function openAiImport(target) {
     finally { copyPrompt.disabled = false; }
   });
 
+  /* 补丁 3：统计本轮待处理文件数 */
+  function pendingCount() {
+    let n = 0;
+    for (const f of fileQueue) if (f.status === "pending") n++;
+    return n;
+  }
+
   /* 生成主体（从 genBtn 事件抽出，供高峰确认后调用） */
   async function runGeneration() {
     const provider = provSel.value;
@@ -4188,9 +4214,16 @@ function openAiImport(target) {
     genBtn.disabled = true; importBtn.disabled = true; importAllBtn.disabled = true; copyPrompt.disabled = true;
 
     try {
+      /* 补丁 3：日志里明确本轮将处理几个文件 */
+      log("本轮将处理 " + pendingCount() + " 个待生成文件" +
+          (casePoolText ? "，以及病例库范围" : "") +
+          (ta.value.trim() ? "，以及手动粘贴文本" : ""));
+
       for (let i = 0; i < fileQueue.length; i++) {
         const item = fileQueue[i];
-        if (item.status === "success") continue;
+        /* 补丁 1：只处理本轮新加入（pending）的文件；
+           parsed / generating / success / error 都是上一轮的遗留，跳过 */
+        if (item.status !== "pending") continue;
 
         if (!item.text) {
           item.status = "parsing";
@@ -4269,7 +4302,7 @@ function openAiImport(target) {
         log("🎉 手动来源共 " + merged.length + " 条（去重后）");
       }
 
-      if (!fileQueue.length && !manualSources.length) {
+      if (!fileQueue.some(f => f.status === "pending") && !manualSources.length) {
         log("⚠ 没有可处理的内容（请在 ③ 选病例库，或上传文件 / 粘贴文本）");
       }
     } catch (e) {
@@ -5561,6 +5594,10 @@ function openSettings() {
     "【参数记忆】\n" +
     "  AI 面板的目标科目、统一指定章节会自动记住上次选择。\n" +
     "  导入面板（病例 / 题库）的统一指定科目与章节同样会记住。\n\n" +
+    "【文件队列】\n" +
+    "  选择新文件时会提示清空旧队列；\n" +
+    "  「开始生成」只处理本轮新加入（等待中）的文件，\n" +
+    "  已成功 / 已解析的旧文件不会被重复处理。\n\n" +
     "【如何更新题库】\n" +
     "方法 1 · 直接在 GitHub 网页编辑：\n" +
     "  打开仓库 → data/questions.json → 铅笔图标编辑 → Commit。\n" +
