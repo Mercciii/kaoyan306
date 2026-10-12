@@ -227,6 +227,12 @@ html[data-theme=dark] .ai-info-free { color:#63d97f; }
 html[data-theme=dark] .ai-info-warn { color:#ff6b6b; }
 .ai-info-link { color:var(--title); font-weight:600; text-decoration:underline dotted; margin-top:3px; align-self:flex-start; }
 
+.ai-peak-badge { font-weight:600; padding:3px 8px; border-radius:4px; font-size:.9em; }
+.ai-peak-badge.peak { background:rgba(214,40,40,.15); color:#d62828; }
+.ai-peak-badge.offpeak { background:rgba(77,204,102,.15); color:#2e9e4a; }
+html[data-theme=dark] .ai-peak-badge.peak { background:rgba(255,107,107,.18); color:#ff6b6b; }
+html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); color:#63d97f; }
+
 .merged-timeline-section { flex:none; margin-top:16px; padding:10px; border:1px solid var(--divider); border-radius:6px; background:var(--panel); }
 .merged-timeline-title { font-size:.9375em; font-weight:700; color:var(--title); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--divider); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .merged-timeline-count { font-size:.75em; font-weight:500; color:var(--sub); background:var(--btn-bg); padding:1px 8px; border-radius:10px; }
@@ -477,6 +483,7 @@ const getFieldsForSubject = sj => FIELD_SCHEMAS[sj] || FIELD_SCHEMAS["内科学"
 const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="kaoyan_answer_log",
       QUIZ_PROGRESS_KEY="kaoyan_quiz_progress", QNOTE_KEY="kaoyan_q_notes", SETTINGS_KEY="kaoyan_settings",
       BACKUP_KEY="kaoyan_backups", BACKUP_PREFIX="kaoyan_backup_", GH_KEY="kaoyan_github", AI_KEY="kaoyan_ai_cfg",
+      IMPORT_CFG_KEY="kaoyan_import_cfg",
       DRAFT_KEY="kaoyan_record_drafts", MAX_BACKUPS=5, DRAFT_MAX=50,
       RELEASE_TAG="data", RELEASE_ASSET_NAME="cases.json", RELEASE_ASSET_NAME_Q="questions.json";
 
@@ -1826,26 +1833,51 @@ async function ghUploadImage(cfg, dataUrl) {
 }
 
 /* =========================================================
-   AI 服务商预设
+   AI 服务商预设（含 peak 高峰时段规则）
+   peak: { weekdays, ranges:[[起, 止], ...], note }
+   - 小数表示半小时，如 9.5 = 9:30
+   - weekdays:true 时仅在周一~周五生效
    ========================================================= */
 const AI_PRESETS = {
-  gemini: { label:"Google Gemini（免费额度最大·推荐）", base_url:"https://generativelanguage.googleapis.com/v1beta/openai/", model:"gemini-2.5-flash", models:["gemini-2.5-flash","gemini-2.5-pro","gemini-2.0-flash"], cors:true, free:"💰 免费层：60 次/分钟，1500 次/天，无需绑卡", note:"在 ai.google.dev 获取 API Key，中文支持好。", key_hint:"AIza...", key_url:"https://aistudio.google.com/app/apikey" },
-  openrouter: { label:"OpenRouter（聚合多模型·含 DeepSeek 免费版）", base_url:"https://openrouter.ai/api/v1", model:"deepseek/deepseek-r1-0528:free", models:["deepseek/deepseek-r1-0528:free","deepseek/deepseek-chat-v3.1:free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free","z-ai/glm-4.5-air:free"], cors:true, free:"💰 免费模型：20 次/分钟，50 次/天（未充值）", note:"一个 Key 调用 30+ 免费模型，含 DeepSeek 免费版。", key_hint:"sk-or-v1-...", key_url:"https://openrouter.ai/keys" },
-  zhipu: { label:"智谱 GLM（中文友好·长期免费）", base_url:"https://open.bigmodel.cn/api/paas/v4", model:"glm-4-flash", models:["glm-4-flash","glm-4-flashx","glm-4-air","glm-4-plus"], cors:true, free:"💰 GLM-4-Flash 长期免费，10 QPS；新用户另有赠金", note:"中文医学文本表现不错，注册即用。", key_hint:"xxxxx.xxxxx", key_url:"https://open.bigmodel.cn/usercenter/apikeys" },
-  groq: { label:"Groq（速度极快·永久免费）", base_url:"https://api.groq.com/openai/v1", model:"openai/gpt-oss-120b", models:["openai/gpt-oss-120b","openai/gpt-oss-20b","llama-3.3-70b-versatile","llama-3.1-8b-instant","qwen/qwen3-32b"], cors:true, free:"💰 按模型分别限每日请求数，永久免费", note:"推理速度最快，适合长文档批量处理。", key_hint:"gsk_...", key_url:"https://console.groq.com/keys" },
-  siliconflow: { label:"硅基流动 SiliconFlow（国内免费模型）", base_url:"https://api.siliconflow.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-14B-Instruct","THUDM/glm-4-9b-chat","deepseek-ai/DeepSeek-V3","deepseek-ai/DeepSeek-R1"], cors:true, free:"💰 多个小模型免费；注册送 14 元额度", note:"国内直连速度快，部分模型永久免费。", key_hint:"sk-...", key_url:"https://cloud.siliconflow.cn/account/ak" },
-  modelscope: { label:"魔搭 ModelScope（阿里·免费额度）", base_url:"https://api-inference.modelscope.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-72B-Instruct","deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"], cors:true, free:"💰 每日 2000 次免费调用", note:"阿里达摩院，国内直连，额度大方。", key_hint:"ms-...", key_url:"https://modelscope.cn/my/myaccesstoken" },
-  deepseek: { label:"DeepSeek 官方（需充值·有 CORS 限制）", base_url:"https://api.deepseek.com/v1", model:"deepseek-chat", models:["deepseek-chat","deepseek-reasoner"], cors:false, free:"💸 新用户一次性赠金（30 天有效），之后按量付费", note:"⚠ 官方 API 不支持浏览器直连，需要自建代理；\n建议改用 OpenRouter 里的 DeepSeek 免费版。", key_hint:"sk-...", key_url:"https://platform.deepseek.com/api_keys", need_proxy:true },
-  moonshot: { label:"Kimi 月之暗面（需充值）", base_url:"https://api.moonshot.cn/v1", model:"moonshot-v1-8k", models:["moonshot-v1-8k","moonshot-v1-32k","moonshot-v1-128k","kimi-k2-0905-preview"], cors:true, free:"💸 新用户赠 15 元，之后按量付费", note:"长上下文能力强，适合长 PDF。", key_hint:"sk-...", key_url:"https://platform.moonshot.cn/console/api-keys" },
-  dashscope: { label:"通义千问 DashScope（需充值）", base_url:"https://dashscope.aliyuncs.com/compatible-mode/v1", model:"qwen-plus", models:["qwen-plus","qwen-turbo","qwen-max","qwen-long"], cors:true, free:"💸 新用户各模型有免费额度，之后按量付费", note:"qwen-long 支持超长文档，适合整本书。", key_hint:"sk-...", key_url:"https://bailian.console.aliyun.com/?apiKey=1" },
-  openai: { label:"OpenAI 官方（需充值）", base_url:"https://api.openai.com/v1", model:"gpt-4o-mini", models:["gpt-4o-mini","gpt-4o","gpt-4.1-mini"], cors:true, free:"💸 无免费层，需绑卡充值", note:"质量稳定，但国内访问需要网络条件。", key_hint:"sk-...", key_url:"https://platform.openai.com/api-keys" },
-  ollama: { label:"Ollama 本地模型（完全免费·离线）", base_url:"http://localhost:11434/v1", model:"qwen2.5:7b", models:["qwen2.5:7b","qwen2.5:14b","deepseek-r1:7b","llama3.1:8b"], cors:true, free:"💰 完全免费，无 Key，无网络费用", note:"需本机安装 Ollama 并拉取模型；\n运行前设置 OLLAMA_ORIGINS=* 允许跨域。", key_hint:"（本地无需 Key，填 ollama 即可）", key_url:"https://ollama.com/download", no_key:true },
-  lmstudio: { label:"LM Studio 本地模型（完全免费）", base_url:"http://localhost:1234/v1", model:"local-model", models:["local-model"], cors:true, free:"💰 完全免费，图形界面管理模型", note:"启动 LM Studio 的 Local Server 即可。", key_hint:"（本地无需 Key，随意填）", key_url:"https://lmstudio.ai/", no_key:true },
-  manual: { label:"手动模式（复制 Prompt 到网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，使用 ChatGPT / DeepSeek / Kimi 网页版", note:"不调用 API，只生成 Prompt；\n把 Prompt 贴到任意网页版 AI，再把返回 JSON 贴回结果框。", key_hint:"", key_url:"", manual:true },
-  custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"" },
+  gemini: { label:"Google Gemini（免费额度最大·推荐）", base_url:"https://generativelanguage.googleapis.com/v1beta/openai/", model:"gemini-2.5-flash", models:["gemini-2.5-flash","gemini-2.5-pro","gemini-2.0-flash"], cors:true, free:"💰 免费层：60 次/分钟，1500 次/天，无需绑卡", note:"在 ai.google.dev 获取 API Key，中文支持好。", key_hint:"AIza...", key_url:"https://aistudio.google.com/app/apikey", peak:null },
+  openrouter: { label:"OpenRouter（聚合多模型·含 DeepSeek 免费版）", base_url:"https://openrouter.ai/api/v1", model:"deepseek/deepseek-r1-0528:free", models:["deepseek/deepseek-r1-0528:free","deepseek/deepseek-chat-v3.1:free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free","z-ai/glm-4.5-air:free"], cors:true, free:"💰 免费模型：20 次/分钟，50 次/天（未充值）", note:"一个 Key 调用 30+ 免费模型，含 DeepSeek 免费版。", key_hint:"sk-or-v1-...", key_url:"https://openrouter.ai/keys", peak:{ weekdays:false, ranges:[[20,23]], note:"免费模型额外限流，延迟升高" } },
+  zhipu: { label:"智谱 GLM（中文友好·长期免费）", base_url:"https://open.bigmodel.cn/api/paas/v4", model:"glm-4-flash", models:["glm-4-flash","glm-4-flashx","glm-4-air","glm-4-plus"], cors:true, free:"💰 GLM-4-Flash 长期免费，10 QPS；新用户另有赠金", note:"中文医学文本表现不错，注册即用。", key_hint:"xxxxx.xxxxx", key_url:"https://open.bigmodel.cn/usercenter/apikeys", peak:{ weekdays:true, ranges:[[15,18]], note:"并发限流，模型速度变慢" } },
+  groq: { label:"Groq（速度极快·永久免费）", base_url:"https://api.groq.com/openai/v1", model:"openai/gpt-oss-120b", models:["openai/gpt-oss-120b","openai/gpt-oss-20b","llama-3.3-70b-versatile","llama-3.1-8b-instant","qwen/qwen3-32b"], cors:true, free:"💰 按模型分别限每日请求数，永久免费", note:"推理速度最快，适合长文档批量处理。", key_hint:"gsk_...", key_url:"https://console.groq.com/keys", peak:null },
+  siliconflow: { label:"硅基流动 SiliconFlow（国内免费模型）", base_url:"https://api.siliconflow.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-14B-Instruct","THUDM/glm-4-9b-chat","deepseek-ai/DeepSeek-V3","deepseek-ai/DeepSeek-R1"], cors:true, free:"💰 多个小模型免费；注册送 14 元额度", note:"国内直连速度快，部分模型永久免费。", key_hint:"sk-...", key_url:"https://cloud.siliconflow.cn/account/ak", peak:{ weekdays:false, ranges:[[10,12],[19,21]], note:"免费模型 429 / 1305 报错概率高" } },
+  modelscope: { label:"魔搭 ModelScope（阿里·免费额度）", base_url:"https://api-inference.modelscope.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-72B-Instruct","deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"], cors:true, free:"💰 每日 2000 次免费调用", note:"阿里达摩院，国内直连，额度大方。", key_hint:"ms-...", key_url:"https://modelscope.cn/my/myaccesstoken", peak:null },
+  deepseek: { label:"DeepSeek 官方（需充值·有 CORS 限制）", base_url:"https://api.deepseek.com/v1", model:"deepseek-chat", models:["deepseek-chat","deepseek-reasoner"], cors:false, free:"💸 新用户一次性赠金（30 天有效），之后按量付费", note:"⚠ 官方 API 不支持浏览器直连，需要自建代理；\n建议改用 OpenRouter 里的 DeepSeek 免费版。", key_hint:"sk-...", key_url:"https://platform.deepseek.com/api_keys", need_proxy:true, peak:{ weekdays:true, ranges:[[9,12],[14,18]], note:"空闲时段价格减半，高峰价翻倍" } },
+  moonshot: { label:"Kimi 月之暗面（需充值）", base_url:"https://api.moonshot.cn/v1", model:"moonshot-v1-8k", models:["moonshot-v1-8k","moonshot-v1-32k","moonshot-v1-128k","kimi-k2-0905-preview"], cors:true, free:"💸 新用户赠 15 元，之后按量付费", note:"长上下文能力强，适合长 PDF。", key_hint:"sk-...", key_url:"https://platform.moonshot.cn/console/api-keys", peak:{ weekdays:true, ranges:[[9.5,11.5],[14,16.5]], note:"服务节点负载高，低等级排队更久" } },
+  dashscope: { label:"通义千问 DashScope（需充值）", base_url:"https://dashscope.aliyuncs.com/compatible-mode/v1", model:"qwen-plus", models:["qwen-plus","qwen-turbo","qwen-max","qwen-long"], cors:true, free:"💸 新用户各模型有免费额度，之后按量付费", note:"qwen-long 支持超长文档，适合整本书。", key_hint:"sk-...", key_url:"https://bailian.console.aliyun.com/?apiKey=1", peak:null },
+  openai: { label:"OpenAI 官方（需充值）", base_url:"https://api.openai.com/v1", model:"gpt-4o-mini", models:["gpt-4o-mini","gpt-4o","gpt-4.1-mini"], cors:true, free:"💸 无免费层，需绑卡充值", note:"质量稳定，但国内访问需要网络条件。", key_hint:"sk-...", key_url:"https://platform.openai.com/api-keys", peak:null },
+  ollama: { label:"Ollama 本地模型（完全免费·离线）", base_url:"http://localhost:11434/v1", model:"qwen2.5:7b", models:["qwen2.5:7b","qwen2.5:14b","deepseek-r1:7b","llama3.1:8b"], cors:true, free:"💰 完全免费，无 Key，无网络费用", note:"需本机安装 Ollama 并拉取模型；\n运行前设置 OLLAMA_ORIGINS=* 允许跨域。", key_hint:"（本地无需 Key，填 ollama 即可）", key_url:"https://ollama.com/download", no_key:true, peak:null },
+  lmstudio: { label:"LM Studio 本地模型（完全免费）", base_url:"http://localhost:1234/v1", model:"local-model", models:["local-model"], cors:true, free:"💰 完全免费，图形界面管理模型", note:"启动 LM Studio 的 Local Server 即可。", key_hint:"（本地无需 Key，随意填）", key_url:"https://lmstudio.ai/", no_key:true, peak:null },
+  manual: { label:"手动模式（复制 Prompt 到网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，使用 ChatGPT / DeepSeek / Kimi 网页版", note:"不调用 API，只生成 Prompt；\n把 Prompt 贴到任意网页版 AI，再把返回 JSON 贴回结果框。", key_hint:"", key_url:"", manual:true, peak:null },
+  custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"", peak:null },
 };
+
+/* 返回 { isPeak:boolean, note:string|null, label:string } */
+function getPeakStatus(providerKey) {
+  const preset = AI_PRESETS[providerKey];
+  if (!preset || !preset.peak) return { isPeak:false, note:null, label:"" };
+  const now = new Date();
+  const day = now.getDay();
+  const isWeekday = day >= 1 && day <= 5;
+  const hour = now.getHours() + now.getMinutes() / 60;
+  const p = preset.peak;
+  if (p.weekdays && !isWeekday) {
+    return { isPeak:false, note:p.note, label:"空闲时段" };
+  }
+  for (const [lo, hi] of p.ranges) {
+    if (hour >= lo && hour < hi) {
+      return { isPeak:true, note:p.note, label:"高峰时段" };
+    }
+  }
+  return { isPeak:false, note:p.note, label:"空闲时段" };
+}
+
 function loadAiConfig() {
-  const d = { provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model, api_key:"", temperature:0.2, max_tokens:8000, chunk_size:5000, chunk_overlap:300 };
+  const d = { provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model, api_key:"", temperature:0.2, max_tokens:8000, chunk_size:5000, chunk_overlap:300,
+              subject_target:"", chapter_sel:"__keep__" };
   try {
     const raw = localStorage.getItem(AI_KEY);
     if (raw) {
@@ -1861,8 +1893,48 @@ function saveAiConfig(cfg) {
       provider: cfg.provider, base_url: cfg.base_url, model: cfg.model,
       api_key: cfg.api_key, temperature: cfg.temperature, max_tokens: cfg.max_tokens,
       chunk_size: cfg.chunk_size, chunk_overlap: cfg.chunk_overlap,
+      subject_target: cfg.subject_target || "",
+      chapter_sel: cfg.chapter_sel || "__keep__",
     }));
   } catch (e) {}
+}
+
+/* 病例导入 / 题库导入 的面板配置（共用） */
+function loadImportCfg() {
+  const d = { subject: "保持原值", chapter: "__keep__" };
+  try {
+    const raw = localStorage.getItem(IMPORT_CFG_KEY);
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (o && typeof o === "object" && !Array.isArray(o)) {
+        if (typeof o.subject === "string") d.subject = o.subject;
+        if (typeof o.chapter === "string") d.chapter = o.chapter;
+      }
+    }
+  } catch (e) {}
+  return d;
+}
+function saveImportCfg(subjectVal, chapterVal) {
+  try {
+    localStorage.setItem(IMPORT_CFG_KEY, JSON.stringify({
+      subject: subjectVal || "保持原值",
+      chapter: chapterVal || "__keep__",
+    }));
+  } catch (e) {}
+}
+function applyImportCfg(saved, overrideSel, rebuildFn) {
+  const sj = saved && saved.subject;
+  if (sj === "保持原值" || SUBJECTS.indexOf(sj) !== -1) overrideSel.value = sj;
+  rebuildFn(saved ? saved.chapter : "__keep__");
+}
+function setChapterSelValue(chapSel, list, keepValue) {
+  let want = "__keep__";
+  const kv = keepValue;
+  if (kv === "__empty__" || kv === "") want = "__empty__";
+  else if (kv === "__keep__" || kv == null) want = "__keep__";
+  else if (kv === CHAPTER_OTHER) want = CHAPTER_OTHER;
+  else if (list && list.indexOf(kv) !== -1) want = kv;
+  chapSel.value = want;
 }
 
 /* =========================================================
@@ -3434,6 +3506,7 @@ function openUpload(target) {
    病例导入 / 导出 / PDF
    ========================================================= */
 function openImport() {
+  const savedCfg = loadImportCfg();
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", "导入数据"));
@@ -3458,27 +3531,35 @@ function openImport() {
   chapSel.className = "edit-select";
   chapRow.appendChild(chapSel);
   body.appendChild(chapRow);
-  function rebuildImportChapter() {
+
+  function rebuildImportChapter(keepValue) {
     const sj = overrideSel.value;
+    const list = (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) ? CHAPTER_WHITELIST[sj] : [];
     chapSel.innerHTML = "";
     const keepOpt = document.createElement("option");
     keepOpt.value = "__keep__"; keepOpt.textContent = "保持原值";
     chapSel.appendChild(keepOpt);
-    if (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) {
-      CHAPTER_WHITELIST[sj].forEach(c => {
-        const o = document.createElement("option"); o.value = c; o.textContent = c; chapSel.appendChild(o);
-      });
-    }
+    list.forEach(c => {
+      const o = document.createElement("option"); o.value = c; o.textContent = c; chapSel.appendChild(o);
+    });
     const otherOpt = document.createElement("option");
     otherOpt.value = CHAPTER_OTHER; otherOpt.textContent = CHAPTER_OTHER;
     chapSel.appendChild(otherOpt);
     const emptyOpt = document.createElement("option");
     emptyOpt.value = "__empty__"; emptyOpt.textContent = CHAPTER_EMPTY_LABEL;
     chapSel.appendChild(emptyOpt);
-    chapSel.value = "__keep__";
+    setChapterSelValue(chapSel, list, keepValue);
   }
-  overrideSel.addEventListener("change", rebuildImportChapter);
-  rebuildImportChapter();
+
+  applyImportCfg(savedCfg, overrideSel, rebuildImportChapter);
+
+  // 注意：不能直接写 addEventListener("change", rebuildImportChapter)，
+  // 否则 Event 对象会被当成 keepValue 传入
+  overrideSel.addEventListener("change", () => {
+    rebuildImportChapter();
+    saveImportCfg(overrideSel.value, chapSel.value);
+  });
+  chapSel.addEventListener("change", () => saveImportCfg(overrideSel.value, chapSel.value));
 
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
@@ -3491,6 +3572,7 @@ function openImport() {
   function doImport(mode) {
     const text = ta.value.trim();
     if (!text) { confirmPopup("请先粘贴 JSON 内容"); return; }
+    saveImportCfg(overrideSel.value, chapSel.value);
     const override = overrideSel.value === "保持原值" ? null : overrideSel.value;
     const chapValue = chapSel.value;
     const chapOverride = chapValue === "__keep__" ? null : (chapValue === "__empty__" ? "" : chapValue);
@@ -3657,6 +3739,12 @@ function openAiImport(target) {
     const p = AI_PRESETS[provSel.value];
     infoCard.innerHTML = "";
     infoCard.className = "ai-info-card";
+    const peak = getPeakStatus(provSel.value);
+    if (peak.label) {
+      const peakEl = el("div", "ai-peak-badge" + (peak.isPeak ? " peak" : " offpeak"),
+        (peak.isPeak ? "🔴 " : "🟢 ") + peak.label + (peak.note ? "： " + peak.note : ""));
+      infoCard.appendChild(peakEl);
+    }
     infoCard.appendChild(el("div", "ai-info-free", p.free || "—"));
     if (p.note) infoCard.appendChild(el("div", "ai-info-note", p.note));
     if (p.cors === false) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 此接口不支持浏览器直接调用（CORS 限制），需要自建代理。"));
@@ -3903,27 +3991,37 @@ function openAiImport(target) {
   chapSel.className = "edit-select";
   chapRow.appendChild(chapSel);
   form.appendChild(chapRow);
-  function rebuildAiChapter() {
+
+  function rebuildAiChapter(keepValue) {
     const sj = subjSel.value;
+    const list = CHAPTER_WHITELIST[sj] || [];
     chapSel.innerHTML = "";
     const keepOpt = document.createElement("option");
     keepOpt.value = "__keep__"; keepOpt.textContent = "保持原值";
     chapSel.appendChild(keepOpt);
-    if (CHAPTER_WHITELIST[sj]) {
-      CHAPTER_WHITELIST[sj].forEach(c => {
-        const o = document.createElement("option"); o.value = c; o.textContent = c; chapSel.appendChild(o);
-      });
-    }
+    list.forEach(c => {
+      const o = document.createElement("option"); o.value = c; o.textContent = c; chapSel.appendChild(o);
+    });
     const otherOpt = document.createElement("option");
     otherOpt.value = CHAPTER_OTHER; otherOpt.textContent = CHAPTER_OTHER;
     chapSel.appendChild(otherOpt);
     const emptyOpt = document.createElement("option");
     emptyOpt.value = "__empty__"; emptyOpt.textContent = CHAPTER_EMPTY_LABEL;
     chapSel.appendChild(emptyOpt);
-    chapSel.value = "__keep__";
+    setChapterSelValue(chapSel, list, keepValue);
   }
-  subjSel.addEventListener("change", rebuildAiChapter);
-  rebuildAiChapter();
+
+  // 恢复上次保存的值
+  if (SUBJECTS.indexOf(cfg.subject_target) !== -1) subjSel.value = cfg.subject_target;
+  rebuildAiChapter(cfg.chapter_sel);
+
+  // ⚠ 不能写成 addEventListener("change", rebuildAiChapter)：
+  //    Event 对象会被当成 keepValue 传进去，导致章节永远重置为「保持原值」
+  subjSel.addEventListener("change", () => {
+    rebuildAiChapter();                              // 换科目 → 章节重置
+    saveAiConfig(readCfg());                         // 顺手记住
+  });
+  chapSel.addEventListener("change", () => saveAiConfig(readCfg()));
 
   form.appendChild(el("div", "gh-section-title", (isQ ? "⑤" : "④") + " 生成结果"));
   const logEl = el("div", "gh-status", "");
@@ -4026,6 +4124,7 @@ function openAiImport(target) {
       chunk_overlap: parseInt(overlapIn.value, 10) || 300,
       chapter_override: chOverride,
       subject_target: subjSel.value,
+      chapter_sel: chValue,          // 原始 select 值，仅供 UI 恢复
     };
   }
   closeBtn.addEventListener("click", () => ov.remove());
@@ -4053,7 +4152,8 @@ function openAiImport(target) {
     finally { copyPrompt.disabled = false; }
   });
 
-  genBtn.addEventListener("click", async () => {
+  /* 生成主体（从 genBtn 事件抽出，供高峰确认后调用） */
+  async function runGeneration() {
     const provider = provSel.value;
     const preset = AI_PRESETS[provider];
 
@@ -4177,6 +4277,31 @@ function openAiImport(target) {
     } finally {
       genBtn.disabled = false; importBtn.disabled = false; importAllBtn.disabled = false; copyPrompt.disabled = false;
     }
+  }
+
+  /* genBtn：先做高峰确认，再执行 runGeneration */
+  genBtn.addEventListener("click", () => {
+    const provider = provSel.value;
+    const preset = AI_PRESETS[provider];
+
+    /* 手动模式不调用 API，不受高峰影响 */
+    if (preset.manual) { runGeneration(); return; }
+
+    const peak = getPeakStatus(provider);
+    if (peak.isPeak && peak.note) {
+      confirmPopup(
+        "当前为" + peak.label + "。\n" +
+        peak.note + "\n\n" +
+        "高峰期可能更慢、更容易触发限流" +
+        (provider === "deepseek" ? "，且费用更高" : "") + "。\n" +
+        "确定现在开始生成吗？",
+        runGeneration,
+        "继续生成",
+        "⏰ 高峰提醒"
+      );
+      return;
+    }
+    runGeneration();
   });
 
   importAllBtn.addEventListener("click", () => {
@@ -4254,6 +4379,7 @@ function openAiImport(target) {
    题库粘贴导入 / 导出 / 清空
    ========================================================= */
 function openQuestionImport() {
+  const savedCfg = loadImportCfg();
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", "粘贴导入题目"));
@@ -4279,27 +4405,34 @@ function openQuestionImport() {
   chSel.className = "edit-select";
   chRow.appendChild(chSel);
   body.appendChild(chRow);
-  function rebuildQChapter() {
+
+  function rebuildQChapter(keepValue) {
     const sj = sjSel.value;
+    const list = (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) ? CHAPTER_WHITELIST[sj] : [];
     chSel.innerHTML = "";
     const keepOpt = document.createElement("option");
     keepOpt.value = "__keep__"; keepOpt.textContent = "保持原值";
     chSel.appendChild(keepOpt);
-    if (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) {
-      CHAPTER_WHITELIST[sj].forEach(c => {
-        const o = document.createElement("option"); o.value = c; o.textContent = c; chSel.appendChild(o);
-      });
-    }
+    list.forEach(c => {
+      const o = document.createElement("option"); o.value = c; o.textContent = c; chSel.appendChild(o);
+    });
     const otherOpt = document.createElement("option");
     otherOpt.value = CHAPTER_OTHER; otherOpt.textContent = CHAPTER_OTHER;
     chSel.appendChild(otherOpt);
     const emptyOpt = document.createElement("option");
     emptyOpt.value = "__empty__"; emptyOpt.textContent = CHAPTER_EMPTY_LABEL;
     chSel.appendChild(emptyOpt);
-    chSel.value = "__keep__";
+    setChapterSelValue(chSel, list, keepValue);
   }
-  sjSel.addEventListener("change", rebuildQChapter);
-  rebuildQChapter();
+
+  applyImportCfg(savedCfg, sjSel, rebuildQChapter);
+
+  // ⚠ 同样不能直接写 addEventListener("change", rebuildQChapter)
+  sjSel.addEventListener("change", () => {
+    rebuildQChapter();
+    saveImportCfg(sjSel.value, chSel.value);
+  });
+  chSel.addEventListener("change", () => saveImportCfg(sjSel.value, chSel.value));
 
   const exRow = el("div", "export-row");
   exRow.appendChild(el("div", "row-label", "示例"));
@@ -4320,6 +4453,7 @@ function openQuestionImport() {
   function doImport(mode) {
     const t = ta.value.trim();
     if (!t) { confirmPopup("请先粘贴 JSON"); return; }
+    saveImportCfg(sjSel.value, chSel.value);
     const sjOverride = sjSel.value === "保持原值" ? null : sjSel.value;
     const chValue = chSel.value;
     const chOverride = chValue === "__keep__" ? null : (chValue === "__empty__" ? "" : chValue);
@@ -5420,6 +5554,13 @@ function openSettings() {
     "  ★ 收藏 / 当前筛选 / 全部 / 按科目。\n" +
     "  选中后只针对该范围内的病例出题，\n" +
     "  relatedCase 会指回对应病例标题。\n\n" +
+    "【AI 高峰提示】\n" +
+    "  面板顶部会显示当前服务商的「高峰 / 空闲」状态。\n" +
+    "  点「开始生成」时若为高峰，会先弹出提醒再执行。\n" +
+    "  高峰时段通常更慢、更易限流；DeepSeek 高峰期费用翻倍。\n\n" +
+    "【参数记忆】\n" +
+    "  AI 面板的目标科目、统一指定章节会自动记住上次选择。\n" +
+    "  导入面板（病例 / 题库）的统一指定科目与章节同样会记住。\n\n" +
     "【如何更新题库】\n" +
     "方法 1 · 直接在 GitHub 网页编辑：\n" +
     "  打开仓库 → data/questions.json → 铅笔图标编辑 → Commit。\n" +
