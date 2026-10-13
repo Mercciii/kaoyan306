@@ -444,7 +444,14 @@ const FIELD_SCHEMAS = {
   "内科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "外科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "生理学": [["overview","概述"],["phys_basic","基本概念"],["phys_mechanism","发生机制"],["phys_regulation","调节因素"],["phys_factors","影响因素"],["phys_experiment","实验现象 / 指标"],["phys_clinical","临床联系"],["phys_summary","小结"]],
-  "生物化学": [["overview","概述"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_summary","小结"]],
+/* 生物化学：按 4 篇分组，共 29 个字段
+   · 结构与功能篇：overview / structure / bond / property / nucleic_property / vitamin_mineral / coenzyme
+   · 代谢与调节篇：pathway / enzyme / regulation / energy / kinetics / inhibitor / location / energy_molecule / lipoprotein / metabolic_disease
+   · 分子生物学篇：mb_element / mb_process / pro_vs_euk / tech / tool_enzyme / regulation_level
+   · 医学专题篇：signal / gene_abnormal / organ / clinical
+   · 通用：compare / summary */
+"生物化学": [["overview","概述"],["biochem_structure","结构 / 构象要点"],["biochem_bond","关键化学键与作用力"],["biochem_property","理化性质与应用"],["biochem_nucleic_property","核酸理化性质"],["biochem_vitamin_mineral","维生素 / 无机元素"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_kinetics","动力学 / 定量参数"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_location","亚细胞定位"],["biochem_energy_molecule","高能化合物"],["biochem_lipoprotein","血浆脂蛋白"],["biochem_metabolic_disease","代谢性疾病"],["biochem_mb_element","分子生物学元件与序列"],["biochem_mb_process","遗传信息传递要点"],["biochem_pro_vs_euk","原核 vs 真核对"],["biochem_tech","相关技术 / 方法原理"],["biochem_tool_enzyme","工具酶与载体"],["biochem_regulation_level","表达调控层次"],["biochem_signal","信号转导通路"],["biochem_gene_abnormal","基因异常与疾病"],["biochem_organ","组织器官代谢特点"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_compare","对比鉴别"],["biochem_summary","小结 / 口诀"],
+],
   /* 病理学总论：概念定义 / 分类分型 / 病因机制 / 基本病理变化 / 结局转归 / 临床病理联系 / 易混概念辨析 / 高频考点 */
   "病理学总论": [
     ["general_concept","概念与定义"],
@@ -595,9 +602,28 @@ const CHAPTER_EMPTY_LABEL = "（留空）";
 
 const QUIZ_TYPE_CODE = { single:"S", multiple:"M", judge:"J", B:"B", A3:"A" };
 
+/* 匹配"系统码 + 系统名"：
+   - 内科学 / 外科学 / 病理学总论 / 病理学各论：走 SYSTEM_CODE_MAP 关键词匹配
+   - 生理学 / 生物化学：系统名 = 章节名，系统码 = 章节在 CHAPTER_WHITELIST 中的序号（2 位补零）
+   - 匹配失败统一返回 { code:"00", name:"其他" } */
 function matchSystemCode(subject, text) {
   const list = SYSTEM_CODE_MAP[subject];
-  if (!list) return { code:"00", name:"其他" };
+  if (!list) {
+    /* 生理学 / 生物化学：系统名与章节名一致 */
+    if (subject === "生理学" || subject === "生物化学") {
+      const wl = CHAPTER_WHITELIST[subject] || [];
+      let best = null;
+      for (let i = 0; i < wl.length; i++) {
+        const w = wl[i];
+        if (text.indexOf(w) !== -1 && (!best || w.length > best.hitLen)) {
+          best = { hitLen: w.length, name: w, idx: i };
+        }
+      }
+      if (best) return { code: String(best.idx + 1).padStart(2, "0"), name: best.name };
+      return { code: "00", name: "其他" };
+    }
+    return { code: "00", name: "其他" };
+  }
   let best = null;
   for (let i = 0; i < list.length; i++) {
     const entry = list[i];
@@ -608,7 +634,7 @@ function matchSystemCode(subject, text) {
       }
     }
   }
-  return best ? { code: best.code, name: best.name } : { code:"00", name:"其他" };
+  return best ? { code: best.code, name: best.name } : { code: "00", name: "其他" };
 }
 /* 把任意章节名归一到该科目白名单内的标准名；无法归类返回"其他" */
 function normalizeChapter(subject, chapter) {
