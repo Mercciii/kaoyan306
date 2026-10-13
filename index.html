@@ -498,6 +498,7 @@ const SETTINGS_DEFAULTS = {
   status:"全部", tag:"全部", sort:"默认", starred_only:false, scroll_y:1.0,
   mode:"cases", q_subject:"全部", q_type:"全部",
   quiz_mode:"practice", quiz_count:20, quiz_scope:"all",
+  auto_pull:false,
 };
 
 const SAMPLE_JSON = '[{"title":"COPD（内外科模板）","subject":"内科学","chapter":"呼吸系统疾病","frequency":"★★★★★","status":"未看","tags":["高频"],"overview":"以持续气流受限为特征的疾病。","manifestations":"慢性咳嗽、咳痰、活动后气促。","diagnosis":"吸入支气管扩张剂后 FEV1/FVC < 70%。","treatment":"支气管扩张剂为主。"}]';
@@ -1074,6 +1075,7 @@ const state = {
   status: "全部", tag: "全部", sort: "默认", starredOnly: false, scrollY: 1.0, search: "",
   mode: "cases", qSubject: "全部", qType: "全部", qSearch: "",
   quizMode: "practice", quizCount: 20, quizScope: "all",
+  autoPull: false,
 };
 
 function loadSettings() {
@@ -1102,6 +1104,7 @@ function loadSettings() {
   state.quizMode = data.quiz_mode || "practice";
   state.quizCount = Number(data.quiz_count) || 20;
   state.quizScope = data.quiz_scope || "all";
+  state.autoPull = !!data.auto_pull;
 }
 function saveSettings() {
   try {
@@ -1111,6 +1114,7 @@ function saveSettings() {
       tag: state.tag, sort: state.sort, starred_only: state.starredOnly, scroll_y: state.scrollY,
       mode: state.mode, q_subject: state.qSubject, q_type: state.qType,
       quiz_mode: state.quizMode, quiz_count: state.quizCount, quiz_scope: state.quizScope,
+      auto_pull: state.autoPull,
     }));
   } catch (e) {}
 }
@@ -1412,6 +1416,44 @@ function showRemoteUpdateBar(label, remoteCount, localCount, url, kind) {
   });
   bar.appendChild(txt); bar.appendChild(pull); bar.appendChild(ign);
   document.body.appendChild(bar);
+}
+
+/* 从 GitHub 拉取远端数据覆盖本地
+   kind: "cases" | "questions"
+   silent: true 时静默（不弹窗），失败只 console.error */
+async function pullFromRemote(kind, silent) {
+  const isQ = kind === "questions";
+  const url = isQ ? REMOTE_QUESTIONS_URL : REMOTE_DATA_URL;
+  const label = isQ ? "题库" : "病例";
+  try {
+    const resp = await fetch(url + "?t=" + Date.now());
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const remote = await resp.json();
+    if (!Array.isArray(remote)) throw new Error("返回不是数组");
+    if (!remote.length) throw new Error("远端为空");
+
+    const before = isQ ? questionStore.data.length : store.data.length;
+
+    if (isQ) {
+      questionStore.data = remote.map(normalizeQuestion);
+      questionStore.save();
+      renderQuizListOnly();
+      rebuildQSubjectValues();
+    } else {
+      store.backup();
+      store.data = remote.map(normalizeItem);
+      store.save(false);
+      render();
+    }
+    if (!silent) {
+      confirmPopup("✅ 已拉取" + label + " " + remote.length + " 条\n（本地原有 " + before + " 条）");
+    }
+    return { ok: true, count: remote.length, before };
+  } catch (e) {
+    if (!silent) confirmPopup("❌ 拉取" + label + "失败：" + e.message);
+    else console.error("自动拉取" + label + "失败：", e);
+    return { ok: false, error: e.message };
+  }
 }
 
 /* =========================================================
@@ -5542,6 +5584,35 @@ function openSettings() {
   backupBtn.addEventListener("click", () => { store.clearBackups(); backupBtn.textContent = "清理备份（当前 0 份）"; confirmPopup("备份已清理"); });
   addRow("自动备份", backupBtn);
 
+  /* 强制拉取 */
+  const pullWrap = el("div", "font-wrap");
+  const pullCaseBtn = el("button", "btn", "病例");
+  const pullQuizBtn = el("button", "btn", "题库");
+  pullCaseBtn.addEventListener("click", async () => {
+    pullCaseBtn.disabled = true;
+    await pullFromRemote("cases", false);
+    pullCaseBtn.disabled = false;
+  });
+  pullQuizBtn.addEventListener("click", async () => {
+    pullQuizBtn.disabled = true;
+    await pullFromRemote("questions", false);
+    pullQuizBtn.disabled = false;
+  });
+  pullWrap.appendChild(pullCaseBtn); pullWrap.appendChild(pullQuizBtn);
+  addRow("🔄 强制拉取", pullWrap);
+
+  /* 自动拉取开关 */
+  const autoPullBtn = el("button", "btn", state.autoPull ? "已开启" : "已关闭");
+  autoPullBtn.addEventListener("click", () => {
+    state.autoPull = !state.autoPull;
+    saveSettings();
+    autoPullBtn.textContent = state.autoPull ? "已开启" : "已关闭";
+    confirmPopup(state.autoPull
+      ? "已开启「启动时自动拉取」。\n\n下次打开页面会直接以 GitHub 上的数据覆盖本地。\n请确保 GitHub 上的版本始终是最新的。"
+      : "已关闭「启动时自动拉取」。");
+  });
+  addRow("启动时自动拉取", autoPullBtn);
+
   const ghBtn = el("button", "btn", "打开上传面板");
   ghBtn.addEventListener("click", () => { ov.remove(); openUpload("cases"); });
   addRow("GitHub 上传（病例）", ghBtn);
@@ -5594,6 +5665,10 @@ function openSettings() {
     "【参数记忆】\n" +
     "  AI 面板的目标科目、统一指定章节会自动记住上次选择。\n" +
     "  导入面板（病例 / 题库）的统一指定科目与章节同样会记住。\n\n" +
+    "【远端同步】\n" +
+    "  设置面板「强制拉取」可随时用 GitHub 上的版本覆盖本地。\n" +
+    "  「启动时自动拉取」开启后，每次打开页面都会无条件从 GitHub 拉，\n" +
+    "  适合把 GitHub 当唯一数据源的用法。拉取前病例会自动备份。\n\n" +
     "【文件队列】\n" +
     "  选择新文件时会提示清空旧队列；\n" +
     "  「开始生成」只处理本轮新加入（等待中）的文件，\n" +
@@ -5797,6 +5872,15 @@ async function init() {
     ]);
   } catch (e) { if (!Array.isArray(store.data)) store.data = []; if (!Array.isArray(questionStore.data)) questionStore.data = []; }
   try { migrateAllData(); } catch (e) {}
+
+  /* 启动时自动拉取（以 GitHub 为唯一数据源） */
+  if (state.autoPull) {
+    await Promise.all([
+      pullFromRemote("cases", true),
+      pullFromRemote("questions", true),
+    ]);
+  }
+
   bindEvents();
   document.getElementById("starBtn").textContent = state.starredOnly ? "★ 收藏" : "☆ 收藏";
   document.getElementById("sortSel").value = state.sort;
