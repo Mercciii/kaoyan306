@@ -2071,6 +2071,11 @@ function buildCasePrompt(subject) {
     "",
     "【提取要求】",
     "1. 数值必须带单位（如 13.7%、70%、120/80 mmHg），一律不得丢弃。",
+"【生化专项要求（极为重要）】",
+"1. 严禁输出任何化学结构式、SMILES 编码或复杂的化学方程式（如 COO-、CH2 等）。",
+"2. 所有的化学反应过程，必须完全使用中文专业名词描述。例如：用“氧化型辅酶Ⅰ”代替“NAD+”，用“还原型辅酶Ⅰ”代替“NADH”，用“游离氨”代替“NH3”，用“三磷酸腺苷”代替“ATP”，用“镁离子”代替“Mg2+”。",
+"3. 代谢途径的反应过程，必须严格使用 `@节点 | 内容` 的格式分行输出（节点如：第一步、限速步骤、无氧还原等）。",
+"4. 关键酶、辅酶、限速步骤，必须使用 `==文字==` 或 `@@文字@@` 进行高亮标记。",
     "2. 专业术语、缩写保留原样（COPD、ARDS、DIC 等），不要展开成中文。",
     "3. 原文的「首选」「金标准」「禁忌」「最常」「典型」等关键词必须保留。",
     "4. 分类/分型/分期要把每一型和判断标准都写全，不能只写名字。",
@@ -2111,7 +2116,13 @@ function buildQuestionPrompt(subject) {
     "",
     "【出题要求】",
     "1. 一次生成 5~10 题，难度 3 星为主。",
-    "2. 单选题必须恰好 4 个选项，答案唯一。",
+// 👇 新增这一块 👇
+"【生化专项要求（极为重要）】",
+"1. 题干和解析中严禁出现化学结构式或复杂化学方程式。",
+"2. 必须使用中文专业名词（如“氧化型辅酶Ⅰ”而非“NAD+”）。",
+"3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
+// 👆 新增结束 👆
+        "2. 单选题必须恰好 4 个选项，答案唯一。",
     "3. 多选题至少 2 个正确选项，type 用 multiple，answer 用数组。",
     "4. 每题的 4 个选项必须分别来自不同鉴别诊断。",
     "5. 解析分点：① 诊断依据 ② 排除理由 ③ 易错点。",
@@ -2827,21 +2838,39 @@ function makeRichToolbar(target) {
     try { target.setSelectionRange(newStart, newEnd); } catch (err) {}
   });
   bar.appendChild(drugBtn);
-  const tlBtn = el("button", "rich-btn tl", "时间线");
-  tlBtn.type = "button";
-  tlBtn.title = "插入时间线模板：每行 @节点 | 内容";
-  tlBtn.addEventListener("mousedown", e => e.preventDefault());
-  tlBtn.addEventListener("click", e => {
-    e.preventDefault();
-    const tmpl = "\n@主诉 | \n@查体 | \n@辅助检查 | \n@诊断 | \n@治疗 | \n";
-    const start = target.selectionStart, end = target.selectionEnd;
-    const val = target.value;
-    target.value = val.slice(0, start) + tmpl + val.slice(end);
-    target.focus();
-    const pos = start + tmpl.length;
-    try { target.setSelectionRange(pos, pos); } catch (err) {}
-  });
-  bar.appendChild(tlBtn);
+  // 1. 临床时间线按钮（内外科）
+const tlClinicalBtn = el("button", "rich-btn tl", "临床线");
+tlClinicalBtn.type = "button";
+tlClinicalBtn.title = "插入内外科临床时间线模板：主诉、查体、诊断等";
+tlClinicalBtn.addEventListener("mousedown", e => e.preventDefault());
+tlClinicalBtn.addEventListener("click", e => {
+  e.preventDefault();
+  const tmpl = "\n@主诉 | \n@查体 | \n@辅助检查 | \n@诊断 | \n@治疗 | \n";
+  const start = target.selectionStart, end = target.selectionEnd;
+  const val = target.value;
+  target.value = val.slice(0, start) + tmpl + val.slice(end);
+  target.focus();
+  const pos = start + tmpl.length;
+  try { target.setSelectionRange(pos, pos); } catch (err) {}
+});
+bar.appendChild(tlClinicalBtn);
+
+// 2. 生化时间线按钮（生物化学）
+const tlBiochemBtn = el("button", "rich-btn tl", "生化线");
+tlBiochemBtn.type = "button";
+tlBiochemBtn.title = "插入生物化学反应过程模板：步骤、关键酶、产物等";
+tlBiochemBtn.addEventListener("mousedown", e => e.preventDefault());
+tlBiochemBtn.addEventListener("click", e => {
+  e.preventDefault();
+  const tmpl = "\n@第一步 | \n@关键酶 | \n@反应条件 | \n@产物 | \n@生理意义 | \n";
+  const start = target.selectionStart, end = target.selectionEnd;
+  const val = target.value;
+  target.value = val.slice(0, start) + tmpl + val.slice(end);
+  target.focus();
+  const pos = start + tmpl.length;
+  try { target.setSelectionRange(pos, pos); } catch (err) {}
+});
+bar.appendChild(tlBiochemBtn);
   const blockMarks = [
     { label: "分割线", text: "\n---\n" },
     { label: "引用", text: "\n> " },
