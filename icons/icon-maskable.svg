@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="考研西医综合 306">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f6ee0"/>
+      <stop offset="1" stop-color="#1a4db3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- maskable 图标不要自己加圆角，由系统裁切 -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- 内容缩到中心 72%，保证落在安全区内 -->
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <g transform="translate(256 118)" opacity="0.95">
+      <rect x="-9" y="-34" width="18" height="68" rx="6" fill="#ffffff"/>
+      <rect x="-34" y="-9" width="68" height="18" rx="6" fill="#ffffff"/>
+    </g>
+
+    <text x="256" y="330" text-anchor="middle"
+          font-family="'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif"
+          font-size="196" font-weight="700" fill="#ffffff" letter-spacing="4">306</text>
+
+    <text x="256" y="416" text-anchor="middle"
+          font-family="'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif"
+          font-size="62" font-weight="600" fill="#cfe0ff" letter-spacing="6">西医综合</text>
+  </g>
+</svg>
