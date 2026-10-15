@@ -1,16 +1,16 @@
 {
   "_meta": {
-    "savedAt": "2026-10-15T08:19:58.814Z",
+    "savedAt": "2026-10-15T15:50:16.931Z",
     "version": 1
   },
   "provider": "custom",
-  "base_url": "https://api.deepseek.com/",
-  "model": "deepseek-chat",
+  "base_url": "https://opencode.ai/zen/v1",
+  "model": "deepseek-v4.1-flash-free",
   "temperature": 0.2,
   "max_tokens": 8000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "生物化学",
-  "chapter_sel": "其他重要器官和组织的生物化学",
+  "subject_target": "病理学各论",
+  "chapter_sel": "呼吸系统疾病",
   "custom_models": {}
 }
