@@ -1,20 +1,37 @@
 {
-  "name": "西医综合306病例速查",
-  "short_name": "306病例",
+  "name": "考研西医综合 306 · 病例速查 & 刷题",
+  "short_name": "西医综合306",
+  "description": "考研西医综合 306 病例速查与刷题工具：内置内科、外科、生理、生化、病理、人文模板，支持 AI 出题、错题本、PDF 导出与深色模式。",
+  "lang": "zh-CN",
+  "dir": "ltr",
   "start_url": "./",
+  "scope": "./",
+  "id": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#1a4db3",
+  "categories": ["education", "medical", "productivity", "books"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "https://cdn.jsdelivr.net/gh/Mercciii/kaoyan306@main/icon.png",
+      "src": "./icons/icon.svg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/Mercciii/kaoyan306@main/icon.png",
+      "src": "./icons/icon.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
