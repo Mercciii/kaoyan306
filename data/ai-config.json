@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-10-15T15:50:16.931Z",
+    "savedAt": "2026-10-15T15:51:28.461Z",
     "version": 1
   },
   "provider": "custom",
@@ -12,5 +12,6 @@
   "chunk_overlap": 300,
   "subject_target": "病理学各论",
   "chapter_sel": "呼吸系统疾病",
-  "custom_models": {}
+  "custom_models": {},
+  "api_key": "sk_f83ed058205d_FKClXEaEvWbd_r4XEs_Fk9H-oaEB8XXZ"
 }
