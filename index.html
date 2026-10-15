@@ -444,15 +444,8 @@ const FIELD_SCHEMAS = {
   "内科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "外科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "生理学": [["overview","概述"],["phys_basic","基本概念"],["phys_mechanism","发生机制"],["phys_regulation","调节因素"],["phys_factors","影响因素"],["phys_experiment","实验现象 / 指标"],["phys_clinical","临床联系"],["phys_summary","小结"]],
-/* 生物化学：按 4 篇分组，共 29 个字段
-   · 结构与功能篇：overview / structure / bond / property / nucleic_property / vitamin_mineral / coenzyme
-   · 代谢与调节篇：pathway / enzyme / regulation / energy / kinetics / inhibitor / location / energy_molecule / lipoprotein / metabolic_disease
-   · 分子生物学篇：mb_element / mb_process / pro_vs_euk / tech / tool_enzyme / regulation_level
-   · 医学专题篇：signal / gene_abnormal / organ / clinical
-   · 通用：compare / summary */
 "生物化学": [["overview","概述"],["biochem_structure","结构 / 构象要点"],["biochem_bond","关键化学键与作用力"],["biochem_property","理化性质与应用"],["biochem_nucleic_property","核酸理化性质"],["biochem_vitamin_mineral","维生素 / 无机元素"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_kinetics","动力学 / 定量参数"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_location","亚细胞定位"],["biochem_energy_molecule","高能化合物"],["biochem_lipoprotein","血浆脂蛋白"],["biochem_metabolic_disease","代谢性疾病"],["biochem_mb_element","分子生物学元件与序列"],["biochem_mb_process","遗传信息传递要点"],["biochem_pro_vs_euk","原核 vs 真核对"],["biochem_tech","相关技术 / 方法原理"],["biochem_tool_enzyme","工具酶与载体"],["biochem_regulation_level","表达调控层次"],["biochem_signal","信号转导通路"],["biochem_gene_abnormal","基因异常与疾病"],["biochem_organ","组织器官代谢特点"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_compare","对比鉴别"],["biochem_summary","小结 / 口诀"],
 ],
-  /* 病理学总论：概念定义 / 分类分型 / 病因机制 / 基本病理变化 / 结局转归 / 临床病理联系 / 易混概念辨析 / 高频考点 */
   "病理学总论": [
     ["general_concept","概念与定义"],
     ["general_classification","分类与分型"],
@@ -463,7 +456,6 @@ const FIELD_SCHEMAS = {
     ["general_confusion","易混概念辨析"],
     ["general_keypoints","高频考点 / 记忆口诀"],
   ],
-  /* 病理学各论：原有字段全部保留 + 新增（分类分型 / 好发部位人群 / 分子病理 / 并发症 / 高频考点） */
   "病理学各论": [
     ["overview","概述"],
     ["patho_classification","分类与分型"],
@@ -512,7 +504,6 @@ const SAMPLE_JSON = '[{"title":"COPD（内外科模板）","subject":"内科学"
 const SAMPLE_QUESTION_JSON = '[{"subject":"内科学","chapter":"呼吸系统疾病","type":"single","stem":"男，68 岁，吸烟 40 年。近 5 年反复咳嗽、咳痰，活动后气促。吸入支气管扩张剂后 ==FEV1/FVC = 62%==。最可能的诊断是？","options":[{"key":"A","text":"支气管哮喘"},{"key":"B","text":"COPD"},{"key":"C","text":"支气管扩张"},{"key":"D","text":"肺结核"}],"answer":["B"],"explanation":"1. 长期吸烟史 + 持续气流受限；\\n2. @@FEV1/FVC < 70%@@ 是 COPD 的诊断金标准；\\n3. 哮喘多有过敏史、可逆性气流受限。","relatedCase":"COPD（内外科模板）","frequency":"★★★★★","difficulty":3,"tags":["高频"]}]';
 const SAMPLE_B_JSON = '[{"subject":"内科学","chapter":"循环系统疾病","type":"B","group":"g-001","sharedOptions":[{"key":"A","text":"主动脉瓣狭窄"},{"key":"B","text":"二尖瓣狭窄"},{"key":"C","text":"主动脉瓣关闭不全"},{"key":"D","text":"二尖瓣关闭不全"}],"subQuestions":[{"stem":"心尖部舒张期隆隆样杂音见于","answer":["B"],"explanation":"二尖瓣狭窄的典型杂音。"},{"stem":"胸骨右缘第2肋间收缩期喷射样杂音见于","answer":["A"],"explanation":"主动脉瓣狭窄的典型杂音。"}]}]';
 const SAMPLE_A3_JSON = '[{"subject":"内科学","chapter":"循环系统疾病","type":"A3","caseStem":"男，55 岁。突发胸骨后压榨样疼痛 2 小时，伴大汗、恶心。既往高血压 10 年。查体：BP 150/95 mmHg，心率 95 次/分，心音低钝。心电图：V1-V4 ST 段抬高。","questions":[{"stem":"最可能的诊断是？","options":[{"key":"A","text":"急性心包炎"},{"key":"B","text":"急性心肌梗死"},{"key":"C","text":"肺栓塞"},{"key":"D","text":"主动脉夹层"}],"answer":["B"],"explanation":"典型胸痛 + ST 段抬高 + 危险因素。"},{"stem":"最关键的治疗措施是？","options":[{"key":"A","text":"溶栓"},{"key":"B","text":"直接 PCI"},{"key":"C","text":"抗凝"},{"key":"D","text":"止痛"}],"answer":["B"],"explanation":"STEMI 首选直接 PCI。"}]}]';
-
 /* =========================================================
    基础工具
    ========================================================= */
@@ -532,8 +523,6 @@ function genId() { let s = ""; for (let i = 0; i < 8; i++) s += Math.floor(Math.
 
 /* =========================================================
    ID 自动编号
-   病例：{科目码}{科目名}-{系统码}{系统名}-{3位序号}
-   题库：Q{科目码}{科目名}-{系统码}{系统名}-{题型码}-{4位序号}
    ========================================================= */
 const SUBJECT_CODE_MAP = {
   "生理学":"01", "生物化学":"02", "病理学总论":"03",
@@ -587,7 +576,6 @@ const SYSTEM_CODE_MAP = {
   ],
 };
 
-/* 每个科目的章节白名单：AI 生成与下拉选择都以此为准 */
 const CHAPTER_WHITELIST = {
   "内科学": ["呼吸系统疾病","循环系统疾病","消化系统疾病","泌尿系统疾病","血液系统疾病","内分泌和代谢性疾病","风湿免疫病","理化因素所致疾病"],
   "外科学": ["外科学总论","神经外科疾病","颈部和乳腺外科疾病","胸部外科疾病","心脏与血管外科疾病","腹部外科疾病","泌尿外科疾病","骨科疾病"],
@@ -602,14 +590,9 @@ const CHAPTER_EMPTY_LABEL = "（留空）";
 
 const QUIZ_TYPE_CODE = { single:"S", multiple:"M", judge:"J", B:"B", A3:"A" };
 
-/* 匹配"系统码 + 系统名"：
-   - 内科学 / 外科学 / 病理学总论 / 病理学各论：走 SYSTEM_CODE_MAP 关键词匹配
-   - 生理学 / 生物化学：系统名 = 章节名，系统码 = 章节在 CHAPTER_WHITELIST 中的序号（2 位补零）
-   - 匹配失败统一返回 { code:"00", name:"其他" } */
 function matchSystemCode(subject, text) {
   const list = SYSTEM_CODE_MAP[subject];
   if (!list) {
-    /* 生理学 / 生物化学：系统名与章节名一致 */
     if (subject === "生理学" || subject === "生物化学") {
       const wl = CHAPTER_WHITELIST[subject] || [];
       let best = null;
@@ -636,7 +619,6 @@ function matchSystemCode(subject, text) {
   }
   return best ? { code: best.code, name: best.name } : { code: "00", name: "其他" };
 }
-/* 把任意章节名归一到该科目白名单内的标准名；无法归类返回"其他" */
 function normalizeChapter(subject, chapter) {
   const list = CHAPTER_WHITELIST[subject];
   const c = String(chapter == null ? "" : chapter).trim();
@@ -1149,7 +1131,6 @@ function applyTheme() {
   document.documentElement.style.setProperty("--font-scale", String(state.fontScale));
 }
 
-/* 搜索缓存 */
 const __searchCache = new WeakMap();
 function getSearchText(item) {
   let cached = __searchCache.get(item);
@@ -1444,9 +1425,6 @@ function showRemoteUpdateBar(label, remoteCount, localCount, url, kind) {
   document.body.appendChild(bar);
 }
 
-/* 从 GitHub 拉取远端数据覆盖本地
-   kind: "cases" | "questions"
-   silent: true 时静默（不弹窗），失败只 console.error */
 async function pullFromRemote(kind, silent) {
   const isQ = kind === "questions";
   const url = isQ ? REMOTE_QUESTIONS_URL : REMOTE_DATA_URL;
@@ -1553,10 +1531,7 @@ const questionStore = {
 };
 
 /* =========================================================
-   数据迁移（一次性）
-   1) 外科学基础 → 外科学总论
-   2) 旧 Q<subjCode><subj>-<type>-<seq> 补上章节维度
-   3) 病理学 → 病理学总论 / 病理学各论（按章节归类）
+   数据迁移
    ========================================================= */
 const PATHO_GENERAL_CHAPTERS = ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"];
 
@@ -1564,7 +1539,6 @@ function migrateAllData() {
   let changedCases = false;
   let changedQuestions = false;
 
-  /* 病例迁移：chapter "外科学基础" → "外科学总论"；ID 前缀同步 */
   const caseIdSet = {};
   for (let i = 0; i < store.data.length; i++) caseIdSet[store.data[i].id] = true;
   for (let i = 0; i < store.data.length; i++) {
@@ -1590,7 +1564,6 @@ function migrateAllData() {
     }
   }
 
-  /* 病理学拆分迁移：subject "病理学" → "病理学总论" / "病理学各论" */
   for (let i = 0; i < store.data.length; i++) {
     const d = store.data[i];
     if (d.subject === "病理学") {
@@ -1608,7 +1581,6 @@ function migrateAllData() {
     }
   }
 
-  /* 题库迁移：旧格式 Q<subjCode><subj>-<type>-<seq> 加上章节维度 */
   const qIdSet = {};
   for (let i = 0; i < questionStore.data.length; i++) qIdSet[questionStore.data[i].id] = true;
   for (let i = 0; i < questionStore.data.length; i++) {
@@ -1701,7 +1673,6 @@ function quizPriority(q) {
   const days = (Date.now() - r.lastAt) / 86400000;
   return 500 + Math.min(days, 100);
 }
-
 /* =========================================================
    GitHub 上传相关
    ========================================================= */
@@ -1842,6 +1813,53 @@ async function ghPutFileViaGitData(cfg, contentText, onStep) {
   await ghUpdateRef(cfg, newCommit.sha);
   return newCommit;
 }
+
+/* ===== 新增：读取 / 写入任意仓库文件（用于 AI 配置云端同步） ===== */
+async function ghReadFile(cfg, path) {
+  const apiPath = "/contents/" + String(path).split("/").map(encodeURIComponent).join("/");
+  const url = ghRepoUrl(cfg, apiPath) + "?ref=" + encodeURIComponent(cfg.branch || "main");
+  const resp = await fetch(url, { headers: ghHeaders(cfg) });
+  if (resp.status === 404) return null;
+  const body = await readJsonSafe(resp);
+  if (!resp.ok) throw new Error(ghErrMsg(resp, body));
+  if (!body || !body.content) return null;
+  const b64 = String(body.content).replace(/\s+/g, "");
+  let bin;
+  try { bin = atob(b64); } catch (e) { throw new Error("文件内容不是有效的 base64"); }
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder("utf-8").decode(bytes);
+}
+async function ghWriteFile(cfg, path, text, message) {
+  const apiPath = "/contents/" + String(path).split("/").map(encodeURIComponent).join("/");
+  let sha = null;
+  try {
+    const gUrl = ghRepoUrl(cfg, apiPath) + "?ref=" + encodeURIComponent(cfg.branch || "main");
+    const gResp = await fetch(gUrl, { headers: ghHeaders(cfg) });
+    if (gResp.ok) {
+      const gBody = await readJsonSafe(gResp);
+      if (gBody && gBody.sha) sha = gBody.sha;
+    }
+  } catch (e) {}
+  const body = {
+    message: message || "更新配置",
+    content: utf8ToBase64(text),
+    branch: cfg.branch || "main",
+  };
+  if (sha) body.sha = sha;
+  const resp = await fetch(ghRepoUrl(cfg, apiPath), {
+    method: "PUT",
+    headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders(cfg)),
+    body: JSON.stringify(body),
+  });
+  const rb = await readJsonSafe(resp);
+  if (!resp.ok) throw new Error(ghErrMsg(resp, rb));
+  return rb;
+}
+
+/* =========================================================
+   Release 上传相关
+   ========================================================= */
 async function ghEnsureRelease(cfg, tag, name) {
   const resp = await fetch(ghRepoUrl(cfg, "/releases/tags/" + encodeURIComponent(tag)), { headers: ghHeaders(cfg) });
   if (resp.ok) { const body = await readJsonSafe(resp); if (body && body.id) return body; }
@@ -1901,10 +1919,7 @@ async function ghUploadImage(cfg, dataUrl) {
 }
 
 /* =========================================================
-   AI 服务商预设（含 peak 高峰时段规则）
-   peak: { weekdays, ranges:[[起, 止], ...], note }
-   - 小数表示半小时，如 9.5 = 9:30
-   - weekdays:true 时仅在周一~周五生效
+   AI 服务商预设
    ========================================================= */
 const AI_PRESETS = {
   gemini: { label:"Google Gemini（免费额度最大·推荐）", base_url:"https://generativelanguage.googleapis.com/v1beta/openai/", model:"gemini-2.5-flash", models:["gemini-2.5-flash","gemini-2.5-pro","gemini-2.0-flash"], cors:true, free:"💰 免费层：60 次/分钟，1500 次/天，无需绑卡", note:"在 ai.google.dev 获取 API Key，中文支持好。", key_hint:"AIza...", key_url:"https://aistudio.google.com/app/apikey", peak:null },
@@ -1923,7 +1938,6 @@ const AI_PRESETS = {
   custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"", peak:null },
 };
 
-/* 返回 { isPeak:boolean, note:string|null, label:string } */
 function getPeakStatus(providerKey) {
   const preset = AI_PRESETS[providerKey];
   if (!preset || !preset.peak) return { isPeak:false, note:null, label:"" };
@@ -1943,14 +1957,23 @@ function getPeakStatus(providerKey) {
   return { isPeak:false, note:p.note, label:"空闲时段" };
 }
 
+/* ===== 新版 loadAiConfig / saveAiConfig（含 custom_models） ===== */
 function loadAiConfig() {
-  const d = { provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model, api_key:"", temperature:0.2, max_tokens:8000, chunk_size:5000, chunk_overlap:300,
-              subject_target:"", chapter_sel:"__keep__" };
+  const d = {
+    provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model,
+    api_key:"", temperature:0.2, max_tokens:8000, chunk_size:5000, chunk_overlap:300,
+    subject_target:"", chapter_sel:"__keep__",
+    custom_models: {},
+  };
   try {
     const raw = localStorage.getItem(AI_KEY);
     if (raw) {
       const o = JSON.parse(raw);
-      if (o && typeof o === "object" && !Array.isArray(o)) for (const k in d) if (Object.prototype.hasOwnProperty.call(o, k)) d[k] = o[k];
+      if (o && typeof o === "object" && !Array.isArray(o)) {
+        for (const k in d) if (Object.prototype.hasOwnProperty.call(o, k)) d[k] = o[k];
+        if (!d.custom_models || typeof d.custom_models !== "object" || Array.isArray(d.custom_models))
+          d.custom_models = {};
+      }
     }
   } catch (e) {}
   return d;
@@ -1963,11 +1986,11 @@ function saveAiConfig(cfg) {
       chunk_size: cfg.chunk_size, chunk_overlap: cfg.chunk_overlap,
       subject_target: cfg.subject_target || "",
       chapter_sel: cfg.chapter_sel || "__keep__",
+      custom_models: cfg.custom_models || {},
     }));
   } catch (e) {}
 }
 
-/* 病例导入 / 题库导入 的面板配置（共用） */
 function loadImportCfg() {
   const d = { subject: "保持原值", chapter: "__keep__" };
   try {
@@ -2116,12 +2139,10 @@ function buildQuestionPrompt(subject) {
     "",
     "【出题要求】",
     "1. 一次生成 5~10 题，难度 3 星为主。",
-// 👇 新增这一块 👇
 "【生化专项要求（极为重要）】",
 "1. 题干和解析中严禁出现化学结构式或复杂化学方程式。",
 "2. 必须使用中文专业名词（如“氧化型辅酶Ⅰ”而非“NAD+”）。",
 "3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
-// 👆 新增结束 👆
         "2. 单选题必须恰好 4 个选项，答案唯一。",
     "3. 多选题至少 2 个正确选项，type 用 multiple，answer 用数组。",
     "4. 每题的 4 个选项必须分别来自不同鉴别诊断。",
@@ -2192,9 +2213,6 @@ function parseAiJson(text) {
   throw new Error("AI 返回内容不是合法 JSON，请重试或换模型");
 }
 
-/* =========================================================
-   AI 结果 ID 剥离 + 病例 → AI 资料文本 + 病例库范围选择
-   ========================================================= */
 function stripAiIds(items) {
   if (!Array.isArray(items)) return items;
   for (let i = 0; i < items.length; i++) {
@@ -2405,7 +2423,6 @@ async function aiGenerate(opts, onLog, isQ) {
   onLog("合并去重后共 " + merged.length + " 条");
   return isQ ? merged.map(normalizeQuestion) : merged.map(normalizeItem);
 }
-
 /* =========================================================
    PDF 导出
    ========================================================= */
@@ -2838,39 +2855,36 @@ function makeRichToolbar(target) {
     try { target.setSelectionRange(newStart, newEnd); } catch (err) {}
   });
   bar.appendChild(drugBtn);
-  // 1. 临床时间线按钮（内外科）
-const tlClinicalBtn = el("button", "rich-btn tl", "临床线");
-tlClinicalBtn.type = "button";
-tlClinicalBtn.title = "插入内外科临床时间线模板：主诉、查体、诊断等";
-tlClinicalBtn.addEventListener("mousedown", e => e.preventDefault());
-tlClinicalBtn.addEventListener("click", e => {
-  e.preventDefault();
-  const tmpl = "\n@主诉 | \n@查体 | \n@辅助检查 | \n@诊断 | \n@治疗 | \n";
-  const start = target.selectionStart, end = target.selectionEnd;
-  const val = target.value;
-  target.value = val.slice(0, start) + tmpl + val.slice(end);
-  target.focus();
-  const pos = start + tmpl.length;
-  try { target.setSelectionRange(pos, pos); } catch (err) {}
-});
-bar.appendChild(tlClinicalBtn);
-
-// 2. 生化时间线按钮（生物化学）
-const tlBiochemBtn = el("button", "rich-btn tl", "生化线");
-tlBiochemBtn.type = "button";
-tlBiochemBtn.title = "插入生物化学反应过程模板：步骤、关键酶、产物等";
-tlBiochemBtn.addEventListener("mousedown", e => e.preventDefault());
-tlBiochemBtn.addEventListener("click", e => {
-  e.preventDefault();
-  const tmpl = "\n@第一步 | \n@关键酶 | \n@反应条件 | \n@产物 | \n@生理意义 | \n";
-  const start = target.selectionStart, end = target.selectionEnd;
-  const val = target.value;
-  target.value = val.slice(0, start) + tmpl + val.slice(end);
-  target.focus();
-  const pos = start + tmpl.length;
-  try { target.setSelectionRange(pos, pos); } catch (err) {}
-});
-bar.appendChild(tlBiochemBtn);
+  const tlClinicalBtn = el("button", "rich-btn tl", "临床线");
+  tlClinicalBtn.type = "button";
+  tlClinicalBtn.title = "插入内外科临床时间线模板：主诉、查体、诊断等";
+  tlClinicalBtn.addEventListener("mousedown", e => e.preventDefault());
+  tlClinicalBtn.addEventListener("click", e => {
+    e.preventDefault();
+    const tmpl = "\n@主诉 | \n@查体 | \n@辅助检查 | \n@诊断 | \n@治疗 | \n";
+    const start = target.selectionStart, end = target.selectionEnd;
+    const val = target.value;
+    target.value = val.slice(0, start) + tmpl + val.slice(end);
+    target.focus();
+    const pos = start + tmpl.length;
+    try { target.setSelectionRange(pos, pos); } catch (err) {}
+  });
+  bar.appendChild(tlClinicalBtn);
+  const tlBiochemBtn = el("button", "rich-btn tl", "生化线");
+  tlBiochemBtn.type = "button";
+  tlBiochemBtn.title = "插入生物化学反应过程模板：步骤、关键酶、产物等";
+  tlBiochemBtn.addEventListener("mousedown", e => e.preventDefault());
+  tlBiochemBtn.addEventListener("click", e => {
+    e.preventDefault();
+    const tmpl = "\n@第一步 | \n@关键酶 | \n@反应条件 | \n@产物 | \n@生理意义 | \n";
+    const start = target.selectionStart, end = target.selectionEnd;
+    const val = target.value;
+    target.value = val.slice(0, start) + tmpl + val.slice(end);
+    target.focus();
+    const pos = start + tmpl.length;
+    try { target.setSelectionRange(pos, pos); } catch (err) {}
+  });
+  bar.appendChild(tlBiochemBtn);
   const blockMarks = [
     { label: "分割线", text: "\n---\n" },
     { label: "引用", text: "\n> " },
@@ -3394,7 +3408,7 @@ function saveItem(data, originalId) {
 }
 
 /* =========================================================
-   上传面板（支持病例 / 题库）
+   上传面板
    ========================================================= */
 function openUpload(target) {
   const isQ = target === "questions";
@@ -3600,7 +3614,7 @@ function openUpload(target) {
 }
 
 /* =========================================================
-   病例导入 / 导出 / PDF
+   导入 / 导出 / PDF 面板
    ========================================================= */
 function openImport() {
   const savedCfg = loadImportCfg();
@@ -3650,8 +3664,6 @@ function openImport() {
 
   applyImportCfg(savedCfg, overrideSel, rebuildImportChapter);
 
-  // 注意：不能直接写 addEventListener("change", rebuildImportChapter)，
-  // 否则 Event 对象会被当成 keepValue 传入
   overrideSel.addEventListener("change", () => {
     rebuildImportChapter();
     saveImportCfg(overrideSel.value, chapSel.value);
@@ -3804,10 +3816,9 @@ function openPdfExport() {
   ov.appendChild(pop);
   document.body.appendChild(ov);
 }
-
 /* =========================================================
    AI 生成面板（病例 / 题库通用）
-   支持多文件队列，每个文件独立生成 JSON
+   支持：多文件队列 / 自定义模型 / 云端同步
    ========================================================= */
 function openAiImport(target) {
   const isQ = target === "questions";
@@ -3863,6 +3874,8 @@ function openAiImport(target) {
     return i;
   }
   const baseIn = mkInput("Base URL", cfg.base_url, "text", "https://.../v1");
+
+  /* ===== 模型名一行（下拉 + 自定义输入 + ＋ / × ） ===== */
   const modelRow = el("div", "import-row");
   modelRow.appendChild(el("div", "row-label", "模型名"));
   const modelSel = document.createElement("select");
@@ -3870,8 +3883,124 @@ function openAiImport(target) {
   const modelIn = document.createElement("input");
   modelIn.className = "edit-input"; modelIn.type = "text";
   modelIn.spellcheck = false; modelIn.autocomplete = "off";
+  modelIn.style.display = "none";
+  const addModelBtn = el("button", "btn", "＋");
+  addModelBtn.title = "添加自定义模型";
+  addModelBtn.style.cssText = "flex:none;width:auto;padding:0 10px";
+  const delModelBtn = el("button", "btn", "×");
+  delModelBtn.title = "删除当前自定义模型";
+  delModelBtn.style.cssText = "flex:none;width:auto;padding:0 10px";
   modelRow.appendChild(modelSel); modelRow.appendChild(modelIn);
+  modelRow.appendChild(addModelBtn); modelRow.appendChild(delModelBtn);
   form.appendChild(modelRow);
+
+  /* ===== 自定义模型列表（按服务商隔离） ===== */
+  let customModels = Object.assign({}, cfg.custom_models || {});
+
+  function getCustomList(providerKey) {
+    const l = customModels[providerKey];
+    return Array.isArray(l) ? l.slice() : [];
+  }
+  function persistCustomModels() {
+    const c = loadAiConfig();
+    c.custom_models = customModels;
+    saveAiConfig(c);
+  }
+  function refreshModelList(providerKey, currentModel) {
+    const p = AI_PRESETS[providerKey];
+    modelSel.innerHTML = "";
+    if (!p || p.manual) {
+      const o = document.createElement("option");
+      o.value = ""; o.textContent = "（手动模式无需模型）";
+      modelSel.appendChild(o);
+      modelSel.disabled = true;
+      modelIn.style.display = "none";
+      return;
+    }
+    modelSel.disabled = false;
+    const presetModels = (p.models || []).slice();
+    const customs = getCustomList(providerKey);
+    presetModels.forEach(m => {
+      const o = document.createElement("option");
+      o.value = m; o.textContent = m;
+      modelSel.appendChild(o);
+    });
+    customs.forEach(m => {
+      const o = document.createElement("option");
+      o.value = m; o.textContent = "★ " + m;
+      o.dataset.custom = "1";
+      modelSel.appendChild(o);
+    });
+    const customOpt = document.createElement("option");
+    customOpt.value = "__custom__";
+    customOpt.textContent = "（自定义模型名…）";
+    modelSel.appendChild(customOpt);
+
+    const want = String(currentModel || "").trim();
+    if (want) {
+      let found = false;
+      for (let i = 0; i < modelSel.options.length; i++) {
+        if (modelSel.options[i].value === want) { modelSel.selectedIndex = i; found = true; break; }
+      }
+      if (!found) {
+        modelSel.value = "__custom__";
+        modelIn.value = want;
+        modelIn.style.display = "";
+        return;
+      }
+    } else {
+      if (presetModels.length) modelSel.selectedIndex = 0;
+      else if (customs.length) modelSel.selectedIndex = presetModels.length;
+      else modelSel.value = "__custom__";
+    }
+    modelIn.style.display = "none";
+    modelIn.value = "";
+  }
+
+  modelSel.addEventListener("change", () => {
+    if (modelSel.value === "__custom__") {
+      modelIn.style.display = "";
+      modelIn.value = "";
+      modelIn.focus();
+    } else {
+      modelIn.style.display = "none";
+      modelIn.value = "";
+    }
+  });
+  addModelBtn.addEventListener("click", () => {
+    const name = modelIn.value.trim();
+    if (modelIn.style.display !== "none" && name) {
+      const key = provSel.value;
+      if (!customModels[key]) customModels[key] = [];
+      if (customModels[key].indexOf(name) !== -1) { confirmPopup("该模型已在列表中"); return; }
+      customModels[key].push(name);
+      persistCustomModels();
+      refreshModelList(key, name);
+      return;
+    }
+    modelSel.value = "__custom__";
+    modelIn.style.display = "";
+    modelIn.value = "";
+    modelIn.focus();
+  });
+  delModelBtn.addEventListener("click", () => {
+    const key = provSel.value;
+    const val = modelSel.value;
+    if (val === "__custom__") {
+      modelIn.value = "";
+      modelIn.style.display = "none";
+      refreshModelList(key, "");
+      return;
+    }
+    const list = customModels[key] || [];
+    const i = list.indexOf(val);
+    if (i === -1) { confirmPopup("只能删除自定义模型（前面带 ★ 的）"); return; }
+    list.splice(i, 1);
+    customModels[key] = list;
+    persistCustomModels();
+    refreshModelList(key, "");
+  });
+
   const keyIn = mkInput("API Key", cfg.api_key, "password", "sk-...");
 
   const tempRow = el("div", "import-row");
@@ -3896,39 +4025,141 @@ function openAiImport(target) {
     const p = AI_PRESETS[key];
     refreshInfoCard();
     if (p.manual) {
-      baseIn.value = ""; modelIn.value = "";
-      baseIn.disabled = true; modelIn.disabled = true;
-      modelSel.style.display = "none"; modelIn.style.display = "";
-      modelIn.placeholder = "（手动模式无需模型）";
-      keyIn.disabled = true; keyIn.placeholder = "（手动模式无需 Key）";
+      baseIn.value = "";
+      baseIn.disabled = true;
+      keyIn.disabled = true;
+      keyIn.placeholder = "（手动模式无需 Key）";
+      refreshModelList(key, "");
       return;
     }
-    baseIn.disabled = false; keyIn.disabled = false;
+    baseIn.disabled = false;
+    keyIn.disabled = false;
     if (!keepUserValue) { baseIn.value = p.base_url; keyIn.placeholder = p.key_hint || "sk-..."; }
-    modelSel.innerHTML = "";
-    if (p.models && p.models.length) {
-      p.models.forEach(m => { const o = document.createElement("option"); o.value = m; o.textContent = m; modelSel.appendChild(o); });
-      const customOpt = document.createElement("option"); customOpt.value = "__custom__"; customOpt.textContent = "（自定义模型名）"; modelSel.appendChild(customOpt);
-      modelSel.style.display = ""; modelIn.style.display = "none";
-      const want = keepUserValue ? (cfg.model || p.model) : p.model;
-      if (p.models.indexOf(want) !== -1) modelSel.value = want;
-      else { modelSel.value = "__custom__"; modelSel.style.display = "none"; modelIn.style.display = ""; modelIn.value = want || ""; modelIn.placeholder = "输入模型名"; }
-    } else {
-      modelSel.style.display = "none"; modelIn.style.display = "";
-      modelIn.value = keepUserValue ? (cfg.model || "") : "";
-      modelIn.placeholder = "输入模型名";
-    }
+    refreshModelList(key, keepUserValue ? cfg.model : p.model);
   }
   provSel.addEventListener("change", () => { const oldKey = keyIn.value; applyPreset(provSel.value, false); keyIn.value = oldKey; });
-  modelSel.addEventListener("change", () => {
-    if (modelSel.value === "__custom__") { modelSel.style.display = "none"; modelIn.style.display = ""; modelIn.value = ""; modelIn.focus(); }
-  });
   applyPreset(provSel.value, true);
   keyIn.value = cfg.api_key || "";
 
   form.appendChild(el("div", "gh-note", "Key 只保存在本机浏览器，不会上传第三方。公共设备用完请到服务商后台吊销。"));
 
-  /* ===== ③ 出题范围（仅题库模式）===== */
+  /* ===== ☁️ 云端同步 ===== */
+  form.appendChild(el("div", "gh-section-title", "☁️ 云端同步（跨设备）"));
+  const cloudRow = el("div", "file-row");
+  const cloudSaveBtn = el("button", "btn", "☁ 保存到云端");
+  const cloudLoadBtn = el("button", "btn", "☁ 从云端加载");
+  const cloudInfo = el("div", "gh-status", "使用 GitHub 仓库 data/ai-config.json 保存");
+  cloudSaveBtn.style.cssText = "flex:none;padding:0 12px;height:42px";
+  cloudLoadBtn.style.cssText = "flex:none;padding:0 12px;height:42px";
+  cloudRow.appendChild(cloudSaveBtn);
+  cloudRow.appendChild(cloudLoadBtn);
+  cloudRow.appendChild(cloudInfo);
+  form.appendChild(cloudRow);
+
+  let includeKeyInCloud = false;
+  const cloudOptRow = el("div", "file-row");
+  const keyToggleBtn = el("button", "btn", "同步 API Key：否");
+  keyToggleBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  keyToggleBtn.addEventListener("click", () => {
+    includeKeyInCloud = !includeKeyInCloud;
+    keyToggleBtn.textContent = "同步 API Key：" + (includeKeyInCloud ? "是" : "否");
+    keyToggleBtn.className = "btn" + (includeKeyInCloud ? " active" : "");
+  });
+  cloudOptRow.appendChild(keyToggleBtn);
+  cloudOptRow.appendChild(el("div", "gh-note", "⚠ 若仓库是公开的，勾选同步 Key 意味着任何人都能看到，请谨慎。"));
+  form.appendChild(cloudOptRow);
+
+  cloudSaveBtn.addEventListener("click", async () => {
+    const ghCfg = loadGhConfig();
+    if (!ghCfg.owner || !ghCfg.repo || !ghCfg.token) {
+      confirmPopup("请先在「上传」面板配置 GitHub 的 owner / repo / Token\n（设置 → GitHub 上传）");
+      return;
+    }
+    const c = readCfg();
+    const payload = {
+      _meta: { savedAt: new Date().toISOString(), version: 1 },
+      provider: c.provider,
+      base_url: c.base_url,
+      model: c.model,
+      temperature: c.temperature,
+      max_tokens: c.max_tokens,
+      chunk_size: c.chunk_size,
+      chunk_overlap: c.chunk_overlap,
+      subject_target: c.subject_target,
+      chapter_sel: c.chapter_sel,
+      custom_models: customModels,
+    };
+    if (includeKeyInCloud) payload.api_key = c.api_key;
+    cloudSaveBtn.disabled = true;
+    cloudInfo.textContent = "⏳ 正在保存到 " + ghCfg.owner + "/" + ghCfg.repo + "…";
+    cloudInfo.className = "gh-status";
+    try {
+      await ghWriteFile(ghCfg, "data/ai-config.json", JSON.stringify(payload, null, 2), "更新 AI 配置");
+      cloudInfo.textContent = "✅ 已保存（" + (includeKeyInCloud ? "含 Key" : "不含 Key") + "）";
+      cloudInfo.className = "gh-status ok";
+    } catch (e) {
+      cloudInfo.textContent = "❌ " + e.message;
+      cloudInfo.className = "gh-status err";
+    } finally {
+      cloudSaveBtn.disabled = false;
+    }
+  });
+
+  cloudLoadBtn.addEventListener("click", async () => {
+    const ghCfg = loadGhConfig();
+    if (!ghCfg.owner || !ghCfg.repo || !ghCfg.token) {
+      confirmPopup("请先在「上传」面板配置 GitHub 的 owner / repo / Token");
+      return;
+    }
+    cloudLoadBtn.disabled = true;
+    cloudInfo.textContent = "⏳ 正在从云端加载…";
+    cloudInfo.className = "gh-status";
+    try {
+      const text = await ghReadFile(ghCfg, "data/ai-config.json");
+      if (!text) {
+        cloudInfo.textContent = "ℹ️ 云端还没有保存过配置";
+        cloudInfo.className = "gh-status";
+        return;
+      }
+      const obj = JSON.parse(text);
+      const cur = loadAiConfig();
+      const merged = Object.assign({}, cur, obj);
+      if (!obj.api_key) merged.api_key = cur.api_key;
+      if (!obj.custom_models || typeof obj.custom_models !== "object" || Array.isArray(obj.custom_models))
+        merged.custom_models = cur.custom_models || {};
+      saveAiConfig(merged);
+
+      customModels = Object.assign({}, merged.custom_models || {});
+      provSel.value = (merged.provider && AI_PRESETS[merged.provider]) ? merged.provider : "gemini";
+      const pk = provSel.value;
+      const preset = AI_PRESETS[pk];
+      refreshInfoCard();
+      if (preset.manual) {
+        baseIn.value = ""; baseIn.disabled = true;
+        keyIn.disabled = true; keyIn.placeholder = "（手动模式无需 Key）";
+      } else {
+        baseIn.disabled = false; keyIn.disabled = false;
+        baseIn.value = merged.base_url || preset.base_url;
+        keyIn.placeholder = preset.key_hint || "sk-...";
+      }
+      keyIn.value = merged.api_key || "";
+      tempIn.value = String(merged.temperature != null ? merged.temperature : 0.2);
+      maxIn.value = String(merged.max_tokens != null ? merged.max_tokens : 8000);
+      chunkIn.value = String(merged.chunk_size != null ? merged.chunk_size : 5000);
+      overlapIn.value = String(merged.chunk_overlap != null ? merged.chunk_overlap : 300);
+      refreshModelList(pk, merged.model || preset.model || "");
+
+      cloudInfo.textContent = "✅ 已从云端加载" + (obj.api_key ? "（含 Key）" : "（云端无 Key，沿用本地）");
+      cloudInfo.className = "gh-status ok";
+    } catch (e) {
+      cloudInfo.textContent = "❌ " + e.message;
+      cloudInfo.className = "gh-status err";
+    } finally {
+      cloudLoadBtn.disabled = false;
+    }
+  });
+
+  /* ===== ③ 出题范围（仅题库模式） ===== */
   let casePoolText = "";
   let casePoolCount = 0;
   let casePoolLabel = "";
@@ -4108,15 +4339,12 @@ function openAiImport(target) {
     setChapterSelValue(chapSel, list, keepValue);
   }
 
-  // 恢复上次保存的值
   if (SUBJECTS.indexOf(cfg.subject_target) !== -1) subjSel.value = cfg.subject_target;
   rebuildAiChapter(cfg.chapter_sel);
 
-  // ⚠ 不能写成 addEventListener("change", rebuildAiChapter)：
-  //    Event 对象会被当成 keepValue 传进去，导致章节永远重置为「保持原值」
   subjSel.addEventListener("change", () => {
-    rebuildAiChapter();                              // 换科目 → 章节重置
-    saveAiConfig(readCfg());                         // 顺手记住
+    rebuildAiChapter();
+    saveAiConfig(readCfg());
   });
   chapSel.addEventListener("change", () => saveAiConfig(readCfg()));
 
@@ -4179,8 +4407,6 @@ function openAiImport(target) {
   fileIn.addEventListener("change", () => {
     const files = Array.from(fileIn.files || []);
     if (!files.length) return;
-
-    /* 补丁 2：队列里还有未导入的文件时，先问要不要清空 */
     const stale = fileQueue.filter(f => f.status !== "success");
     const doAdd = () => {
       fileQueue.length = 0;
@@ -4200,7 +4426,6 @@ function openAiImport(target) {
       renderQueue();
       fileIn.value = "";
     };
-
     if (stale.length) {
       confirmPopup(
         "队列里还有 " + stale.length + " 个未导入的文件：\n" +
@@ -4229,10 +4454,11 @@ function openAiImport(target) {
   function readCfg() {
     const chValue = chapSel.value;
     const chOverride = chValue === "__keep__" ? null : (chValue === "__empty__" ? "" : chValue);
+    const modelValue = (modelSel.value === "__custom__") ? modelIn.value.trim() : modelSel.value;
     return {
       provider: provSel.value,
       base_url: baseIn.value.trim(),
-      model: modelIn.style.display === "none" ? modelSel.value : modelIn.value.trim(),
+      model: modelValue,
       api_key: keyIn.value.trim(),
       temperature: parseFloat(tempIn.value) || 0.2,
       max_tokens: parseInt(maxIn.value, 10) || 8000,
@@ -4240,7 +4466,8 @@ function openAiImport(target) {
       chunk_overlap: parseInt(overlapIn.value, 10) || 300,
       chapter_override: chOverride,
       subject_target: subjSel.value,
-      chapter_sel: chValue,          // 原始 select 值，仅供 UI 恢复
+      chapter_sel: chValue,
+      custom_models: customModels,
     };
   }
   closeBtn.addEventListener("click", () => ov.remove());
@@ -4268,14 +4495,12 @@ function openAiImport(target) {
     finally { copyPrompt.disabled = false; }
   });
 
-  /* 补丁 3：统计本轮待处理文件数 */
   function pendingCount() {
     let n = 0;
     for (const f of fileQueue) if (f.status === "pending") n++;
     return n;
   }
 
-  /* 生成主体（从 genBtn 事件抽出，供高峰确认后调用） */
   async function runGeneration() {
     const provider = provSel.value;
     const preset = AI_PRESETS[provider];
@@ -4311,15 +4536,12 @@ function openAiImport(target) {
     genBtn.disabled = true; importBtn.disabled = true; importAllBtn.disabled = true; copyPrompt.disabled = true;
 
     try {
-      /* 补丁 3：日志里明确本轮将处理几个文件 */
       log("本轮将处理 " + pendingCount() + " 个待生成文件" +
           (casePoolText ? "，以及病例库范围" : "") +
           (ta.value.trim() ? "，以及手动粘贴文本" : ""));
 
       for (let i = 0; i < fileQueue.length; i++) {
         const item = fileQueue[i];
-        /* 补丁 1：只处理本轮新加入（pending）的文件；
-           parsed / generating / success / error 都是上一轮的遗留，跳过 */
         if (item.status !== "pending") continue;
 
         if (!item.text) {
@@ -4409,14 +4631,10 @@ function openAiImport(target) {
     }
   }
 
-  /* genBtn：先做高峰确认，再执行 runGeneration */
   genBtn.addEventListener("click", () => {
     const provider = provSel.value;
     const preset = AI_PRESETS[provider];
-
-    /* 手动模式不调用 API，不受高峰影响 */
     if (preset.manual) { runGeneration(); return; }
-
     const peak = getPeakStatus(provider);
     if (peak.isPeak && peak.note) {
       confirmPopup(
@@ -4504,7 +4722,6 @@ function openAiImport(target) {
   ov.appendChild(pop);
   document.body.appendChild(ov);
 }
-
 /* =========================================================
    题库粘贴导入 / 导出 / 清空
    ========================================================= */
@@ -4557,7 +4774,6 @@ function openQuestionImport() {
 
   applyImportCfg(savedCfg, sjSel, rebuildQChapter);
 
-  // ⚠ 同样不能直接写 addEventListener("change", rebuildQChapter)
   sjSel.addEventListener("change", () => {
     rebuildQChapter();
     saveImportCfg(sjSel.value, chSel.value);
@@ -4653,7 +4869,7 @@ function confirmClearQ() {
 }
 
 /* =========================================================
-   刷题主面板（支持 single / multiple / judge / B / A3）
+   刷题主面板
    ========================================================= */
 function openQuiz(pool, opts) {
   opts = opts || {};
@@ -5544,7 +5760,7 @@ function updateBackToTop() {
 }
 
 /* =========================================================
-   随机大病历（简化版）
+   随机大病历
    ========================================================= */
 const RECORD_SURNAMES = ["张", "王", "李", "赵", "刘", "陈", "杨", "黄", "周", "吴", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗"];
 const RECORD_JOBS = ["退休工人", "教师", "公司职员", "农民", "货车司机", "公务员", "个体经营者", "护士", "厨师", "建筑工人", "家庭主妇"];
@@ -5639,7 +5855,6 @@ function openSettings() {
   backupBtn.addEventListener("click", () => { store.clearBackups(); backupBtn.textContent = "清理备份（当前 0 份）"; confirmPopup("备份已清理"); });
   addRow("自动备份", backupBtn);
 
-  /* 强制拉取 */
   const pullWrap = el("div", "font-wrap");
   const pullCaseBtn = el("button", "btn", "病例");
   const pullQuizBtn = el("button", "btn", "题库");
@@ -5656,7 +5871,6 @@ function openSettings() {
   pullWrap.appendChild(pullCaseBtn); pullWrap.appendChild(pullQuizBtn);
   addRow("🔄 强制拉取", pullWrap);
 
-  /* 自动拉取开关 */
   const autoPullBtn = el("button", "btn", state.autoPull ? "已开启" : "已关闭");
   autoPullBtn.addEventListener("click", () => {
     state.autoPull = !state.autoPull;
@@ -5688,88 +5902,51 @@ function openSettings() {
     "【数据保存】\n" +
     "病例与题库均保存在浏览器本地存储中，清除浏览器数据时一并清除。\n" +
     "每次修改自动生成备份（最多 5 份）。\n\n" +
-    "【病理学拆分说明】\n" +
-    "  病理学 → 拆为「病理学总论」与「病理学各论」两个科目。\n" +
-    "  · 总论模板字段：概念与定义 / 分类与分型 / 病因与发生机制 /\n" +
-    "    基本病理变化 / 结局与转归 / 临床病理联系 / 易混概念辨析 /\n" +
-    "    高频考点 · 记忆口诀。\n" +
-    "  · 各论模板字段：原有 9 个字段全部保留，另增加\n" +
-    "    分类与分型 / 好发部位与人群 / 分子病理 / 并发症 /\n" +
-    "    高频考点 · 易错点。\n" +
-    "  旧数据中 subject=病理学的条目会自动按章节迁移。\n\n" +
+    "【自定义模型】\n" +
+    "AI 面板「模型名」一行：\n" +
+    "  · 下拉选择预设模型；\n" +
+    "  · 选「（自定义模型名…）」后填入模型名，点「＋」加入列表；\n" +
+    "  · 自定义模型以 ★ 开头显示，可点「×」删除；\n" +
+    "  · 每个服务商维护独立的模型列表。\n\n" +
+    "【云端同步】\n" +
+    "AI 面板「☁️ 云端同步」区域：\n" +
+    "  · 「保存到云端」把当前 AI 配置 + 自定义模型写入仓库 data/ai-config.json；\n" +
+    "  · 「从云端加载」从该文件恢复配置；\n" +
+    "  · 可选是否同步 API Key（公开仓库请勿勾选）。\n\n" +
+    "【病理学拆分】\n" +
+    "  病理学 → 拆为「病理学总论」与「病理学各论」两个科目。\n\n" +
     "【ID 自动编号】\n" +
     "  病例：{科目码}{科目名}-{系统码}{系统名}-{3位序号}\n" +
     "        例：04内科学-01呼吸系统疾病-001\n" +
     "  题库：Q{科目码}{科目名}-{系统码}{系统名}-{题型码}-{4位序号}\n" +
-    "        例：Q04内科学-01呼吸系统疾病-S-0001\n" +
-    "  JSON 自带 id 时保留原值，否则自动编号。\n" +
-    "  AI 生成的 id 会自动剥离，一律走自动编号。\n\n" +
+    "        例：Q04内科学-01呼吸系统疾病-S-0001\n\n" +
     "【章节约束】\n" +
     "  编辑面板的章节为下拉选择，选项与科目关联。\n" +
-    "  AI 生成时章节会被归一到白名单范围内，\n" +
-    "  导入时可选「统一指定章节」覆盖所有条目。\n\n" +
+    "  AI 生成时章节会被归一到白名单范围内。\n\n" +
     "【AI 出题范围】\n" +
     "  AI 出题面板 ③ 可基于病例库限定范围：\n" +
-    "  ★ 收藏 / 当前筛选 / 全部 / 按科目。\n" +
-    "  选中后只针对该范围内的病例出题，\n" +
-    "  relatedCase 会指回对应病例标题。\n\n" +
+    "  ★ 收藏 / 当前筛选 / 全部 / 按科目。\n\n" +
     "【AI 高峰提示】\n" +
-    "  面板顶部会显示当前服务商的「高峰 / 空闲」状态。\n" +
-    "  点「开始生成」时若为高峰，会先弹出提醒再执行。\n" +
-    "  高峰时段通常更慢、更易限流；DeepSeek 高峰期费用翻倍。\n\n" +
-    "【参数记忆】\n" +
-    "  AI 面板的目标科目、统一指定章节会自动记住上次选择。\n" +
-    "  导入面板（病例 / 题库）的统一指定科目与章节同样会记住。\n\n" +
+    "  面板顶部显示当前服务商的「高峰 / 空闲」状态。\n\n" +
     "【远端同步】\n" +
     "  设置面板「强制拉取」可随时用 GitHub 上的版本覆盖本地。\n" +
-    "  「启动时自动拉取」开启后，每次打开页面都会无条件从 GitHub 拉，\n" +
-    "  适合把 GitHub 当唯一数据源的用法。拉取前病例会自动备份。\n\n" +
-    "【文件队列】\n" +
-    "  选择新文件时会提示清空旧队列；\n" +
-    "  「开始生成」只处理本轮新加入（等待中）的文件，\n" +
-    "  已成功 / 已解析的旧文件不会被重复处理。\n\n" +
+    "  「启动时自动拉取」开启后，每次打开页面都会无条件从 GitHub 拉。\n\n" +
     "【如何更新题库】\n" +
-    "方法 1 · 直接在 GitHub 网页编辑：\n" +
-    "  打开仓库 → data/questions.json → 铅笔图标编辑 → Commit。\n" +
-    "  下次打开本页面会自动拉取最新题库。\n\n" +
-    "方法 2 · 在本页面导入：\n" +
-    "  刷题模式 → 底部「粘贴导入」直接粘贴题目 JSON，\n" +
-    "  或点「🤖 AI出题」上传 PDF / 讲义，让 AI 生成。\n\n" +
-    "方法 3 · 从本页面上传到 GitHub：\n" +
-    "  刷题模式 → 底部「上传题库」→ 填 owner / repo / Token →\n" +
-    "  载入当前题库 → 「上传」。\n" +
-    "  上传后可在 GitHub 网页查看，其他设备打开也能拉到。\n\n" +
-    "【题目 JSON 格式】\n" +
-    "  必填：stem（题干）、answer（答案数组）\n" +
-    "  常见：subject、chapter、type（single/multiple/judge/B/A3）、\n" +
-    "        options（[{key,text}]）、explanation、relatedCase\n" +
-    "  B型题：type=B + sharedOptions + subQuestions\n" +
-    "  A3/A4：type=A3 + caseStem + questions\n\n" +
-    "【复习方法建议】\n" +
-    "  1. 首次刷题选「练习」模式，边做边看解析。\n" +
-    "  2. 学完一章后开「考试」模式模拟考场。\n" +
-    "  3. 考前用「背题」模式快速过一遍。\n" +
-    "  4. 定期刷「错题本」直至清零。\n" +
-    "  5. 用「统计」查看各章节正确率，集中补薄弱环节。\n\n" +
+    "方法 1 · GitHub 网页编辑 data/questions.json；\n" +
+    "方法 2 · 刷题模式 →「粘贴导入」或「🤖 AI出题」；\n" +
+    "方法 3 · 刷题模式 →「上传题库」→ 填 owner / repo / Token → 上传。\n\n" +
     "【快捷键】\n" +
     "  A/B/C/D 或 1/2/3/4 选择选项\n" +
     "  Enter 提交 / 下一题\n" +
     "  空格 下一题\n" +
     "  Esc 关闭弹窗\n\n" +
-    "【GitHub 上传 Token】\n" +
-    "  需要 contents:write 权限的 Personal Access Token。\n" +
-    "  Token 只保存在本机浏览器，不会上传第三方。\n\n" +
     "【富文本标记】\n" +
-    "  · 行内：==高亮== !!红!! @@蓝@@ $$药名$$ **粗** //斜// __下划__ ~~删除~~ ^上标^ _下标_ `代码`\n" +
-    "  · 块级：--- 分隔线、> 引用、- 或 1. 列表、### 折叠小节、[[病例名]] 内部跳转\n" +
-    "  · 表格：连续多行都以 | 开头和结尾\n" +
-    "  · 时间线：每行 @节点 | 内容\n\n" +
-    "【缩写自动展开】\n" +
-    "  COPD、ARDS、DIC、ACS 等常见缩写悬停可看全称。\n\n" +
+    "  行内：==高亮== !!红!! @@蓝@@ $$药名$$ **粗** //斜// __下划__ ~~删除~~ ^上标^ _下标_ `代码`\n" +
+    "  块级：--- 分隔线、> 引用、- 或 1. 列表、### 折叠小节、[[病例名]] 内部跳转\n" +
+    "  表格：连续多行都以 | 开头和结尾\n" +
+    "  时间线：每行 @节点 | 内容\n\n" +
     "【高级搜索】\n" +
     "  科目:内科学 标签:高频 状态:需复习 收藏:是，可混普通关键词。\n\n" +
-    "【数据上传】\n" +
-    "  Git Data API（≤100 MB）/ Release Assets（≤2 GB），需要 contents:write 权限的 Personal Access Token。\n\n" +
     "仅供考研复习参考，请以当年考试大纲和最新教材为准。");
   body.appendChild(info);
   pop.appendChild(body);
@@ -5812,7 +5989,6 @@ function confirmPopup(text, onYes, yesText, title) {
   return ov;
 }
 
-/* Esc 关闭最上层弹窗 */
 document.addEventListener("keydown", function (e) {
   if (e.key !== "Escape") return;
   const all = document.querySelectorAll(".overlay");
@@ -5928,7 +6104,6 @@ async function init() {
   } catch (e) { if (!Array.isArray(store.data)) store.data = []; if (!Array.isArray(questionStore.data)) questionStore.data = []; }
   try { migrateAllData(); } catch (e) {}
 
-  /* 启动时自动拉取（以 GitHub 为唯一数据源） */
   if (state.autoPull) {
     await Promise.all([
       pullFromRemote("cases", true),
