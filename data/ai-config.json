@@ -1,16 +1,16 @@
 {
   "_meta": {
-    "savedAt": "2026-10-15T07:38:06.188Z",
+    "savedAt": "2026-10-15T08:19:58.814Z",
     "version": 1
   },
   "provider": "custom",
   "base_url": "https://api.deepseek.com/",
-  "model": "deepseek-flash",
+  "model": "deepseek-chat",
   "temperature": 0.2,
   "max_tokens": 8000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
   "subject_target": "生物化学",
-  "chapter_sel": "血液的生物化学",
+  "chapter_sel": "其他重要器官和组织的生物化学",
   "custom_models": {}
 }
