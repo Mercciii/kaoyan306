@@ -44,6 +44,7 @@ const PASSTHROUGH_HOSTS = new Set([
   "api.moonshot.cn",
   "dashscope.aliyuncs.com",
   "api.openai.com",
+  "opencode.ai"
 ]);
 
 /* 可长缓存的静态 CDN */
