@@ -1,17 +1,17 @@
 {
   "_meta": {
-    "savedAt": "2026-10-15T16:02:19.655Z",
+    "savedAt": "2026-10-16T03:07:46.382Z",
     "version": 1
   },
   "provider": "custom",
-  "base_url": "https://opencode.ai/inference/openai/v1/chat/completions",
-  "model": "deepseek-v4.1-flash-free",
+  "base_url": "https://api.deepseek.com/",
+  "model": "deepseek-chat",
   "temperature": 0.2,
   "max_tokens": 8000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "病理学各论",
-  "chapter_sel": "呼吸系统疾病",
+  "subject_target": "生物化学",
+  "chapter_sel": "细胞信号转导与疾病",
   "custom_models": {},
-  "api_key": "sk_f83ed058205d_FKClXEaEvWbd_r4XEs_Fk9H-oaEB8XXZ"
+  "api_key": "sk-3245a7b18a1646ceb7939698fdbff7c5"
 }
