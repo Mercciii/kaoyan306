@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-10-16T09:42:19.752Z",
+    "savedAt": "2026-10-16T09:50:40.381Z",
     "version": 1
   },
   "provider": "custom",
@@ -10,7 +10,7 @@
   "max_tokens": 8000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "病理学各论",
-  "chapter_sel": "呼吸系统疾病",
+  "subject_target": "生理学",
+  "chapter_sel": "内分泌",
   "custom_models": {}
 }
