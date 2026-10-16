@@ -1,17 +1,16 @@
 {
   "_meta": {
-    "savedAt": "2026-10-16T03:07:46.382Z",
+    "savedAt": "2026-10-16T09:42:19.752Z",
     "version": 1
   },
   "provider": "custom",
-  "base_url": "https://api.deepseek.com/",
+  "base_url": "https://api.deepseek.com/v1",
   "model": "deepseek-chat",
   "temperature": 0.2,
   "max_tokens": 8000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "生物化学",
-  "chapter_sel": "细胞信号转导与疾病",
-  "custom_models": {},
-  "api_key": "sk-3245a7b18a1646ceb7939698fdbff7c5"
+  "subject_target": "病理学各论",
+  "chapter_sel": "呼吸系统疾病",
+  "custom_models": {}
 }
