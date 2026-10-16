@@ -6432,6 +6432,7 @@ function openSettings() {
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", "设置"));
   const body = el("div", "popup-body");
+  body.style.overflowY = "auto";
   function addRow(labelText, widget) {
     const r = el("div", "settings-row");
     r.appendChild(el("div", "row-label", labelText));
