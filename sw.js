@@ -9,7 +9,7 @@
    ========================================================= */
 "use strict";
 
-const SW_VERSION   = "1.0.4";
+const SW_VERSION   = "1.1.0";
 const CACHE_PREFIX = "kaoyan306";
 
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
@@ -257,6 +257,25 @@ async function staleWhileRevalidate(request, cacheName) {
 
   return new Response("", { status: 504, statusText: "Gateway Timeout" });
 }
+
+/* =========================================================
+   通知点击：聚焦（或打开）应用窗口
+   ========================================================= */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const target = "./index.html";
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) {
+      try {
+        if ("focus" in c) { await c.focus(); return; }
+      } catch (e) { /* 忽略 */ }
+    }
+    if (self.clients.openWindow) {
+      try { await self.clients.openWindow(target); } catch (e) { /* 忽略 */ }
+    }
+  })());
+});
 
 /* =========================================================
    消息通道（可选：由页面主动控制）
