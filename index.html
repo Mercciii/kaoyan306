@@ -367,7 +367,7 @@ html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); 
     <button class="btn" id="heatmapBtn">📊 统计</button>
   </div>
 
-  <div id="statLabel" class="case-only"></div>
+  <div id="statLabel"></div>
 
   <div id="listScroll"><div id="listLayout"></div></div>
 
@@ -578,7 +578,7 @@ const SYSTEM_CODE_MAP = {
 const CHAPTER_WHITELIST = {
   "内科学": ["呼吸系统疾病","循环系统疾病","消化系统疾病","泌尿系统疾病","血液系统疾病","内分泌和代谢性疾病","风湿免疫病","理化因素所致疾病"],
   "外科学": ["外科学总论","神经外科疾病","颈部和乳腺外科疾病","胸部外科疾病","心脏与血管外科疾病","腹部外科疾病","泌尿外科疾病","骨科疾病"],
-  "生理学": ["绪论","细胞的基本功能","血液","血液循环","呼吸","消化和吸收","能量代谢与体温","尿的生成和排出","感觉器官的功能","神经系统的功能","内分泌","生殖","生殖","生长发育和衰老"],
+  "生理学": ["绪论","细胞的基本功能","血液","血液循环","呼吸","消化和吸收","能量代谢与体温","尿的生成和排出","感觉器官的功能","神经系统的功能","内分泌","生殖","生长发育和衰老"],
   "生物化学": ["蛋白质的结构与功能","酶与酶促反应","核酸的结构与功能","糖蛋白和蛋白聚糖的结构与功能","水和无机元素","维生素","糖代谢","脂质代谢","氨基酸代谢","生物氧化","核苷酸代谢","代谢的整合与调节","真核基因与基因组","DNA的合成","RNA的生物合成","蛋白质的合成","基因表达调控","常用的分子生物学技术","DNA重组和重组DNA技术","细胞信号转导与疾病","DNA损伤和损伤修复","疾病相关基因","癌症的分子基础","基因诊断和基因治疗","肝的生物化学","血液的生物化学","其他重要器官和组织的生物化学"],
   "病理学总论": ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"],
   "病理学各论": ["心血管系统疾病","呼吸系统疾病","消化系统疾病","淋巴造血系统疾病","泌尿系统疾病","生殖系统和乳腺疾病","内分泌系统疾病","神经系统疾病","骨关节和软组织疾病","传染病","寄生虫病","病理学诊断与研究技术"],
@@ -1099,7 +1099,7 @@ async function ocrPdfText(file, onProgress, opts) {
   let cacheKey = "";
   if (useCache) {
     const h = await hashBuffer(buf);
-    cacheKey = h + "|" + OCR_ENGINE_VERSION + "|" + engine + "|" + lang + "|" + scale.toFixed(1);
+    cacheKey = h + "|" + OCR_ENGINE_VERSION + "|" + engine + "|" + lang + "|" + scale.toFixed(1) + "|" + (preprocess ? "p1" : "p0");
   }
 
   let workers = null;
@@ -1422,10 +1422,18 @@ function applyAbbr(s) {
   s = s.replace(/\u0001T(\d+)\u0001/g, (m, i) => tags[+i] || "");
   return s;
 }
+function highlightRichText(html, keyword) {
+  if (!keyword) return html;
+  const parts = String(html).split(/(<[^>]*>)/);
+  for (let i = 0; i < parts.length; i += 2) {
+    if (!parts[i]) continue;
+    try { parts[i] = parts[i].replace(new RegExp(escapeRegExp(keyword), "gi"), m => '<span class="hl">' + m + '</span>'); } catch (e) {}
+  }
+  return parts.join("");
+}
 function applyInline(s, keyword) {
   const imgs = [];
   s = extractImages(s, imgs);
-  if (keyword) { try { s = s.replace(new RegExp(escapeRegExp(keyword), "gi"), m => '<span class="hl">' + m + '</span>'); } catch (e) {} }
   s = s.replace(/\[\[(.*?)\]\]/g, '<span class="rich-link" data-target="$1">$1</span>');
   s = s.replace(/\$\$([^$<>]+)\$\$/g, '<span class="rich-drug" data-drug="$1">$1</span>');
   s = s.replace(/@@([^@<>]+)@@/g, '<span class="rich-key">$1</span>');
@@ -1438,6 +1446,7 @@ function applyInline(s, keyword) {
   s = s.replace(/\^([^\^<>]+)\^/g, '<sup class="rich-sup">$1</sup>');
   s = s.replace(/(^|[^A-Za-z0-9_])_([^_<>]+)_(?![A-Za-z0-9_])/g, '$1<sub class="rich-sub">$2</sub>');
   s = s.replace(/`([^`<>]+)`/g, '<code class="rich-code">$1</code>');
+  s = highlightRichText(s, keyword);
   return restoreImages(s, imgs);
 }
 function buildTimelineHtml(block, keyword) {
@@ -1453,7 +1462,6 @@ function buildTimelineHtml(block, keyword) {
 function applyBlock(s, keyword) {
   const imgs = [];
   s = extractImages(s, imgs);
-  if (keyword) { try { s = s.replace(new RegExp(escapeRegExp(keyword), "gi"), m => '<span class="hl">' + m + '</span>'); } catch (e) {} }
   s = s.replace(/(?:^|\n)((?:@[^\n|]*\|[^\n]*(?:\n|$))+)/g, (m, block) => "\n" + buildTimelineHtml(block.replace(/^\n/, ""), keyword) + "\n");
   s = s.replace(/^---\s*$/gm, '<hr class="rich-hr">');
   s = s.replace(/^>\s?(.*)$/gm, '<span class="rich-quote">$1</span>');
@@ -1472,6 +1480,7 @@ function applyBlock(s, keyword) {
   s = s.replace(/\^([^\^\<>]+)\^/g, '<sup class="rich-sup">$1</sup>');
   s = s.replace(/(^|[^A-Za-z0-9_])_([^_<>]+)_(?![A-Za-z0-9_])/g, '$1<sub class="rich-sub">$2</sub>');
   s = s.replace(/`([^`<>]+)`/g, '<code class="rich-code">$1</code>');
+  s = highlightRichText(s, keyword);
   return restoreImages(s, imgs);
 }
 function buildTableHtml(lines, keyword) {
@@ -1661,21 +1670,22 @@ function normalizeQuestion(raw) {
     caseStem: String(raw.caseStem || "").trim(),
     sharedOptions: [],
     subQuestions: [],
+    questions: [],
     options: [],
     answer: [],
     explanation: String(raw.explanation || "").trim(),
     relatedCase: String(raw.relatedCase || "").trim(),
     frequency: String(raw.frequency || "").trim(),
-    difficulty: Number(raw.difficulty) || 3,
+    difficulty: clamp(Number(raw.difficulty) || 3, 1, 5),
     starred: parseBool(raw.starred),
     doubt: parseBool(raw.doubt),
     tags: [],
     group: String(raw.group || "").trim(),
   };
   const opts = raw.options || [];
-  if (Array.isArray(opts)) q.options = opts.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || ""), text: String(o.text || "") });
+  if (Array.isArray(opts)) q.options = opts.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || "").trim().toUpperCase(), text: String(o.text || "") });
   const sOpts = raw.sharedOptions || [];
-  if (Array.isArray(sOpts)) q.sharedOptions = sOpts.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || ""), text: String(o.text || "") });
+  if (Array.isArray(sOpts)) q.sharedOptions = sOpts.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || "").trim().toUpperCase(), text: String(o.text || "") });
   if (Array.isArray(raw.subQuestions)) q.subQuestions = raw.subQuestions.map(sq => ({
     stem: String(sq.stem || "").trim(),
     answer: Array.isArray(sq.answer) ? sq.answer.map(x => String(x).toUpperCase()) : (typeof sq.answer === "string" ? sq.answer.split(/[,，;；\s]+/).map(x => x.toUpperCase()).filter(Boolean) : []),
@@ -1683,7 +1693,7 @@ function normalizeQuestion(raw) {
   }));
   if (Array.isArray(raw.questions)) q.questions = raw.questions.map(sq => ({
     stem: String(sq.stem || "").trim(),
-    options: Array.isArray(sq.options) ? sq.options.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || ""), text: String(o.text || "") }) : [],
+    options: Array.isArray(sq.options) ? sq.options.map(o => (typeof o === "string") ? { key: "", text: o } : { key: String(o.key || "").trim().toUpperCase(), text: String(o.text || "") }) : [],
     answer: Array.isArray(sq.answer) ? sq.answer.map(x => String(x).toUpperCase()) : (typeof sq.answer === "string" ? sq.answer.split(/[,，;；\s]+/).map(x => x.toUpperCase()).filter(Boolean) : []),
     explanation: String(sq.explanation || "").trim(),
   }));
@@ -1815,10 +1825,12 @@ const store = {
       items[i].id = buildCaseId(items[i], baseData, idCounters);
     }
 
-    const existingTitles = {};
-    for (let i = 0; i < this.data.length; i++) existingTitles[this.data[i].title] = true;
-    for (let i = 0; i < items.length; i++) {
-      if (existingTitles[items[i].title]) warnings.push("「" + items[i].title + "」与现有数据标题重复");
+    if (mode !== "replace") {
+      const existingTitles = {};
+      for (let i = 0; i < this.data.length; i++) existingTitles[this.data[i].title] = true;
+      for (let i = 0; i < items.length; i++) {
+        if (existingTitles[items[i].title]) warnings.push("「" + items[i].title + "」与现有数据标题重复");
+      }
     }
 
     if (mode === "replace") {
@@ -1864,8 +1876,9 @@ function showRemoteUpdateBar(label, remoteCount, localCount, url, kind) {
       const resp = await fetch(url + "?t=" + Date.now());
       const remote = await resp.json();
       if (!Array.isArray(remote)) throw new Error("返回不是数组");
-      if (kind === "questions") { questionStore.data = remote.map(normalizeQuestion); questionStore.save(); renderQuizListOnly(); rebuildQSubjectValues(); }
-      else { store.backup(); store.data = remote.map(normalizeItem); store.save(false); render(); }
+      if (kind === "questions") { questionStore.data = remote.map(normalizeQuestion); questionStore.save(); rebuildQSubjectValues(); }
+      else { store.backup(); store.data = remote.map(normalizeItem); store.save(false); }
+      if (state.mode === "quiz") renderQuizListOnly(); else render();
       bar.remove();
       confirmPopup("已拉取 " + remote.length + " 条");
     } catch (e) { confirmPopup("拉取失败：" + e.message); }
@@ -1890,14 +1903,13 @@ async function pullFromRemote(kind, silent) {
     if (isQ) {
       questionStore.data = remote.map(normalizeQuestion);
       questionStore.save();
-      renderQuizListOnly();
       rebuildQSubjectValues();
     } else {
       store.backup();
       store.data = remote.map(normalizeItem);
       store.save(false);
-      render();
     }
+    if (state.mode === "quiz") renderQuizListOnly(); else render();
     if (!silent) {
       confirmPopup("✅ 已拉取" + label + " " + remote.length + " 条\n（本地原有 " + before + " 条）");
     }
@@ -1967,7 +1979,17 @@ const questionStore = {
       items[i].id = buildQuestionId(items[i], baseData, counters);
     }
     if (mode === "replace") this.data = items;
-    else this.data = this.data.concat(items);
+    else {
+      const existingIds = {};
+      for (let i = 0; i < this.data.length; i++) existingIds[this.data[i].id] = true;
+      const assigned = this.data.slice();
+      for (let i = 0; i < items.length; i++) {
+        if (existingIds[items[i].id]) items[i].id = buildQuestionId(items[i], assigned, {});
+        existingIds[items[i].id] = true;
+        assigned.push(items[i]);
+      }
+      this.data = this.data.concat(items);
+    }
     this.save();
     return { ok: true, msg: "已" + (mode === "replace" ? "替换为" : "追加") + " " + items.length + " 题" };
   },
@@ -2031,6 +2053,7 @@ function migrateAllData() {
   }
 
   const qIdSet = {};
+  const qIdMap = {};
   for (let i = 0; i < questionStore.data.length; i++) qIdSet[questionStore.data[i].id] = true;
   for (let i = 0; i < questionStore.data.length; i++) {
     const q = questionStore.data[i];
@@ -2047,11 +2070,44 @@ function migrateAllData() {
     delete qIdSet[oldId];
     qIdSet[newId] = true;
     q.id = newId;
+    qIdMap[oldId] = newId;
     changedQuestions = true;
   }
 
   if (changedCases) store.save(false);
   if (changedQuestions) questionStore.save();
+
+  const renamed = Object.keys(qIdMap);
+  if (renamed.length) {
+    let logChanged = false;
+    for (const oldId of renamed) {
+      const newId = qIdMap[oldId];
+      if (answerLog.data[oldId] === undefined) continue;
+      if (answerLog.data[newId] === undefined) answerLog.data[newId] = answerLog.data[oldId];
+      delete answerLog.data[oldId];
+      logChanged = true;
+    }
+    if (logChanged) answerLog.save();
+    try {
+      const p = quizProgress.load();
+      if (p && Array.isArray(p.poolIds)) {
+        let pc = false;
+        p.poolIds = p.poolIds.map(id => { if (qIdMap[id]) { pc = true; return qIdMap[id]; } return id; });
+        if (pc) quizProgress.save(p);
+      }
+    } catch (e) {}
+    try {
+      const notes = loadQNotes();
+      let nc = false;
+      for (const oldId of renamed) {
+        if (notes[oldId] === undefined) continue;
+        if (notes[qIdMap[oldId]] === undefined) notes[qIdMap[oldId]] = notes[oldId];
+        delete notes[oldId];
+        nc = true;
+      }
+      if (nc) saveQNotes(notes);
+    } catch (e) {}
+  }
 }
 
 /* =========================================================
@@ -2076,15 +2132,55 @@ const answerLog = {
   stats() {
     let total = 0, correct = 0, wrong = 0, unanswered = 0;
     for (const q of questionStore.data) {
-      const r = this.data[q.id];
-      if (!r) { unanswered++; continue; }
+      const st = answerStatusFor(q);
+      if (!st.answered) { unanswered++; continue; }
       total++;
-      if (r.correct) correct++; else wrong++;
+      if (st.anyWrong) wrong++; else correct++;
     }
     return { total, correct, wrong, unanswered, all: questionStore.data.length };
   },
-  wrongIds() { const ids = []; for (const qid in this.data) if (!this.data[qid].correct) ids.push(qid); return ids; },
+  wrongIds() {
+    const ids = [];
+    for (const q of questionStore.data) if (answerStatusFor(q).anyWrong) ids.push(q.id);
+    return ids;
+  },
 };
+function questionSubCount(q) {
+  if (q.type === "B") return (q.subQuestions || []).length || 1;
+  if (q.type === "A3") return (q.questions || []).length || 1;
+  return 1;
+}
+function answerRecordsFor(q) {
+  const n = questionSubCount(q);
+  const recs = [];
+  for (let i = 0; i < n; i++) {
+    const k = n > 1 ? q.id + "#" + i : q.id;
+    if (answerLog.data[k]) recs.push(answerLog.data[k]);
+  }
+  return recs;
+}
+function answerStatusFor(q) {
+  const recs = answerRecordsFor(q);
+  let anyWrong = false, allCorrect = recs.length > 0;
+  let wrongCount = 0, attempts = 0, lastAt = 0, bestElapsed = 0;
+  for (const r of recs) {
+    if (!r.correct) { anyWrong = true; allCorrect = false; }
+    wrongCount += r.wrongCount || 0;
+    attempts += r.attempts || 0;
+    if ((r.lastAt || 0) > lastAt) lastAt = r.lastAt || 0;
+    if (r.bestElapsed && (!bestElapsed || r.bestElapsed < bestElapsed)) bestElapsed = r.bestElapsed;
+  }
+  return {
+    answered: recs.length >= questionSubCount(q),
+    any: recs.length > 0,
+    anyWrong,
+    allCorrect,
+    wrongCount,
+    attempts,
+    lastAt,
+    bestElapsed,
+  };
+}
 const quizProgress = {
   load() { try { const raw = localStorage.getItem(QUIZ_PROGRESS_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } },
   save(p) { try { localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(p)); } catch (e) {} },
@@ -2116,10 +2212,10 @@ function judgeMulti(q, subIdx, userAnswer) {
   return judgeAnswer(q, userAnswer);
 }
 function quizPriority(q) {
-  const r = answerLog.data[q.id];
-  if (!r) return 1000;
-  if (!r.correct) return 800 - Math.min(r.wrongCount * 50, 200);
-  const days = (Date.now() - r.lastAt) / 86400000;
+  const st = answerStatusFor(q);
+  if (!st.any) return 1000;
+  if (st.anyWrong) return 800 - Math.min(st.wrongCount * 50, 200);
+  const days = (Date.now() - st.lastAt) / 86400000;
   return 500 + Math.min(days, 100);
 }
 
@@ -2141,6 +2237,7 @@ function guessGhDefaults() {
 function loadGhConfig() {
   const d = Object.assign({
     owner: "", repo: "", branch: "main", path: "data/cases.json",
+    questions_path: "", cases_path: "",
     token: "", message: "更新数据", upload_mode: "git",
     image_dir: "images", image_base_url: "",
   }, guessGhDefaults());
@@ -2158,8 +2255,12 @@ function loadGhConfig() {
 }
 function saveGhConfig(cfg) {
   try {
+    const prev = loadGhConfig();
+    const legacyPath = cfg.cases_path ? cfg.path : (cfg.questions_path ? (prev.path || "data/cases.json") : cfg.path);
     localStorage.setItem(GH_KEY, JSON.stringify({
-      owner: cfg.owner, repo: cfg.repo, branch: cfg.branch, path: cfg.path,
+      owner: cfg.owner, repo: cfg.repo, branch: cfg.branch, path: legacyPath,
+      questions_path: cfg.questions_path || prev.questions_path || "",
+      cases_path: cfg.cases_path || prev.cases_path || "",
       token: cfg.token, message: cfg.message, upload_mode: cfg.upload_mode || "git",
       image_dir: cfg.image_dir || "images",
       image_base_url: cfg.image_base_url || "",
@@ -2567,11 +2668,6 @@ function buildCasePrompt(subject) {
     "",
     "【提取要求】",
     "1. 数值必须带单位（如 13.7%、70%、120/80 mmHg），一律不得丢弃。",
-"【生化专项要求（极为重要）】",
-"1. 严禁输出任何化学结构式、SMILES 编码或复杂的化学方程式（如 COO-、CH2 等）。",
-"2. 所有的化学反应过程，必须完全使用中文专业名词描述。例如：用“氧化型辅酶Ⅰ”代替“NAD+”，用“还原型辅酶Ⅰ”代替“NADH”，用“游离氨”代替“NH3”，用“三磷酸腺苷”代替“ATP”，用“镁离子”代替“Mg2+”。",
-"3. 代谢途径的反应过程，必须严格使用 `@节点 | 内容` 的格式分行输出（节点如：第一步、限速步骤、无氧还原等）。",
-"4. 关键酶、辅酶、限速步骤，必须使用 `==文字==` 或 `@@文字@@` 进行高亮标记。",
     "2. 专业术语、缩写保留原样（COPD、ARDS、DIC 等），不要展开成中文。",
     "3. 原文的「首选」「金标准」「禁忌」「最常」「典型」等关键词必须保留。",
     "4. 分类/分型/分期要把每一型和判断标准都写全，不能只写名字。",
@@ -2580,6 +2676,12 @@ function buildCasePrompt(subject) {
     "7. 资料包含多个疾病时拆成多条；同一疾病不同章节不要拆。",
     "8. 资料中没有的字段，值必须留空字符串 \"\"，禁止臆造或填充示例文字。",
     "9. 不要输出 id 字段，系统会自动编号。",
+    "",
+    "【生化专项要求（极为重要）】",
+    "1. 严禁输出任何化学结构式、SMILES 编码或复杂的化学方程式（如 COO-、CH2 等）。",
+    "2. 所有的化学反应过程，必须完全使用中文专业名词描述。例如：用“氧化型辅酶Ⅰ”代替“NAD+”，用“还原型辅酶Ⅰ”代替“NADH”，用“游离氨”代替“NH3”，用“三磷酸腺苷”代替“ATP”，用“镁离子”代替“Mg2+”。",
+    "3. 代谢途径的反应过程，必须严格使用 `@节点 | 内容` 的格式分行输出（节点如：第一步、限速步骤、无氧还原等）。",
+    "4. 关键酶、辅酶、限速步骤，必须使用 `==文字==` 或 `@@文字@@` 进行高亮标记。",
     "",
     "【输出约束】",
     "1. 只输出 JSON 数组，不要任何解释、不要 markdown 代码块、不要省略号。",
@@ -2612,10 +2714,6 @@ function buildQuestionPrompt(subject) {
     "",
     "【出题要求】",
     "1. 一次生成 5~10 题，难度 3 星为主。",
-"【生化专项要求（极为重要）】",
-"1. 题干和解析中严禁出现化学结构式或复杂化学方程式。",
-"2. 必须使用中文专业名词（如“氧化型辅酶Ⅰ”而非“NAD+”）。",
-"3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
     "2. 单选题必须恰好 4 个选项，答案唯一。",
     "3. 多选题至少 2 个正确选项，type 用 multiple，answer 用数组。",
     "4. 每题的 4 个选项必须分别来自不同鉴别诊断。",
@@ -2627,6 +2725,11 @@ function buildQuestionPrompt(subject) {
     "10. 保证 JSON 合法，最后一个元素后不要多余逗号。",
     "11. 不要输出 id 字段，系统会自动编号。",
     "12. chapter 只能从上面给出的列表中选择，不得自创或改写。",
+    "",
+    "【生化专项要求（极为重要）】",
+    "1. 题干和解析中严禁出现化学结构式或复杂化学方程式。",
+    "2. 必须使用中文专业名词（如“氧化型辅酶Ⅰ”而非“NAD+”）。",
+    "3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
   ].join("\n");
 }
 
@@ -2825,7 +2928,8 @@ function openCasePoolPicker(onPick) {
 
 function chunkText(text, size, overlap) {
   size = Math.max(1000, Number(size) || 5000);
-  overlap = Math.max(0, Math.min(Number(overlap) || 300, size / 2));
+  const ovNum = Number(overlap);
+  overlap = Math.max(0, Math.min(isFinite(ovNum) ? ovNum : 300, size / 2));
   const paras = String(text).split(/\n{2,}/);
   const chunks = []; let cur = "";
   for (let p of paras) {
@@ -2836,10 +2940,16 @@ function chunkText(text, size, overlap) {
   if (cur) chunks.push(cur);
   return chunks;
 }
+function aiQuestionKey(it) {
+  if (!it || typeof it !== "object") return "";
+  if (it.type === "B") return String(it.stem || (it.subQuestions && it.subQuestions[0] && it.subQuestions[0].stem) || it.group || "").trim();
+  if (it.type === "A3") return String(it.stem || it.caseStem || (it.questions && it.questions[0] && it.questions[0].stem) || "").trim();
+  return String(it.stem || "").trim();
+}
 function mergeAiItems(all, isQ) {
   const map = new Map();
   for (const it of all) {
-    const key = String((isQ ? it.stem : it.title) || "").trim();
+    const key = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
     if (!key) continue;
     if (!map.has(key)) { map.set(key, it); continue; }
     if (!isQ) {
@@ -3833,6 +3943,11 @@ function openEdit(item) {
       tags: tagsInput.value.split(/[,，;；]/).map(t => t.trim()).filter(Boolean),
     };
     for (let i = 0; i < ALL_FIELDS.length; i++) data[ALL_FIELDS[i]] = String(draftValues[ALL_FIELDS[i]] || "").trim();
+    for (const k in src) {
+      if (k.indexOf("__") === 0 || k in data) continue;
+      const v = src[k];
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") data[k] = v;
+    }
     saveItem(data, originalId);
     ov.remove();
   });
@@ -3884,7 +3999,7 @@ function openUpload(target) {
   const ownerIn = mkInput("仓库 owner", cfg.owner, "text", "Mercciii");
   const repoIn = mkInput("仓库名 repo", cfg.repo, "text", "kaoyan306");
   const branchIn = mkInput("分支 branch", cfg.branch, "text", "main");
-  const pathIn = mkInput("数据文件路径（仅 Git Data）", isQ ? defPath : cfg.path, "text", defPath);
+  const pathIn = mkInput("数据文件路径（仅 Git Data）", isQ ? (cfg.questions_path || defPath) : (cfg.cases_path || cfg.path || defPath), "text", defPath);
   const tokenIn = mkInput("GitHub Token（需 contents:write）", cfg.token, "password", "ghp_... 或 github_pat_...");
   const msgIn = mkInput("提交信息", cfg.message, "text", "更新数据");
   form.appendChild(el("div", "gh-note",
@@ -3980,16 +4095,19 @@ function openUpload(target) {
   const testBtn = el("button", "btn", "测试连接");
   const uploadBtn = el("button", "btn", "上传数据");
   function readCfg() {
-    return {
+    const p = pathIn.value.trim() || defPath;
+    const out = {
       owner: ownerIn.value.trim(), repo: repoIn.value.trim(),
       branch: branchIn.value.trim() || "main",
-      path: pathIn.value.trim() || defPath,
+      path: p,
       token: tokenIn.value.trim(),
       message: msgIn.value.trim() || "更新数据",
       upload_mode: modeSel.value,
       image_dir: imgDirIn.value.trim() || "images",
       image_base_url: imgBaseIn.value.trim(),
     };
+    if (isQ) out.questions_path = p; else out.cases_path = p;
+    return out;
   }
   closeBtn.addEventListener("click", () => ov.remove());
   saveCfgBtn.addEventListener("click", () => { saveGhConfig(readCfg()); setStatus("✅ 配置已保存", "ok"); });
@@ -4540,6 +4658,8 @@ function openAiImport(target) {
         merged.custom_models = cur.custom_models || {};
       saveAiConfig(merged);
       customModels = Object.assign({}, merged.custom_models || {});
+      if (SUBJECTS.indexOf(merged.subject_target) !== -1) subjSel.value = merged.subject_target;
+      rebuildAiChapter(merged.chapter_sel || "__keep__");
       provSel.value = (merged.provider && AI_PRESETS[merged.provider]) ? merged.provider : "gemini";
       const pk = provSel.value;
       const preset = AI_PRESETS[pk];
@@ -4980,15 +5100,19 @@ function openAiImport(target) {
     const chValue = chapSel.value;
     const chOverride = chValue === "__keep__" ? null : (chValue === "__empty__" ? "" : chValue);
     const modelValue = (modelSel.value === "__custom__") ? modelIn.value.trim() : modelSel.value;
+    const tempRaw = parseFloat(tempIn.value);
+    const maxRaw = parseInt(maxIn.value, 10);
+    const chunkRaw = parseInt(chunkIn.value, 10);
+    const overlapRaw = parseInt(overlapIn.value, 10);
     return {
       provider: provSel.value,
       base_url: baseIn.value.trim(),
       model: modelValue,
       api_key: keyIn.value.trim(),
-      temperature: parseFloat(tempIn.value) || 0.2,
-      max_tokens: parseInt(maxIn.value, 10) || 8000,
-      chunk_size: parseInt(chunkIn.value, 10) || 5000,
-      chunk_overlap: parseInt(overlapIn.value, 10) || 300,
+      temperature: isFinite(tempRaw) ? tempRaw : 0.2,
+      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
+      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
+      chunk_overlap: isFinite(overlapRaw) && overlapRaw >= 0 ? overlapRaw : 300,
       chapter_override: chOverride,
       subject_target: subjSel.value,
       chapter_sel: chValue,
@@ -5137,7 +5261,7 @@ function openAiImport(target) {
         const seen = {};
         const merged = [];
         for (const it of manualResults) {
-          const k = isQ ? String(it.stem || "").trim() : String(it.title || "").trim();
+          const k = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
           if (!k || seen[k]) continue;
           seen[k] = true;
           merged.push(it);
@@ -5184,7 +5308,7 @@ function openAiImport(target) {
     const allItems = [];
     for (const item of successful) {
       for (const it of item.jsonItems) {
-        const key = isQ ? String(it.stem || "").trim() : String(it.title || "").trim();
+        const key = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
         if (!key || seen[key]) continue;
         seen[key] = true;
         allItems.push(it);
@@ -5391,18 +5515,16 @@ function openQuiz(pool, opts) {
   opts = opts || {};
   const mode = opts.mode || state.quizMode || "practice";
   const examTimer = opts.timer || 0;
-  let base = pool && pool.length ? pool.slice() : questionStore.data.slice();
+  let base = pool ? pool.slice() : questionStore.data.slice();
   const scope = opts.scope || state.quizScope || "all";
-  if (scope === "wrong") base = base.filter(q => { const r = answerLog.data[q.id]; return r && !r.correct; });
-  else if (scope === "unanswered") base = base.filter(q => !answerLog.data[q.id]);
-  if (!base.length) { confirmPopup("该范围下没有题目"); return; }
-  base.sort((a, b) => quizPriority(b) - quizPriority(a));
+  if (!opts.preserveOrder) base.sort((a, b) => quizPriority(b) - quizPriority(a));
   const cnt = opts.count !== undefined ? opts.count : 0;
   if (cnt > 0 && base.length > cnt) base = base.slice(0, cnt);
+  if (!base.length) { confirmPopup("该范围下没有题目"); return; }
   const shuffled = base;
-  let idx = opts.startIdx || 0;
+  let idx = clamp(opts.startIdx || 0, 0, Math.max(0, shuffled.length - 1));
   let userAnswers = opts.userAnswers || {};
-  let subIdx = 0;
+  let subIdx = clamp(opts.startSubIdx || 0, 0, Math.max(0, subCount(shuffled[idx]) - 1));
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   const titleEl = el("div", "popup-title", "刷题");
@@ -5434,11 +5556,14 @@ function openQuiz(pool, opts) {
   let timerHandle = null;
   let startTs = Date.now();
   let sessionId = genId();
+  let sessionDone = 0;
+  let sessionCorrect = 0;
   function saveProgress() {
     quizProgress.save({
       sessionId: sessionId,
       poolIds: base.map(q => q.id),
       idx: idx,
+      subIdx: subIdx,
       userAnswers: userAnswers,
       startedAt: Date.now(),
       mode: mode,
@@ -5548,7 +5673,6 @@ function openQuiz(pool, opts) {
       submitBtn.style.display = "";
       nextBtn.style.display = "";
     }
-    nextBtn.disabled = idx >= shuffled.length - 1 && subIdx >= subCount(q) - 1;
     startTs = Date.now();
   }
   function showResult(q, ansArr, isReview) {
@@ -5620,6 +5744,8 @@ function openQuiz(pool, opts) {
     const correct = judgeMulti(q, subIdx, ansArr);
     const elapsed = Math.round((Date.now() - startTs) / 1000);
     answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+    sessionDone++;
+    if (correct) sessionCorrect++;
     showResult(q, ansArr, false);
     submitBtn.disabled = true;
     saveProgress();
@@ -5633,23 +5759,29 @@ function openQuiz(pool, opts) {
       render(); scroll.scrollTop = 0;
       saveProgress();
     } else {
-      const s = answerLog.stats();
-      let msg = "🎉 全部完成！\n\n本次共 " + shuffled.length + " 题\n答对：" + s.correct + " / " + s.total;
+      let msg = "🎉 全部完成！\n\n本次共 " + shuffled.length + " 题";
+      const totalSubs = shuffled.reduce((a, q) => a + subCount(q), 0);
+      if (totalSubs > shuffled.length) msg += "（含小问共 " + totalSubs + " 道）";
+      msg += "\n本次作答：" + sessionDone + " 道";
+      if (sessionDone > 0) msg += "\n本次答对：" + sessionCorrect + " / " + sessionDone + "（正确率 " + Math.round(sessionCorrect / sessionDone * 100) + "%）";
       confirmPopup(msg, () => { quizProgress.clear(); ov.remove(); }, "关闭", "刷题完成");
     }
   }
-  skipBtn.addEventListener("click", nextSub);
-  submitBtn.addEventListener("click", submit);
-  nextBtn.addEventListener("click", () => {
+  function goNext() {
     if (mode === "exam" && !answered) {
       const q = currentQ();
       const ansArr = userAnswers[answerKey(q)] || [];
       const correct = judgeMulti(q, subIdx, ansArr);
       answerLog.record(answerKey(q), ansArr.slice(), correct, 0);
+      sessionDone++;
+      if (correct) sessionCorrect++;
       answered = true;
     }
     nextSub();
-  });
+  }
+  skipBtn.addEventListener("click", nextSub);
+  submitBtn.addEventListener("click", submit);
+  nextBtn.addEventListener("click", goNext);
   closeBtn.addEventListener("click", () => { saveProgress(); ov.remove(); });
   starBtn.addEventListener("click", () => {
     const q = currentQ();
@@ -5680,11 +5812,11 @@ function openQuiz(pool, opts) {
       e.preventDefault();
     } else if (e.key === "Enter") {
       if (!answered && mode !== "exam" && mode !== "review") submit();
-      else nextSub();
+      else goNext();
       e.preventDefault();
     } else if (e.key === " ") {
       e.preventDefault();
-      nextSub();
+      goNext();
     }
   }
   document.addEventListener("keydown", onKey);
@@ -5796,8 +5928,8 @@ function openQuizPicker() {
     let pool = questionStore.data.slice();
     if (state.qSubject !== "全部") pool = pool.filter(q => q.subject === state.qSubject);
     if (state.qType !== "全部") pool = pool.filter(q => q.type === state.qType);
-    if (state.quizScope === "wrong") pool = pool.filter(q => { const r = answerLog.data[q.id]; return r && !r.correct; });
-    else if (state.quizScope === "unanswered") pool = pool.filter(q => !answerLog.data[q.id]);
+    if (state.quizScope === "wrong") pool = pool.filter(q => answerStatusFor(q).anyWrong);
+    else if (state.quizScope === "unanswered") pool = pool.filter(q => !answerStatusFor(q).answered);
     if (!pool.length) { confirmPopup("该筛选下没有题目"); return; }
     ov.remove();
     openQuiz(pool, { mode: state.quizMode, scope: state.quizScope, count: state.quizCount });
@@ -5856,7 +5988,7 @@ function openWrongBook() {
       const item = el("div", "drug-result-item");
       const stem = stemOf(q) || "";
       item.appendChild(el("span", "dt", stem.slice(0, 40) + (stem.length > 40 ? "…" : "")));
-      item.appendChild(el("span", "ds", "错 " + (answerLog.data[q.id].wrongCount || 1) + " 次"));
+      item.appendChild(el("span", "ds", "错 " + Math.max(1, answerStatusFor(q).wrongCount) + " 次"));
       item.addEventListener("click", () => { ov.remove(); openQuiz([q]); });
       listBox.appendChild(item);
     }
@@ -5871,10 +6003,10 @@ function openWrongBook() {
           groupsMap[k].forEach(addListItem);
         });
       } else if (curGroup === "count") {
-        wrongs.slice().sort((a, b) => (answerLog.data[b.id].wrongCount || 0) - (answerLog.data[a.id].wrongCount || 0)).forEach(addListItem);
+        wrongs.slice().sort((a, b) => answerStatusFor(b).wrongCount - answerStatusFor(a).wrongCount).forEach(addListItem);
       } else if (curGroup === "recent") {
         const cutoff = Date.now() - 7 * 86400000;
-        const recent = wrongs.filter(q => answerLog.data[q.id].lastAt > cutoff);
+        const recent = wrongs.filter(q => answerStatusFor(q).lastAt > cutoff);
         if (!recent.length) { listBox.appendChild(el("div", "empty-note", "最近 7 天没有错题")); return; }
         recent.forEach(addListItem);
       }
@@ -5925,8 +6057,8 @@ function openHeatmap() {
   questionStore.data.forEach(q => {
     const k = q.subject + " · " + (q.chapter || "未填章节");
     if (!chapterStats[k]) chapterStats[k] = { total: 0, correct: 0 };
-    const r = answerLog.data[q.id];
-    if (r && r.attempts) { chapterStats[k].total++; if (r.correct) chapterStats[k].correct++; }
+    const st = answerStatusFor(q);
+    if (st.answered) { chapterStats[k].total++; if (!st.anyWrong) chapterStats[k].correct++; }
   });
   const entries = Object.entries(chapterStats).filter(([, v]) => v.total > 0).sort((a, b) => b[1].total - a[1].total);
   if (!entries.length) scroll.appendChild(el("div", "empty-note", "暂无数据"));
@@ -5976,9 +6108,9 @@ function openHeatmap() {
 function makeQuestionCard(q) {
   const card = el("div", "item-card");
   card.style.background = SUBJECT_COLORS[q.subject] || "#595959";
-  const r = answerLog.data[q.id];
+  const st = answerStatusFor(q);
   const bar = el("div", "status-bar");
-  bar.style.background = !r ? "#999" : r.correct ? "#4dcc66" : "#ff9933";
+  bar.style.background = !st.any ? "#999" : st.anyWrong ? "#ff9933" : "#4dcc66";
   card.appendChild(bar);
   const main = el("div", "item-main");
   main.tabIndex = 0;
@@ -5988,9 +6120,9 @@ function makeQuestionCard(q) {
   const stem = q.type === "B" ? (q.subQuestions[0] && q.subQuestions[0].stem) || "B型题" : q.type === "A3" ? q.caseStem || "病例串题" : q.stem;
   const titleSpan = el("span", "item-title", (q.starred ? "★ " : "") + (stem || "").slice(0, 30) + ((stem && stem.length > 30) ? "…" : "") + "  |  " + (QUIZ_TYPES[q.type] || q.type));
   main.appendChild(titleSpan);
-  if (r) {
-    const badge = el("span", "item-status", r.correct ? "✓" : "✗");
-    badge.style.background = r.correct ? "rgba(77,204,102,.6)" : "rgba(214,40,40,.6)";
+  if (st.any) {
+    const badge = el("span", "item-status", st.anyWrong ? "✗" : "✓");
+    badge.style.background = st.anyWrong ? "rgba(214,40,40,.6)" : "rgba(77,204,102,.6)";
     main.appendChild(badge);
   }
   const starBtn = el("button", "item-star" + (q.starred ? " on" : ""), q.starred ? "★" : "☆");
@@ -6006,7 +6138,7 @@ function getFilteredQuestions() {
   if (state.qSearch) {
     const s = state.qSearch.toLowerCase();
     data = data.filter(q => {
-      const text = [q.stem, q.caseStem, q.explanation, (q.options || []).map(o => o.text).join(" "), (q.sharedOptions || []).map(o => o.text).join(" "), (q.subQuestions || []).map(sq => sq.stem).join(" ")].join(" ").toLowerCase();
+      const text = [q.stem, q.caseStem, q.explanation, (q.options || []).map(o => o.text).join(" "), (q.sharedOptions || []).map(o => o.text).join(" "), (q.subQuestions || []).map(sq => sq.stem).join(" "), (q.questions || []).map(sq => [sq.stem, (sq.options || []).map(o => o.text).join(" "), sq.explanation].join(" ")).join(" ")].join(" ").toLowerCase();
       return text.indexOf(s) !== -1;
     });
   }
@@ -6051,8 +6183,8 @@ function scopeBySubject() {
   return state.subject === "全部" ? store.data : store.data.filter(d => d.subject === state.subject);
 }
 function updateSelectOptions(sel, values) {
-  const cur = Array.from(sel.options).map(o => o.value).join("\u0001");
-  const nxt = values.map(v => v.value).join("\u0001");
+  const cur = Array.from(sel.options).map(o => o.value + "\u0002" + o.textContent).join("\u0001");
+  const nxt = values.map(v => v.value + "\u0002" + v.label).join("\u0001");
   if (cur !== nxt) {
     sel.innerHTML = "";
     for (const v of values) { const o = document.createElement("option"); o.value = v.value; o.textContent = v.label; sel.appendChild(o); }
@@ -6225,7 +6357,10 @@ function saveScroll() {
 function restoreScroll() {
   const s = document.getElementById("listScroll"); if (!s) return;
   const max = s.scrollHeight - s.clientHeight;
-  if (max > 0) s.scrollTop = (1 - clamp(Number(state.scrollY) || 1.0, 0, 1)) * max;
+  if (max > 0) {
+    const y = Number(state.scrollY);
+    s.scrollTop = (1 - clamp(isFinite(y) ? y : 1.0, 0, 1)) * max;
+  }
 }
 function updateBackToTop() {
   const btn = document.getElementById("backToTop"), s = document.getElementById("listScroll");
@@ -6265,7 +6400,7 @@ function openBigRecord() {
   fields.forEach(([k, label]) => {
     const v = String(item[k] || "").trim();
     if (!v) return;
-    secs.push([CN_NUM[n - 1] + "、" + label, [v]]);
+    secs.push([(CN_NUM[n - 1] || String(n)) + "、" + label, [v]]);
     n++;
   });
   secs.forEach(([t, lines]) => {
@@ -6603,7 +6738,7 @@ function bindEvents() {
     const idSet = {}; questionStore.data.forEach(q => idSet[q.id] = q);
     const pool = saved.poolIds.map(id => idSet[id]).filter(Boolean);
     if (!pool.length) { confirmPopup("进度已失效"); return; }
-    openQuiz(pool, { mode: saved.mode, scope: saved.scope, startIdx: saved.idx, userAnswers: saved.userAnswers });
+    openQuiz(pool, { mode: saved.mode, scope: saved.scope, startIdx: saved.idx, startSubIdx: saved.subIdx || 0, userAnswers: saved.userAnswers, preserveOrder: true });
   });
   document.getElementById("wrongBookBtn").addEventListener("click", openWrongBook);
   document.getElementById("heatmapBtn").addEventListener("click", openHeatmap);
