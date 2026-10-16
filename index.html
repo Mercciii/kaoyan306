@@ -277,6 +277,53 @@ html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); 
 .heat-fill { height:100%; border-radius:7px; transition:width .3s; }
 .heat-pct { flex:none; width:60px; text-align:right; font-variant-numeric:tabular-nums; }
 
+/* ===== 复习(SRS) / 打卡 / 追问 / 分享 ===== */
+.srch-hl { background:rgba(255,136,0,.30); border-radius:2px; padding:0 1px; font-weight:700; }
+html[data-theme=dark] .srch-hl { background:rgba(255,170,60,.32); }
+.srs-row { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.srs-hint { flex:1 0 100%; font-size:.8125em; color:var(--sub); padding:2px 0; }
+.srs-row .btn { flex:1; min-width:64px; min-height:44px; }
+.srs-btn.again { border-color:#d62828; color:#d62828; font-weight:700; }
+.srs-btn.hard { border-color:#ff9933; color:#e07b10; font-weight:700; }
+.srs-btn.good { border-color:#4dcc66; color:#2e9e4a; font-weight:700; }
+.srs-btn.easy { border-color:#1a6dd6; color:#1a6dd6; font-weight:700; }
+html[data-theme=dark] .srs-btn.good { color:#63d97f; border-color:#63d97f; }
+html[data-theme=dark] .srs-btn.hard { color:#ffbb66; border-color:#ffbb66; }
+html[data-theme=dark] .srs-btn.easy { color:#73b8ff; border-color:#73b8ff; }
+html[data-theme=dark] .srs-btn.again { color:#ff6b6b; border-color:#ff6b6b; }
+.srs-due-badge { display:inline-block; background:rgba(214,40,40,.14); color:#d62828; border-radius:10px; padding:0 8px; font-size:.85em; font-weight:700; }
+html[data-theme=dark] .srs-due-badge { color:#ff6b6b; background:rgba(255,107,107,.16); }
+.checkin-stats { display:flex; gap:8px; flex-wrap:wrap; }
+.checkin-grid { display:flex; flex-wrap:wrap; gap:3px; padding:4px 0; }
+.checkin-cell { width:15px; height:15px; border-radius:3px; background:var(--btn-bg); border:1px solid var(--divider); }
+.checkin-cell.l1 { background:#c9e8cf; border-color:#a8d8b2; }
+.checkin-cell.l2 { background:#8fd39c; border-color:#6cbf7e; }
+.checkin-cell.l3 { background:#4dcc66; border-color:#3cb356; }
+.checkin-cell.l4 { background:#2e9e4a; border-color:#238040; }
+html[data-theme=dark] .checkin-cell.l1 { background:#2a4a30; border-color:#3a6a44; }
+html[data-theme=dark] .checkin-cell.l2 { background:#2e6e3c; border-color:#3a8a4c; }
+html[data-theme=dark] .checkin-cell.l3 { background:#3cb356; border-color:#4dcc66; }
+html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc66; }
+.related-chips { display:flex; flex-wrap:wrap; gap:6px; padding:2px 0 6px; }
+.related-chip { padding:5px 10px; border:1px solid var(--divider); border-radius:14px; background:var(--panel); color:var(--title); font-size:.8125em; cursor:pointer; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.related-chip:hover { filter:brightness(1.08); }
+.chat-box { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px; }
+.chat-msg { padding:8px 10px; border-radius:8px; font-size:.875em; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+.chat-msg.user { background:rgba(26,77,179,.12); align-self:flex-end; max-width:88%; }
+.chat-msg.ai { background:var(--panel); border:1px solid var(--divider); max-width:94%; align-self:flex-start; }
+.chat-msg.err { background:rgba(214,40,40,.12); color:#d62828; align-self:stretch; }
+.chat-input-row { flex:none; display:flex; gap:6px; }
+.chat-input-row textarea { flex:1; min-height:44px; max-height:110px; }
+.chat-input-row .btn { flex:none; width:auto; padding:0 14px; height:44px; }
+.exam-score { text-align:center; font-size:2.1em; font-weight:800; color:var(--title); padding:4px 0; }
+.speech-bar { position:fixed; left:50%; transform:translateX(-50%); bottom:16px; z-index:2500; background:var(--panel); border:1px solid var(--divider); border-radius:24px; padding:6px 10px; display:flex; gap:6px; align-items:center; box-shadow:0 6px 20px rgba(0,0,0,.35); font-size:.8em; max-width:92vw; }
+.speech-bar .btn { flex:none; width:auto; padding:0 12px; height:34px; }
+.speech-bar .sb-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--sub); }
+.kb-input { text-align:center !important; font-weight:700; color:var(--title); }
+.mnemonic-box { flex:1; min-height:0; overflow-y:auto; padding:10px; border:1px solid var(--divider); border-radius:6px; background:var(--panel); font-size:.875em; line-height:1.75; }
+.share-preview { flex:none; text-align:center; }
+.share-preview img { max-width:100%; max-height:46vh; border:1px solid var(--divider); border-radius:8px; }
+
 @media (max-width:520px) {
   #app { padding:6px; gap:5px; }
   .app-title { font-size:1.02em; }
@@ -320,12 +367,13 @@ html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); 
     </select>
     <select id="chapterSel"></select>
   </div>
-  <input id="searchInput" class="case-only" type="text" placeholder="搜索 / 高级：科目:内科学 标签:高频 状态:需复习">
+  <input id="searchInput" class="case-only" type="text" placeholder="搜索（支持拼音首字母/模糊匹配）/ 高级：科目:内科学 标签:高频">
   <div class="case-only btn-row">
     <button class="btn" id="addBtn">＋ 新增</button>
     <button class="btn" id="randomBtn">随机</button>
     <button class="btn" id="recordBtn">病历</button>
     <button class="btn" id="starBtn">☆ 收藏</button>
+    <button class="btn" id="ragAskBtn">🤖 问答</button>
   </div>
   <div class="case-only btn-row">
     <select id="statusSel">
@@ -359,10 +407,11 @@ html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); 
       <option value="A3">病例串题</option>
     </select>
   </div>
-  <input id="qSearchInput" class="quiz-only" type="text" style="display:none" placeholder="搜索题干 / 选项 / 解析">
+  <input id="qSearchInput" class="quiz-only" type="text" style="display:none" placeholder="搜索题干 / 选项 / 解析（支持拼音首字母）">
   <div class="quiz-only btn-row" style="display:none">
     <button class="btn" id="startQuizBtn">▶ 开始刷题</button>
     <button class="btn" id="continueQuizBtn">⏯ 继续</button>
+    <button class="btn" id="srsBtn">⏰ 复习</button>
     <button class="btn" id="wrongBookBtn">📕 错题本</button>
     <button class="btn" id="heatmapBtn">📊 统计</button>
   </div>
@@ -407,7 +456,7 @@ const SUBJECT_COLORS = {
   "人文精神":"#737380",
 };
 const SORT_OPTIONS = ["默认", "频率高→低", "频率低→高", "标题", "ID升序", "ID降序"];
-const QUIZ_TYPES = { single:"单选", multiple:"多选", judge:"判断", B:"B型题", A3:"病例串题" };
+const QUIZ_TYPES = { single:"单选", multiple:"多选", judge:"判断", B:"B型题", A3:"病例串题", essay:"主观题" };
 
 const SYSTEM_KEYWORDS = [
   ["呼吸系统", ["呼吸", "肺", "气管", "支气管", "胸腔", "哮喘", "COPD"]],
@@ -474,7 +523,7 @@ const FIELD_SCHEMAS = {
   "人文精神": [["overview","概述"],["hum_principle","核心原则"],["hum_scenario","典型情景"],["hum_regulation","法规条款"],["hum_ethics","伦理要点"],["hum_exam","考点提示"]],
 };
 const ALL_FIELDS = (() => { const s={},o=[]; for (const sj in FIELD_SCHEMAS) FIELD_SCHEMAS[sj].forEach(([k]) => { if (!s[k]) { s[k]=1; o.push(k);} }); return o; })();
-const FIELD_LABELS = (() => { const m={}; for (const sj in FIELD_SCHEMAS) FIELD_SCHEMAS[sj].forEach(([k,n]) => { if (!m[k]) m[k]=n; }); return m; })();
+const FIELD_LABELS = (() => { const m={}; for (const sj in FIELD_SCHEMAS) FIELD_SCHEMAS[sj].forEach(([k,n]) => { if (!m[k]) m[k]=n; }); m["ai_mnemonic"]="AI 助记口诀"; return m; })();
 const getFieldsForSubject = sj => FIELD_SCHEMAS[sj] || FIELD_SCHEMAS["内科学"];
 
 const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="kaoyan_answer_log",
@@ -483,6 +532,8 @@ const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="
       IMPORT_CFG_KEY="kaoyan_import_cfg",
       DRAFT_KEY="kaoyan_record_drafts", MAX_BACKUPS=5, DRAFT_MAX=50,
       RELEASE_TAG="data", RELEASE_ASSET_NAME="cases.json", RELEASE_ASSET_NAME_Q="questions.json";
+const SRS_KEY="kaoyan_srs", CHECKIN_KEY="kaoyan_checkin", EXAM_HIST_KEY="kaoyan_exam_hist",
+      NOTIFY_FLAG_KEY="kaoyan_notify_flag";
 
 const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/cases.json";
 const REMOTE_QUESTIONS_URL = "https://mercciii.github.io/kaoyan306/data/questions.json";
@@ -496,7 +547,18 @@ const SETTINGS_DEFAULTS = {
   mode:"cases", q_subject:"全部", q_type:"全部",
   quiz_mode:"practice", quiz_count:20, quiz_scope:"all",
   auto_pull:false,
+  option_shuffle:false, srs_enabled:true, daily_quiz_goal:30, daily_case_goal:10,
+  notify_enabled:false, notify_time:"20:00",
+  shortcuts:{ submit:"Enter", next:"Space", star:"f", doubt:"q", read:"r" },
 };
+const SHORTCUT_ACTIONS = [
+  ["submit", "提交答案（练习模式）"],
+  ["next", "下一题 / 完成当前"],
+  ["star", "收藏本题"],
+  ["doubt", "标记疑问"],
+  ["read", "朗读当前题目"],
+];
+const SHORTCUT_BLOCKED = ["a","b","c","d","e","1","2","3","4","5","arrowleft","arrowright","escape","tab"];
 
 const SAMPLE_JSON = '[{"title":"COPD（内外科模板）","subject":"内科学","chapter":"呼吸系统疾病","frequency":"★★★★★","status":"未看","tags":["高频"],"overview":"以持续气流受限为特征的疾病。","manifestations":"慢性咳嗽、咳痰、活动后气促。","diagnosis":"吸入支气管扩张剂后 FEV1/FVC < 70%。","treatment":"支气管扩张剂为主。"}]';
 const SAMPLE_QUESTION_JSON = '[{"subject":"内科学","chapter":"呼吸系统疾病","type":"single","stem":"男，68 岁，吸烟 40 年。近 5 年反复咳嗽、咳痰，活动后气促。吸入支气管扩张剂后 ==FEV1/FVC = 62%==。最可能的诊断是？","options":[{"key":"A","text":"支气管哮喘"},{"key":"B","text":"COPD"},{"key":"C","text":"支气管扩张"},{"key":"D","text":"肺结核"}],"answer":["B"],"explanation":"1. 长期吸烟史 + 持续气流受限；\\n2. @@FEV1/FVC < 70%@@ 是 COPD 的诊断金标准；\\n3. 哮喘多有过敏史、可逆性气流受限。","relatedCase":"COPD（内外科模板）","frequency":"★★★★★","difficulty":3,"tags":["高频"]}]';
@@ -1542,6 +1604,9 @@ const state = {
   mode: "cases", qSubject: "全部", qType: "全部", qSearch: "",
   quizMode: "practice", quizCount: 20, quizScope: "all",
   autoPull: false,
+  optionShuffle: false, srsEnabled: true, dailyQuizGoal: 30, dailyCaseGoal: 10,
+  notifyEnabled: false, notifyTime: "20:00",
+  shortcuts: { submit: "Enter", next: "Space", star: "f", doubt: "q", read: "r" },
 };
 
 function loadSettings() {
@@ -1571,6 +1636,18 @@ function loadSettings() {
   state.quizCount = Number(data.quiz_count) || 20;
   state.quizScope = data.quiz_scope || "all";
   state.autoPull = !!data.auto_pull;
+  state.optionShuffle = !!data.option_shuffle;
+  state.srsEnabled = data.srs_enabled !== false;
+  state.dailyQuizGoal = clamp(Number(data.daily_quiz_goal) || 30, 0, 500);
+  state.dailyCaseGoal = clamp(Number(data.daily_case_goal) || 10, 0, 500);
+  state.notifyEnabled = !!data.notify_enabled;
+  state.notifyTime = /^\d{1,2}:\d{2}$/.test(String(data.notify_time)) ? data.notify_time : "20:00";
+  const sc = data.shortcuts;
+  if (sc && typeof sc === "object" && !Array.isArray(sc)) {
+    for (const k of Object.keys(SETTINGS_DEFAULTS.shortcuts)) {
+      if (typeof sc[k] === "string" && sc[k]) state.shortcuts[k] = sc[k];
+    }
+  }
 }
 function saveSettings() {
   try {
@@ -1581,6 +1658,10 @@ function saveSettings() {
       mode: state.mode, q_subject: state.qSubject, q_type: state.qType,
       quiz_mode: state.quizMode, quiz_count: state.quizCount, quiz_scope: state.quizScope,
       auto_pull: state.autoPull,
+      option_shuffle: state.optionShuffle, srs_enabled: state.srsEnabled,
+      daily_quiz_goal: state.dailyQuizGoal, daily_case_goal: state.dailyCaseGoal,
+      notify_enabled: state.notifyEnabled, notify_time: state.notifyTime,
+      shortcuts: state.shortcuts,
     }));
   } catch (e) {}
 }
@@ -1635,11 +1716,23 @@ function normalizeItem(raw) {
   });
   return item;
 }
+function coercePayloadArray(obj, kind) {
+  if (Array.isArray(obj)) return obj;
+  if (obj && typeof obj === "object") {
+    const keys = kind === "questions"
+      ? ["questions", "items", "data", "list", "result"]
+      : ["cases", "items", "data", "list", "result"];
+    for (const k of keys) if (Array.isArray(obj[k])) return obj[k];
+  }
+  return null;
+}
 function parseJsonList(text) {
   let parsed;
   try { parsed = JSON.parse(text); }
   catch (e) { return { items: null, err: "JSON 解析失败：" + e.message, warnings: [] }; }
-  if (!Array.isArray(parsed)) return { items: null, err: "顶层必须是数组 [ ... ]", warnings: [] };
+  const arr = coercePayloadArray(parsed, "cases");
+  if (!arr) return { items: null, err: "顶层必须是数组 [ ... ]（也支持 {\"cases\": [...]} 包装格式）", warnings: [] };
+  parsed = arr;
   const items = [], warnings = [], seenTitles = {};
   for (let i = 0; i < parsed.length; i++) {
     const obj = parsed[i];
@@ -1699,7 +1792,10 @@ function normalizeQuestion(raw) {
   }));
   if (q.type === "judge" && q.options.length === 0) q.options = [{ key: "A", text: "正确" }, { key: "B", text: "错误" }];
   const ans = raw.answer;
-  if (Array.isArray(ans)) q.answer = ans.map(x => String(x).trim().toUpperCase());
+  if (q.type === "essay") {
+    if (Array.isArray(ans)) q.answer = ans.map(x => String(x).trim()).filter(Boolean);
+    else if (typeof ans === "string" && ans.trim()) q.answer = [ans.trim()];
+  } else if (Array.isArray(ans)) q.answer = ans.map(x => String(x).trim().toUpperCase());
   else if (typeof ans === "string") q.answer = ans.split(/[,，;；\s]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
   const tags = raw.tags || [];
   if (Array.isArray(tags)) q.tags = tags.map(t => String(t).trim()).filter(Boolean);
@@ -1713,7 +1809,9 @@ function normalizeQuestion(raw) {
 function parseQuestionList(text) {
   let parsed;
   try { parsed = JSON.parse(text); } catch (e) { return { items: null, err: "JSON 解析失败：" + e.message }; }
-  if (!Array.isArray(parsed)) return { items: null, err: "顶层必须是数组" };
+  const arr = coercePayloadArray(parsed, "questions");
+  if (!arr) return { items: null, err: "顶层必须是数组（也支持 {\"questions\": [...]} 包装格式）" };
+  parsed = arr;
   const items = [];
   for (let i = 0; i < parsed.length; i++) {
     const obj = parsed[i];
@@ -1756,8 +1854,9 @@ const store = {
       const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now(), { signal: controller.signal });
       clearTimeout(timer);
       if (resp.ok) {
-        const remoteData = await resp.json();
-        if (Array.isArray(remoteData) && remoteData.length > 0) {
+        const payload = await resp.json();
+        const remoteData = coercePayloadArray(payload, "cases");
+        if (remoteData && remoteData.length > 0) {
           this.data = remoteData.map(normalizeItem);
           try { localStorage.setItem(DATA_KEY, JSON.stringify(this.data)); } catch (e) {}
           return;
@@ -1773,8 +1872,8 @@ const store = {
       const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now(), { signal: controller.signal });
       clearTimeout(timer);
       if (!resp.ok) return;
-      const remoteData = await resp.json();
-      if (!Array.isArray(remoteData) || !remoteData.length) return;
+      const remoteData = coercePayloadArray(await resp.json(), "cases");
+      if (!remoteData || !remoteData.length) return;
       if (remoteData.length !== localCount) showRemoteUpdateBar("病例", remoteData.length, localCount, REMOTE_DATA_URL, "cases");
     } catch (e) {}
   },
@@ -1874,8 +1973,8 @@ function showRemoteUpdateBar(label, remoteCount, localCount, url, kind) {
   pull.addEventListener("click", async () => {
     try {
       const resp = await fetch(url + "?t=" + Date.now());
-      const remote = await resp.json();
-      if (!Array.isArray(remote)) throw new Error("返回不是数组");
+      const remote = coercePayloadArray(await resp.json(), kind === "questions" ? "questions" : "cases");
+      if (!remote) throw new Error("返回不是数组");
       if (kind === "questions") { questionStore.data = remote.map(normalizeQuestion); questionStore.save(); rebuildQSubjectValues(); }
       else { store.backup(); store.data = remote.map(normalizeItem); store.save(false); }
       if (state.mode === "quiz") renderQuizListOnly(); else render();
@@ -1887,6 +1986,38 @@ function showRemoteUpdateBar(label, remoteCount, localCount, url, kind) {
   document.body.appendChild(bar);
 }
 
+function mergeRemoteList(localList, remoteList, isQ) {
+  const normalize = isQ ? normalizeQuestion : normalizeItem;
+  const remote = remoteList.map(normalize);
+  const remoteById = {};
+  remote.forEach(x => { remoteById[x.id] = x; });
+  const localIds = {};
+  const out = [];
+  let updated = 0, kept = 0, added = 0;
+  for (const d of localList) {
+    localIds[d.id] = true;
+    const r = remoteById[d.id];
+    if (!r) { out.push(d); kept++; continue; }
+    const merged = Object.assign({}, d);
+    for (const k in r) {
+      if (!Object.prototype.hasOwnProperty.call(r, k)) continue;
+      if (isQ) {
+        if (k === "starred" || k === "doubt") continue;
+        if ((r[k] === "" || (Array.isArray(r[k]) && !r[k].length)) && merged[k] !== undefined && merged[k] !== "") continue;
+      } else {
+        if (k === "starred" || k === "status") continue;
+        if ((r[k] === "" || (Array.isArray(r[k]) && !r[k].length)) && merged[k]) continue;
+      }
+      merged[k] = r[k];
+    }
+    out.push(merged);
+    updated++;
+  }
+  for (const r of remote) {
+    if (!localIds[r.id]) { out.push(r); added++; }
+  }
+  return { list: out, updated, kept, added };
+}
 async function pullFromRemote(kind, silent) {
   const isQ = kind === "questions";
   const url = isQ ? REMOTE_QUESTIONS_URL : REMOTE_DATA_URL;
@@ -1894,26 +2025,70 @@ async function pullFromRemote(kind, silent) {
   try {
     const resp = await fetch(url + "?t=" + Date.now());
     if (!resp.ok) throw new Error("HTTP " + resp.status);
-    const remote = await resp.json();
-    if (!Array.isArray(remote)) throw new Error("返回不是数组");
+    const remote = coercePayloadArray(await resp.json(), isQ ? "questions" : "cases");
+    if (!remote) throw new Error("返回不是数组");
     if (!remote.length) throw new Error("远端为空");
 
     const before = isQ ? questionStore.data.length : store.data.length;
 
-    if (isQ) {
-      questionStore.data = remote.map(normalizeQuestion);
-      questionStore.save();
-      rebuildQSubjectValues();
-    } else {
-      store.backup();
-      store.data = remote.map(normalizeItem);
-      store.save(false);
+    if (silent) {
+      if (isQ) {
+        questionStore.data = remote.map(normalizeQuestion);
+        questionStore.save();
+        rebuildQSubjectValues();
+      } else {
+        store.backup();
+        store.data = remote.map(normalizeItem);
+        store.save(false);
+      }
+      if (state.mode === "quiz") renderQuizListOnly(); else render();
+      return { ok: true, count: remote.length, before, mode: "overwrite" };
     }
-    if (state.mode === "quiz") renderQuizListOnly(); else render();
-    if (!silent) {
-      confirmPopup("✅ 已拉取" + label + " " + remote.length + " 条\n（本地原有 " + before + " 条）");
-    }
-    return { ok: true, count: remote.length, before };
+
+    const apply = (mode) => {
+      if (mode === "overwrite") {
+        if (isQ) {
+          questionStore.data = remote.map(normalizeQuestion);
+          questionStore.save();
+          rebuildQSubjectValues();
+        } else {
+          store.backup();
+          store.data = remote.map(normalizeItem);
+          store.save(false);
+        }
+        if (state.mode === "quiz") renderQuizListOnly(); else render();
+        confirmPopup("✅ 已覆盖拉取" + label + " " + remote.length + " 条\n（本地原有 " + before + " 条）");
+      } else {
+        const merged = mergeRemoteList(isQ ? questionStore.data : store.data, remote, isQ);
+        if (isQ) {
+          questionStore.data = merged.list;
+          questionStore.save();
+          rebuildQSubjectValues();
+        } else {
+          store.backup();
+          store.data = merged.list;
+          store.save(false);
+        }
+        if (state.mode === "quiz") renderQuizListOnly(); else render();
+        confirmPopup(
+          "✅ 已合并" + label + "\n\n" +
+          "更新 " + merged.updated + " 条 · 新增 " + merged.added + " 条\n" +
+          "保留本地独有 " + merged.kept + " 条\n" +
+          "合并后共 " + merged.list.length + " 条\n\n" +
+          "（同名 ID 以远端内容为准，本地收藏/状态/疑问标记保留）"
+        );
+      }
+    };
+
+    confirmChoice(
+      "远端共有 " + label + " " + remote.length + " 条，本地 " + before + " 条。\n\n" +
+      "选择拉取方式：\n· 覆盖：完全以远端为准（本地独有条目会丢失）\n· 合并：远端优先 + 保留本地独有条目与收藏/状态标记",
+      [
+        { label: "覆盖拉取", onClick: () => apply("overwrite") },
+        { label: "合并拉取", primary: true, onClick: () => apply("merge") },
+      ]
+    );
+    return { ok: true, count: remote.length, before, mode: "ask" };
   } catch (e) {
     if (!silent) confirmPopup("❌ 拉取" + label + "失败：" + e.message);
     else console.error("自动拉取" + label + "失败：", e);
@@ -1940,8 +2115,8 @@ const questionStore = {
       const resp = await fetch(REMOTE_QUESTIONS_URL + "?t=" + Date.now(), { signal: ctl.signal });
       clearTimeout(t);
       if (resp.ok) {
-        const remote = await resp.json();
-        if (Array.isArray(remote) && remote.length) {
+        const remote = coercePayloadArray(await resp.json(), "questions");
+        if (remote && remote.length) {
           this.data = remote.map(normalizeQuestion);
           try { localStorage.setItem(QUESTIONS_KEY, JSON.stringify(this.data)); } catch (e) {}
           return;
@@ -1957,8 +2132,8 @@ const questionStore = {
       const resp = await fetch(REMOTE_QUESTIONS_URL + "?t=" + Date.now(), { signal: ctl.signal });
       clearTimeout(t);
       if (!resp.ok) return;
-      const remote = await resp.json();
-      if (!Array.isArray(remote) || !remote.length) return;
+      const remote = coercePayloadArray(await resp.json(), "questions");
+      if (!remote || !remote.length) return;
       if (remote.length !== localCount) showRemoteUpdateBar("题库", remote.length, localCount, REMOTE_QUESTIONS_URL, "questions");
     } catch (e) {}
   },
@@ -3685,6 +3860,7 @@ function buildMergedTimelineSection(entries, overlayRef) {
   return section;
 }
 function showDetail(item) {
+  try { checkin.addCaseOnce(item.id); } catch (e) {}
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", item.title || "病例详情"));
@@ -3709,6 +3885,38 @@ function showDetail(item) {
     relRow.appendChild(relBtn);
     body.appendChild(relRow);
   }
+  try {
+    const related = relatedCasesFor(item, 6);
+    if (related.length) {
+      const chipBox = el("div", "related-chips");
+      chipBox.appendChild(el("span", "hint-text", "🔗 相关病例："));
+      related.forEach(d2 => {
+        const c2 = el("button", "related-chip", d2.title || "");
+        c2.addEventListener("click", () => { ov.remove(); showDetail(d2); });
+        chipBox.appendChild(c2);
+      });
+      body.appendChild(chipBox);
+    }
+  } catch (e) {}
+  const toolRow = el("div", "detail-ctrl");
+  const readBtn2 = el("button", "btn", "🔊 朗读");
+  const askBtn = el("button", "btn", "🤖 追问");
+  const mnBtn = el("button", "btn", "🪄 助记");
+  const shareBtn = el("button", "btn", "📤 分享");
+  readBtn2.addEventListener("click", () => openMnemonicRead(item));
+  askBtn.addEventListener("click", () => openAiChat({ item: item }));
+  mnBtn.addEventListener("click", () => openMnemonic(item));
+  shareBtn.addEventListener("click", async () => {
+    shareBtn.disabled = true;
+    const old = shareBtn.textContent;
+    shareBtn.textContent = "⏳ 生成中…";
+    try { await shareCaseImage(item); }
+    catch (e2) { confirmPopup("分享失败：" + e2.message); }
+    shareBtn.disabled = false;
+    shareBtn.textContent = old;
+  });
+  toolRow.appendChild(readBtn2); toolRow.appendChild(askBtn); toolRow.appendChild(mnBtn); toolRow.appendChild(shareBtn);
+  body.appendChild(toolRow);
   const ctrl = el("div", "detail-ctrl");
   const showAll = el("button", "btn", "全部展开");
   const hideAll = el("button", "btn", "全部收起");
@@ -3752,6 +3960,11 @@ function showDetail(item) {
       rows.push(row);
       scroll.appendChild(row);
     }
+  }
+  if (String(item.ai_mnemonic == null ? "" : item.ai_mnemonic).trim()) {
+    const row = makeFieldRow(FIELD_LABELS["ai_mnemonic"] || "AI 助记口诀", String(item.ai_mnemonic), state.search, null, ov);
+    rows.push(row);
+    scroll.appendChild(row);
   }
   const timelineEntries = collectTimelineEntries(item);
   if (timelineEntries.length) scroll.appendChild(buildMergedTimelineSection(timelineEntries, ov));
@@ -4288,11 +4501,17 @@ function openExport() {
   const footer = el("div", "popup-footer");
   const closeBtn = el("button", "btn", "关闭");
   const copyBtn = el("button", "btn", "复制全部");
+  const ankiBtn = el("button", "btn", "⬇ Anki CSV");
   closeBtn.addEventListener("click", () => ov.remove());
   copyBtn.addEventListener("click", () => {
     copyText(ta.value).then(() => confirmPopup("已复制到剪贴板")).catch(err => confirmPopup("复制失败：" + err.message));
   });
-  footer.appendChild(closeBtn); footer.appendChild(copyBtn);
+  ankiBtn.addEventListener("click", () => {
+    const items = subjSel.value === "全部" ? store.data : store.data.filter(d => d.subject === subjSel.value);
+    if (!items.length) { confirmPopup("没有可导出的数据"); return; }
+    exportCasesCsv(items);
+  });
+  footer.appendChild(closeBtn); footer.appendChild(copyBtn); footer.appendChild(ankiBtn);
   pop.appendChild(footer);
   ov.appendChild(pop);
   document.body.appendChild(ov);
@@ -5473,7 +5692,7 @@ function openQuestionExport() {
   tpRow.appendChild(el("div", "row-label", "题型"));
   const tpSel = document.createElement("select");
   tpSel.className = "edit-select";
-  [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["B", "B型题"], ["A3", "病例串题"]].forEach(([v, t]) => {
+  [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["B", "B型题"], ["A3", "病例串题"], ["essay", "主观题"]].forEach(([v, t]) => {
     const o = document.createElement("option"); o.value = v; o.textContent = t; tpSel.appendChild(o);
   });
   tpRow.appendChild(tpSel);
@@ -5496,9 +5715,17 @@ function openQuestionExport() {
   const footer = el("div", "popup-footer");
   const closeBtn = el("button", "btn", "关闭");
   const copyBtn = el("button", "btn", "复制全部");
+  const ankiBtn = el("button", "btn", "⬇ Anki CSV");
   closeBtn.addEventListener("click", () => ov.remove());
   copyBtn.addEventListener("click", () => copyText(ta.value).then(() => confirmPopup("已复制")).catch(e => confirmPopup("失败：" + e.message)));
-  footer.appendChild(closeBtn); footer.appendChild(copyBtn);
+  ankiBtn.addEventListener("click", () => {
+    let qs = questionStore.data.slice();
+    if (sjSel.value !== "全部") qs = qs.filter(q => q.subject === sjSel.value);
+    if (tpSel.value !== "全部") qs = qs.filter(q => q.type === tpSel.value);
+    if (!qs.length) { confirmPopup("没有可导出的题目"); return; }
+    exportQuestionsCsv(qs);
+  });
+  footer.appendChild(closeBtn); footer.appendChild(copyBtn); footer.appendChild(ankiBtn);
   pop.appendChild(footer);
   ov.appendChild(pop);
   document.body.appendChild(ov);
@@ -5522,6 +5749,22 @@ function openQuiz(pool, opts) {
   if (cnt > 0 && base.length > cnt) base = base.slice(0, cnt);
   if (!base.length) { confirmPopup("该范围下没有题目"); return; }
   const shuffled = base;
+  const srsMode = !!opts.srs;
+  const shuffleOpts = opts.shuffle !== undefined ? !!opts.shuffle : !!state.optionShuffle;
+  const sessionSubjects = {};
+  const sessionWrong = [];
+  const reviewedKeys = {};
+  const essayTexts = {};
+  const __optOrder = new WeakMap();
+  const remainRef = { v: 0 };
+  let examStartTs = Date.now();
+  function recordSession(q, correct) {
+    const sj = q.subject || "（未填科目）";
+    const st = sessionSubjects[sj] || (sessionSubjects[sj] = { total: 0, correct: 0 });
+    st.total++;
+    if (correct) st.correct++;
+    else if (sessionWrong.indexOf(q) === -1) sessionWrong.push(q);
+  }
   let idx = clamp(opts.startIdx || 0, 0, Math.max(0, shuffled.length - 1));
   let userAnswers = opts.userAnswers || {};
   let subIdx = clamp(opts.startSubIdx || 0, 0, Math.max(0, subCount(shuffled[idx]) - 1));
@@ -5544,15 +5787,17 @@ function openQuiz(pool, opts) {
   const footer = el("div", "popup-footer");
   const starBtn = el("button", "btn", "☆");
   const doubtBtn = el("button", "btn", "❓");
+  const readBtn = el("button", "btn", "🔊");
   const skipBtn = el("button", "btn", "跳过");
   const submitBtn = el("button", "btn", "提交");
   const nextBtn = el("button", "btn", "下一题 →");
   const closeBtn = el("button", "btn", "退出");
-  footer.appendChild(starBtn); footer.appendChild(doubtBtn); footer.appendChild(skipBtn);
+  footer.appendChild(starBtn); footer.appendChild(doubtBtn); footer.appendChild(readBtn); footer.appendChild(skipBtn);
   footer.appendChild(submitBtn); footer.appendChild(nextBtn); footer.appendChild(closeBtn);
   pop.appendChild(body);
   pop.appendChild(footer);
   let answered = false;
+  let essaySubmitted = false;
   let timerHandle = null;
   let startTs = Date.now();
   let sessionId = genId();
@@ -5575,6 +5820,20 @@ function openQuiz(pool, opts) {
     if (q.type === "B") return q.sharedOptions || [];
     if (q.type === "A3") return (q.questions[subIdx] && q.questions[subIdx].options) || [];
     return q.options || [];
+  }
+  function getDisplayOpts(q) {
+    const list = getOpts(q);
+    if (!shuffleOpts || list.length < 2 || q.type === "B") return list;
+    let byKey = __optOrder.get(q);
+    if (!byKey) { byKey = {}; __optOrder.set(q, byKey); }
+    const ck = String(subIdx);
+    let order = byKey[ck];
+    if (!order || order.length !== list.length) {
+      order = list.map((_, i) => i);
+      for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t; }
+      byKey[ck] = order;
+    }
+    return order.map(i => list[i]);
   }
   function getStem(q) {
     if (q.type === "B") return (q.subQuestions[subIdx] && q.subQuestions[subIdx].stem) || "";
@@ -5606,6 +5865,7 @@ function openQuiz(pool, opts) {
   function render() {
     const q = currentQ();
     answered = false;
+    essaySubmitted = false;
     const key = answerKey(q);
     if (!userAnswers[key]) userAnswers[key] = [];
     const ansArr = userAnswers[key];
@@ -5636,9 +5896,41 @@ function openQuiz(pool, opts) {
     if (mode === "practice" && isMultiQ(q) && getAnswer(q).length > 1) {
       scroll.appendChild(el("div", "multi-hint", "💡 本题为多选题，正确选项可能不止 1 个。"));
     }
+    if (q.type === "essay") {
+      const box = el("div", "");
+      box.style.marginTop = "10px";
+      const ta = document.createElement("textarea");
+      ta.className = "edit-textarea";
+      ta.style.minHeight = "170px";
+      ta.placeholder = "在此作答（按要点书写）；提交后可自评掌握程度，或点「AI 批改」";
+      ta.value = essayTexts[key] || "";
+      ta.addEventListener("input", () => { essayTexts[key] = ta.value; });
+      if (mode === "review") ta.readOnly = true;
+      box.appendChild(ta);
+      scroll.appendChild(box);
+      const ansBox = el("div", "");
+      ansBox.id = "__quiz_result";
+      scroll.appendChild(ansBox);
+      if (mode === "review") {
+        answered = true;
+        showEssayResult(q, true);
+        submitBtn.style.display = "none";
+        nextBtn.style.display = "";
+        if (!reviewedKeys[key]) { reviewedKeys[key] = 1; checkin.add("r"); }
+      } else if (mode === "exam") {
+        submitBtn.style.display = "none";
+        nextBtn.style.display = "";
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.style.display = "";
+        nextBtn.style.display = "";
+      }
+      startTs = Date.now();
+      return;
+    }
     const optWrap = el("div", "quiz-opts");
     optWrap.style.marginTop = "10px";
-    getOpts(q).forEach(o => {
+    getDisplayOpts(q).forEach(o => {
       const btn = el("button", "quiz-opt", "");
       btn.dataset.key = o.key || "";
       btn.innerHTML = "<strong>" + escapeHtml(o.key || "") + ".</strong> " + renderRich(o.text || "", "");
@@ -5665,6 +5957,7 @@ function openQuiz(pool, opts) {
       showResult(q, ansArr, true);
       submitBtn.style.display = "none";
       nextBtn.style.display = "";
+      if (!reviewedKeys[key]) { reviewedKeys[key] = 1; checkin.add("r"); }
     } else if (mode === "exam") {
       submitBtn.style.display = "none";
       nextBtn.style.display = "";
@@ -5725,9 +6018,113 @@ function openQuiz(pool, opts) {
     box.appendChild(noteWrap);
     scroll.scrollTop = scroll.scrollHeight;
   }
+  function showEssayResult(q, isReview) {
+    const key2 = answerKey(q);
+    const box = scroll.querySelector("#__quiz_result");
+    if (!box) return;
+    box.innerHTML = "";
+    const head = el("div", "merged-timeline-title", isReview ? "📖 背题模式 · 参考答案" : "📄 参考答案（请对照自评）");
+    head.style.marginTop = "14px";
+    box.appendChild(head);
+    const mine = String(essayTexts[key2] || "").trim();
+    if (mine) {
+      const m = el("div", "field-row");
+      const mb = el("div", "field-content");
+      mb.style.cssText = "display:block;padding:10px;white-space:pre-wrap";
+      mb.appendChild(el("div", "edit-label", "我的作答"));
+      mb.appendChild(document.createTextNode(mine));
+      m.appendChild(mb);
+      box.appendChild(m);
+    }
+    const ref = (q.answer || []).map(s => stripRichMarkup(String(s))).join("\n").trim();
+    const e = el("div", "field-row");
+    const eb = el("div", "field-content");
+    eb.style.cssText = "display:block;padding:10px;white-space:pre-wrap";
+    eb.appendChild(el("div", "edit-label", "参考答案"));
+    eb.appendChild(document.createTextNode(ref || "（本题暂无参考答案）"));
+    e.appendChild(eb);
+    box.appendChild(e);
+    if (q.explanation) {
+      const x = el("div", "field-row");
+      const xb = el("div", "field-content");
+      xb.style.cssText = "display:block;padding:10px";
+      xb.innerHTML = renderRich(q.explanation, "");
+      x.appendChild(xb);
+      box.appendChild(x);
+    }
+    if (!isReview) {
+      const gradeRow = el("div", "srs-row");
+      gradeRow.appendChild(el("div", "srs-hint", "自评掌握程度（计入错题本" + (srsMode ? "与复习计划" : "") + "）："));
+      const grades = [["❌ 未掌握", 0, "again"], ["⚠️ 基本掌握", 1, "hard"], ["✅ 完全掌握", 2, "good"]];
+      let done = false;
+      grades.forEach(([label, g, cls]) => {
+        const b = el("button", "btn srs-btn " + cls, label);
+        b.addEventListener("click", () => {
+          if (done) return;
+          done = true;
+          const correct = g >= 1;
+          answerLog.record(answerKey(q), [], correct, Math.round((Date.now() - startTs) / 1000));
+          sessionDone++;
+          if (correct) sessionCorrect++;
+          recordSession(q, correct);
+          checkin.add("q");
+          if (srsMode) { srs.schedule(srs.keyFor(q, subIdx), g === 0 ? 0 : g === 1 ? 2 : 3); checkin.add("r"); }
+          gradeRow.innerHTML = "";
+          gradeRow.appendChild(el("div", "srs-hint", "✅ 已记录" + (srsMode ? "，已排入复习计划" : "")));
+          answered = true;
+          submitBtn.disabled = true;
+          saveProgress();
+        });
+        gradeRow.appendChild(b);
+      });
+      box.appendChild(gradeRow);
+    }
+    const aiRow = el("div", "font-wrap");
+    aiRow.style.marginTop = "8px";
+    const aiBtn = el("button", "btn", "🤖 AI 批改");
+    const aiOut = el("div", "", "");
+    aiBtn.addEventListener("click", async () => {
+      const text = String(essayTexts[key2] || (scroll.querySelector("textarea") || {}).value || "").trim();
+      if (!text) { confirmPopup("请先填写你的作答"); return; }
+      aiBtn.disabled = true;
+      aiBtn.textContent = "⏳ 批改中…";
+      aiOut.className = "gh-status";
+      aiOut.textContent = "⏳ 正在批改…";
+      try {
+        const r = await aiGradeEssay(q, text);
+        aiOut.className = "gh-status ok";
+        aiOut.innerHTML = "";
+        if (r.score !== null) aiOut.appendChild(el("div", "", "得分：" + r.score + " / 100"));
+        const c = el("div", "");
+        c.innerHTML = renderRich(r.comment, "");
+        aiOut.appendChild(c);
+      } catch (e2) {
+        aiOut.className = "gh-status err";
+        aiOut.textContent = "❌ " + e2.message;
+      }
+      aiBtn.disabled = false;
+      aiBtn.textContent = "🤖 AI 批改";
+    });
+    aiRow.appendChild(aiBtn);
+    box.appendChild(aiRow);
+    box.appendChild(aiOut);
+    scroll.scrollTop = scroll.scrollHeight;
+  }
   function submit() {
     if (answered) return;
     const q = currentQ();
+    if (q.type === "essay") {
+      if (essaySubmitted) return;
+      const key2 = answerKey(q);
+      const ta = scroll.querySelector("textarea");
+      if (ta) essayTexts[key2] = ta.value;
+      if (!String(essayTexts[key2] || "").trim()) { confirmPopup("请先作答再提交"); return; }
+      essaySubmitted = true;
+      if (ta) ta.readOnly = true;
+      showEssayResult(q, false);
+      submitBtn.disabled = true;
+      return;
+    }
     const ansArr = userAnswers[answerKey(q)];
     if (!ansArr || !ansArr.length) { confirmPopup("请先选择答案"); return; }
     if (mode === "practice" && isMultiQ(q)) {
@@ -5743,13 +6140,47 @@ function openQuiz(pool, opts) {
     answered = true;
     const correct = judgeMulti(q, subIdx, ansArr);
     const elapsed = Math.round((Date.now() - startTs) / 1000);
-    answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
-    sessionDone++;
-    if (correct) sessionCorrect++;
     showResult(q, ansArr, false);
     submitBtn.disabled = true;
+    if (srsMode) {
+      showSrsGrade(q, ansArr, elapsed, correct);
+    } else {
+      answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+      sessionDone++;
+      if (correct) sessionCorrect++;
+      recordSession(q, correct);
+      checkin.add("q");
+    }
     saveProgress();
     updateProgress();
+  }
+  function showSrsGrade(q, ansArr, elapsed, autoCorrect) {
+    const box = scroll.querySelector("#__quiz_result");
+    if (!box) return;
+    const row = el("div", "srs-row");
+    row.appendChild(el("div", "srs-hint", "间隔复习 · 刚" + (autoCorrect ? "答对" : "答错") + "，评估掌握程度后计入复习计划："));
+    const grades = [["重来", 0, "again"], ["困难", 1, "hard"], ["良好", 2, "good"], ["简单", 3, "easy"]];
+    let done = false;
+    grades.forEach(([label, g, cls]) => {
+      const b = el("button", "btn srs-btn " + cls, label);
+      b.addEventListener("click", () => {
+        if (done) return;
+        done = true;
+        const r = srs.schedule(srs.keyFor(q, subIdx), g);
+        const correct = g >= 2;
+        answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+        sessionDone++;
+        if (correct) sessionCorrect++;
+        recordSession(q, correct);
+        checkin.add("q"); checkin.add("r");
+        row.innerHTML = "";
+        row.appendChild(el("div", "srs-hint", "✅ 已记录，" + (r.ivl >= 1 ? "下次复习：" + Math.round(r.ivl) + " 天后" : "10 分钟后再来")));
+        setTimeout(function () { if (document.body.contains(ov)) goNext(); }, 600);
+      });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+    scroll.scrollTop = scroll.scrollHeight;
   }
   function nextSub() {
     const q = currentQ();
@@ -5758,6 +6189,8 @@ function openQuiz(pool, opts) {
       idx++; subIdx = 0;
       render(); scroll.scrollTop = 0;
       saveProgress();
+    } else if (mode === "exam") {
+      finishExam();
     } else {
       let msg = "🎉 全部完成！\n\n本次共 " + shuffled.length + " 题";
       const totalSubs = shuffled.reduce((a, q) => a + subCount(q), 0);
@@ -5767,14 +6200,36 @@ function openQuiz(pool, opts) {
       confirmPopup(msg, () => { quizProgress.clear(); ov.remove(); }, "关闭", "刷题完成");
     }
   }
+  function finishExam() {
+    const used = opts.timer > 0 ? Math.max(0, opts.timer * 60 - remainRef.v) : Math.round((Date.now() - examStartTs) / 1000);
+    quizProgress.clear();
+    ov.remove();
+    openExamResult({
+      total: sessionDone, correct: sessionCorrect, timeUsed: used,
+      subjects: sessionSubjects, wrongQs: sessionWrong,
+    });
+  }
   function goNext() {
     if (mode === "exam" && !answered) {
       const q = currentQ();
+      if (q.type === "essay") {
+        const ta = scroll.querySelector("textarea");
+        if (ta) essayTexts[answerKey(q)] = ta.value;
+        answerLog.record(answerKey(q), [], false, 0);
+        sessionDone++;
+        recordSession(q, false);
+        checkin.add("q");
+        answered = true;
+        nextSub();
+        return;
+      }
       const ansArr = userAnswers[answerKey(q)] || [];
       const correct = judgeMulti(q, subIdx, ansArr);
       answerLog.record(answerKey(q), ansArr.slice(), correct, 0);
       sessionDone++;
       if (correct) sessionCorrect++;
+      recordSession(q, correct);
+      checkin.add("q");
       answered = true;
     }
     nextSub();
@@ -5783,51 +6238,90 @@ function openQuiz(pool, opts) {
   submitBtn.addEventListener("click", submit);
   nextBtn.addEventListener("click", goNext);
   closeBtn.addEventListener("click", () => { saveProgress(); ov.remove(); });
-  starBtn.addEventListener("click", () => {
+  function toggleStar() {
     const q = currentQ();
     q.starred = !q.starred;
     questionStore.save();
     starBtn.textContent = q.starred ? "★" : "☆";
-  });
-  doubtBtn.addEventListener("click", () => {
+  }
+  function toggleDoubt() {
     const q = currentQ();
     q.doubt = !q.doubt;
     questionStore.save();
     doubtBtn.textContent = q.doubt ? "❓✓" : "❓";
-  });
+  }
+  function readCurrent() {
+    const q = currentQ();
+    let text = getStem(q) + "。";
+    const opts2 = getOpts(q);
+    if (opts2.length) text += opts2.map(o => o.key + "，" + o.text).join("；") + "。";
+    if (mode === "review" || answered) {
+      text += "答案：" + getAnswer(q).join("、") + "。";
+      const ex = getExplanation(q);
+      if (ex) text += "解析：" + ex;
+    }
+    tts.lastText = text;
+    tts.lastLabel = "第 " + (idx + 1) + " 题";
+    tts.speak(text, tts.lastLabel);
+  }
+  starBtn.addEventListener("click", toggleStar);
+  doubtBtn.addEventListener("click", toggleDoubt);
+  readBtn.addEventListener("click", readCurrent);
   function onKey(e) {
     if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
-    const k = e.key.toUpperCase();
     const q = currentQ();
+    const kUp = e.key.toUpperCase();
     const optWrap = scroll.querySelector(".quiz-opts");
-    if (!optWrap) return;
-    const opts = Array.from(optWrap.children);
-    if (["A", "B", "C", "D", "E"].indexOf(k) !== -1) {
-      const i = ["A", "B", "C", "D", "E"].indexOf(k);
+    const opts = optWrap ? Array.from(optWrap.children) : [];
+    if (["A", "B", "C", "D", "E"].indexOf(kUp) !== -1) {
+      const i = ["A", "B", "C", "D", "E"].indexOf(kUp);
       if (opts[i]) opts[i].click();
       e.preventDefault();
-    } else if (["1", "2", "3", "4", "5"].indexOf(k) !== -1) {
-      const i = parseInt(k, 10) - 1;
+      return;
+    }
+    if (["1", "2", "3", "4", "5"].indexOf(kUp) !== -1) {
+      const i = parseInt(kUp, 10) - 1;
       if (opts[i]) opts[i].click();
       e.preventDefault();
-    } else if (e.key === "Enter") {
+      return;
+    }
+    const sk = normalizeShortcutKey(e);
+    const sc = state.shortcuts || {};
+    if (sc.submit && sk === sc.submit) {
       if (!answered && mode !== "exam" && mode !== "review") submit();
       else goNext();
       e.preventDefault();
-    } else if (e.key === " ") {
+    } else if (sc.next && sk === sc.next) {
       e.preventDefault();
       goNext();
+    } else if (sc.star && sk === sc.star) {
+      e.preventDefault();
+      toggleStar();
+    } else if (sc.doubt && sk === sc.doubt) {
+      e.preventDefault();
+      toggleDoubt();
+    } else if (sc.read && sk === sc.read) {
+      e.preventDefault();
+      readCurrent();
     }
   }
   document.addEventListener("keydown", onKey);
-  if (mode === "exam" && examTimer > 0) {
-    let remain = examTimer * 60;
-    timerEl.textContent = "⏱ " + formatDuration(remain);
-    timerHandle = setInterval(() => {
-      remain--;
+  if (mode === "exam") {
+    examStartTs = Date.now();
+    if (examTimer > 0) {
+      let remain = examTimer * 60;
+      remainRef.v = remain;
       timerEl.textContent = "⏱ " + formatDuration(remain);
-      if (remain <= 0) { clearInterval(timerHandle); confirmPopup("考试时间到！", () => ov.remove()); }
-    }, 1000);
+      timerHandle = setInterval(() => {
+        remain--;
+        remainRef.v = Math.max(0, remain);
+        timerEl.textContent = "⏱ " + formatDuration(remain);
+        if (remain <= 0) {
+          clearInterval(timerHandle);
+          confirmPopup("考试时间到！点击查看本次考试结果。", () => finishExam());
+        }
+      }, 1000);
+    }
   }
   ov.appendChild(pop);
   document.body.appendChild(ov);
@@ -5867,7 +6361,7 @@ function openQuizPicker() {
   addRow("科目", sjSel);
   const tpSel = document.createElement("select");
   tpSel.className = "edit-select";
-  [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["B", "B型题"], ["A3", "病例串题"]].forEach(([v, t]) => {
+  [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["B", "B型题"], ["A3", "病例串题"], ["essay", "主观题"]].forEach(([v, t]) => {
     const o = document.createElement("option"); o.value = v; o.textContent = t; tpSel.appendChild(o);
   });
   tpSel.value = state.qType;
@@ -5889,6 +6383,13 @@ function openQuizPicker() {
   });
   mdSel.value = state.quizMode;
   addRow("模式", mdSel);
+  const shufSel = document.createElement("select");
+  shufSel.className = "edit-select";
+  [["off", "关闭"], ["on", "开启（每题选项随机打乱）"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; shufSel.appendChild(o);
+  });
+  shufSel.value = state.optionShuffle ? "on" : "off";
+  addRow("选项乱序", shufSel);
   const examRow = el("div", "import-row");
   examRow.appendChild(el("div", "row-label", "模拟整卷"));
   const examBtn = el("button", "btn", "按大纲比例出卷（180题）");
@@ -5911,6 +6412,13 @@ function openQuizPicker() {
   });
   examRow.appendChild(examBtn);
   body.appendChild(examRow);
+  const srsRow = el("div", "import-row");
+  srsRow.appendChild(el("div", "row-label", "间隔复习"));
+  const srsNowBtn = el("button", "btn", "⏰ 复习到期题目（" + srs.dueCount() + "）");
+  srsNowBtn.style.flex = "none"; srsNowBtn.style.padding = "0 10px";
+  srsNowBtn.addEventListener("click", () => { ov.remove(); startSrsReview(); });
+  srsRow.appendChild(srsNowBtn);
+  body.appendChild(srsRow);
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
@@ -5922,6 +6430,7 @@ function openQuizPicker() {
     state.quizScope = scSel.value;
     state.quizMode = mdSel.value;
     state.quizCount = parseInt(cntIn.value, 10) || 20;
+    state.optionShuffle = shufSel.value === "on";
     saveSettings();
     document.getElementById("qSubjectSel").value = state.qSubject;
     document.getElementById("qTypeSel").value = state.qType;
@@ -5932,7 +6441,7 @@ function openQuizPicker() {
     else if (state.quizScope === "unanswered") pool = pool.filter(q => !answerStatusFor(q).answered);
     if (!pool.length) { confirmPopup("该筛选下没有题目"); return; }
     ov.remove();
-    openQuiz(pool, { mode: state.quizMode, scope: state.quizScope, count: state.quizCount });
+    openQuiz(pool, { mode: state.quizMode, scope: state.quizScope, count: state.quizCount, shuffle: state.optionShuffle });
   });
   footer.appendChild(cancelBtn); footer.appendChild(startBtn);
   pop.appendChild(footer);
@@ -6012,12 +6521,23 @@ function openWrongBook() {
       }
     }
     renderGroup();
+    const srsAddBtn = el("button", "btn", "⏰ 加入复习");
+    const pdfBtn = el("button", "btn", "🖨 PDF");
+    const csvBtn = el("button", "btn", "📄 Anki");
     const clearBtn = el("button", "btn", "清空记录");
     const quizBtn = el("button", "btn", "重做全部");
     const closeBtn = el("button", "btn", "关闭");
+    srsAddBtn.addEventListener("click", () => {
+      wrongs.forEach(q => { for (let i = 0; i < questionSubCount(q); i++) srs.makeDue(srs.keyFor(q, i)); });
+      srs.save();
+      confirmPopup("已将 " + wrongs.length + " 题加入复习队列（立即到期，可点首页「⏰ 复习」开始）");
+    });
+    pdfBtn.addEventListener("click", () => { printDocument(buildWrongPrintDocument(wrongs)); });
+    csvBtn.addEventListener("click", () => { exportQuestionsCsv(wrongs); });
     clearBtn.addEventListener("click", () => { answerLog.reset(); ov.remove(); confirmPopup("已清空所有答题记录"); });
     quizBtn.addEventListener("click", () => { ov.remove(); openQuiz(wrongs); });
     closeBtn.addEventListener("click", () => ov.remove());
+    footer.appendChild(srsAddBtn); footer.appendChild(pdfBtn); footer.appendChild(csvBtn);
     footer.appendChild(clearBtn); footer.appendChild(quizBtn); footer.appendChild(closeBtn);
   }
   pop.appendChild(footer);
@@ -6051,6 +6571,33 @@ function openHeatmap() {
     overview.appendChild(card);
   });
   body.appendChild(overview);
+  const ts = checkin.todayStats();
+  const streakDays = checkin.streak();
+  const ck = el("div", "");
+  ck.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;font-size:.875em;margin-top:8px";
+  [
+    ["今日刷题", ts.q + " / " + state.dailyQuizGoal],
+    ["今日病例", ts.c + " / " + state.dailyCaseGoal],
+    ["今日复习", String(ts.r)],
+    ["连续打卡", streakDays + " 天"],
+    ["待复习", String(srs.dueCount())],
+  ].forEach(([k, v]) => {
+    const card = el("div", "");
+    card.style.cssText = "flex:1;min-width:88px;padding:8px 10px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
+    card.innerHTML = '<div style="font-size:.72em;color:var(--sub)">' + k + '</div><div style="font-size:1.15em;font-weight:700">' + escapeHtml(String(v)) + '</div>';
+    ck.appendChild(card);
+  });
+  body.appendChild(ck);
+  const ckTitle = el("div", "gh-section-title", "打卡（近 4 周，颜色越深学习越多）");
+  ckTitle.style.marginTop = "8px";
+  body.appendChild(ckTitle);
+  const grid = el("div", "checkin-grid");
+  checkin.lastDays(28).forEach(d => {
+    const cell = el("div", "checkin-cell" + (d.level ? " l" + d.level : ""));
+    cell.title = d.date + "：" + d.total + " 次";
+    grid.appendChild(cell);
+  });
+  body.appendChild(grid);
   const scroll = el("div", "detail-scroll");
   scroll.appendChild(el("div", "gh-section-title", "章节正确率"));
   const chapterStats = {};
@@ -6086,6 +6633,51 @@ function openHeatmap() {
       const row = el("div", "heat-row");
       row.appendChild(el("div", "heat-label", k));
       row.appendChild(el("div", "heat-pct", pct + "% (" + v.correct + "/" + v.total + ")"));
+      const go = el("button", "btn", "练");
+      go.style.cssText = "flex:none;width:auto;padding:0 12px;height:32px;margin-left:6px";
+      go.addEventListener("click", () => {
+        const parts = k.split(" · ");
+        const sj = parts[0], ch = parts[1];
+        const pool = questionStore.data.filter(q => q.subject === sj && (ch === "未填章节" ? !q.chapter : q.chapter === ch));
+        if (!pool.length) { confirmPopup("该章节暂无题目"); return; }
+        ov.remove();
+        openQuiz(pool, { mode: "practice", scope: "all", count: 20, shuffle: state.optionShuffle });
+      });
+      row.appendChild(go);
+      scroll.appendChild(row);
+    });
+  }
+  scroll.appendChild(el("div", "gh-section-title", "题型正确率"));
+  const typeStats = {};
+  questionStore.data.forEach(q => {
+    const k = q.type || "single";
+    if (!typeStats[k]) typeStats[k] = { total: 0, correct: 0 };
+    const st = answerStatusFor(q);
+    if (st.answered) { typeStats[k].total++; if (!st.anyWrong) typeStats[k].correct++; }
+  });
+  const typeEntries = Object.entries(typeStats).filter(([, v]) => v.total > 0);
+  if (!typeEntries.length) scroll.appendChild(el("div", "empty-note", "暂无数据"));
+  else typeEntries.forEach(([k, v]) => {
+    const pct = Math.round(v.correct / v.total * 100);
+    const row = el("div", "heat-row");
+    row.appendChild(el("div", "heat-label", QUIZ_TYPES[k] || k));
+    const bar = el("div", "heat-bar");
+    const fill = el("div", "heat-fill");
+    fill.style.width = pct + "%";
+    fill.style.background = pct >= 80 ? "#4dcc66" : pct >= 60 ? "#f2c433" : pct >= 40 ? "#ff9933" : "#d62828";
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    row.appendChild(el("div", "heat-pct", pct + "% (" + v.correct + "/" + v.total + ")"));
+    scroll.appendChild(row);
+  });
+  if (examHistory.data.length) {
+    scroll.appendChild(el("div", "gh-section-title", "考试历史"));
+    examHistory.data.slice(0, 8).forEach(rec => {
+      const row = el("div", "heat-row");
+      const d3 = new Date(rec.at || Date.now());
+      const hm = String(d3.getHours()).padStart(2, "0") + ":" + String(d3.getMinutes()).padStart(2, "0");
+      row.appendChild(el("div", "heat-label", formatDate(d3) + " " + hm));
+      row.appendChild(el("div", "heat-pct", (rec.pct || 0) + " 分 (" + (rec.correct || 0) + "/" + (rec.total || 0) + ")"));
       scroll.appendChild(row);
     });
   }
@@ -6118,7 +6710,9 @@ function makeQuestionCard(q) {
   main.addEventListener("click", () => openQuiz([q]));
   main.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); openQuiz([q]); } });
   const stem = q.type === "B" ? (q.subQuestions[0] && q.subQuestions[0].stem) || "B型题" : q.type === "A3" ? q.caseStem || "病例串题" : q.stem;
-  const titleSpan = el("span", "item-title", (q.starred ? "★ " : "") + (stem || "").slice(0, 30) + ((stem && stem.length > 30) ? "…" : "") + "  |  " + (QUIZ_TYPES[q.type] || q.type));
+  const kws = (parseSearchQuery(state.qSearch || "").keywords || []).map(k => String(k).toLowerCase());
+  const titleSpan = el("span", "item-title");
+  titleSpan.innerHTML = (q.starred ? "★ " : "") + hlTextHtml((stem || "").slice(0, 30) + ((stem && stem.length > 30) ? "…" : ""), kws) + "  |  " + escapeHtml(QUIZ_TYPES[q.type] || q.type);
   main.appendChild(titleSpan);
   if (st.any) {
     const badge = el("span", "item-status", st.anyWrong ? "✗" : "✓");
@@ -6136,11 +6730,16 @@ function getFilteredQuestions() {
   if (state.qSubject !== "全部") data = data.filter(q => q.subject === state.qSubject);
   if (state.qType !== "全部") data = data.filter(q => q.type === state.qType);
   if (state.qSearch) {
-    const s = state.qSearch.toLowerCase();
-    data = data.filter(q => {
-      const text = [q.stem, q.caseStem, q.explanation, (q.options || []).map(o => o.text).join(" "), (q.sharedOptions || []).map(o => o.text).join(" "), (q.subQuestions || []).map(sq => sq.stem).join(" "), (q.questions || []).map(sq => [sq.stem, (sq.options || []).map(o => o.text).join(" "), sq.explanation].join(" ")).join(" ")].join(" ").toLowerCase();
-      return text.indexOf(s) !== -1;
-    });
+    const parsed = parseSearchQuery(state.qSearch);
+    if (parsed.subject) data = data.filter(q => String(q.subject || "").indexOf(parsed.subject) !== -1);
+    if (parsed.chapter) data = data.filter(q => String(q.chapter || "").indexOf(parsed.chapter) !== -1);
+    if (parsed.keywords.length) {
+      const kws = parsed.keywords.map(k => String(k).toLowerCase());
+      data = data.filter(item => {
+        for (let i = 0; i < kws.length; i++) if (!keywordMatchesQuestion(item, kws[i])) return false;
+        return true;
+      });
+    }
   }
   return data;
 }
@@ -6264,8 +6863,7 @@ function getFiltered() {
     if (q.keywords.length) {
       const kws = q.keywords.map(k => String(k).toLowerCase());
       data = data.filter(d => {
-        const s = getSearchText(d);
-        for (let i = 0; i < kws.length; i++) if (s.indexOf(kws[i]) === -1) return false;
+        for (let i = 0; i < kws.length; i++) if (!keywordMatchesCase(d, kws[i])) return false;
         return true;
       });
     }
@@ -6291,7 +6889,10 @@ function makeItemCard(item) {
   main.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showDetail(item); }
   });
-  main.appendChild(el("span", "item-title", (item.starred ? "★ " : "") + item.title + "  |  " + (item.subject || "")));
+  const kws = currentSearchKeywords();
+  const titleSpan = el("span", "item-title");
+  titleSpan.innerHTML = (item.starred ? "★ " : "") + hlTextHtml(item.title || "", kws) + "  |  " + hlTextHtml(item.subject || "", kws);
+  main.appendChild(titleSpan);
   const statusBtn = el("button", "item-status", item.status || "未看");
   statusBtn.addEventListener("click", (e) => { e.stopPropagation(); cycleItemStatus(item); });
   main.appendChild(statusBtn);
@@ -6425,6 +7026,1035 @@ function openBigRecord() {
 }
 
 /* =========================================================
+   v2 新增模块
+   1) 确认弹窗（多按钮）    2) 拼音首字母搜索
+   3) 间隔重复（SRS）       4) 打卡 / 学习统计
+   5) 考试历史              6) 语音朗读（TTS）
+   7) 相关病例推荐          8) AI 追问 / 全库问答（RAG）
+   9) AI 助记口诀          10) AI 批改主观题
+  11) 病例卡片分享图      12) Anki CSV 导出
+  13) 错题 PDF            14) 复习提醒通知
+  15) 自定义快捷键        16) 考试结果
+   ========================================================= */
+
+/* ---------- 1) 多按钮确认弹窗 ---------- */
+function confirmChoice(text, choices, title) {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-sm");
+  pop.appendChild(el("div", "popup-title", title || "请选择"));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "confirm-msg", text));
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  cancelBtn.addEventListener("click", () => ov.remove());
+  footer.appendChild(cancelBtn);
+  (choices || []).forEach(c => {
+    const b = el("button", "btn" + (c.primary ? " active" : ""), c.label);
+    b.addEventListener("click", () => { ov.remove(); if (typeof c.onClick === "function") c.onClick(); });
+    footer.appendChild(b);
+  });
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+  return ov;
+}
+
+/* ---------- 2) 拼音首字母 ---------- */
+const PY_INITIALS_RAW = "一y丁d七q万w三s上s下x不b与y专z丘q丙b业y丛c丝s丢d两l严y丧s个g中z串c临l丸w丹d为w主z久j义y乏f乒p乓p乘c乙y乱l乳r争z二e于y互h五w亚y亡w亢k交j产c亲q人r什s仁r介j从c仑l他t代d以y件j价j伊y休x优y会h传c伤s伦l伯b估g伴b伸s似s位w低d体t作z佝g使s供g依y侣l侧c侵q便b促c保b信x修x倍b倒d候h值z倾q假j偏p停t健j偶o偻l偿c储c催c像x僵j儿e元y充c先x光g克k免m入r全q兰l共g关g兴x其q具j典d养y兼j内n冈g再z冒m军j农n冠g冬d冲c况k冷l冻d净j准z凋d减j凝n凡f凯k凸t凹a出c击j刀d分f切q划h列l则z刚g创c初c判p利l别b到d制z刺c剂j削x前q剖p剥b剩s剪j副f割g力l功g加j动d助z劳l势s勃b包b化h匹p区q医y匿n十s升s半b协x卒z卓z单d卟b卡k卧w卫w印y危w卵l压y厌y厚h原y厥j去q参c叉c及j友y双s反f发f取q受s变b叠d口k叩k可k台t史s右y叶y号h司s各g合h吉j同t名m后h吐t向x吖y吞t吡b吩f含h听t启q吸x吻w呆d呈c告g呕o员y呤l周z呼h命m和h咬y咯g咳k咽y品p哆d响x哮x哺b唇c啉l啶d喉h喘c喙h喷p嗜s嗪q嗽s嘌p嘧m器q噬s噻s囊n四s回h因y团t困k围w固g图t圆y在z地d场c坏h坐z块k垂c型x垫d埃a域y培p基j堡b堵d塌t塑s塞s境j增z墨m壁b壕h士s壮z声s壳k壶h处c备b复f外w多d夜y大d天t夫f央y失s头t夹j奇q奋f奎k契q套t女n奶n好h妇f妊r妥t始s娠s娩m婴y媒m子z孔k孕y存c孟m孢b孤g学x孪l安a完w宏h官g定d实s客k室s宫g害h家j容r宽k宿s寄j密m寒h寡g对d导d封f射s小x少s尔e尖j尘c尤y尺c尼n尾w尿n局j层c屈q屏p展z属s山s岛d峡x峰f崎q崩b嵌q巢c工g左z巧q巨j差c巯q己j巴b布b希x帕p带d常c帽m幕m干g平p年n并b幼y幽y床c序x库k应y底d度d座z庭t康k廓k延y建j开k异y式s弓g引y弛c张z弥m弧h弹d强q当d录l形x影y征z径j律l得d御y循x微w德d心x必b志z快k念n怀h态t急j性x总z恒h恢h恩e息x恶e患h情q惰d愈y意y感g慢m憩q戈g戊w成c我w戒j或h战z截j房f所s扁b手s扑p打d执z扩k扫s扭n扰r扳b技j抑y抗k折z护h报b抬t抵d抽c拉l拓t拟n择z括k拮j拴s拷k拼p持c挂g指z挛l挤j挥h挫c振z捕b损s换h据j掌z排p探t接j控k推t描m提t插c搏b搐c搦n搭d摄s摩m撕s撤c播b操c擦c支z收s改g攻g放f效x敏m救j散s数s敲q整z文w斑b斗d料l斜x斥c断d斯s新x方f施s旁p旋x族z无w日r早z时s明m昏h易y星x春c是s昼z显x晓x晕y晚w晨c晶j暂z暑s暖n暴b曲q更g曼m替t最z月y有y朊r朋p朗l期q木m未w末m本b术s机j杀s杂z杆g杉s束s条t来l杯b松s板b极j构g析x枕z林l果g枝z枢s枯k架j枷j柏b染r柠n查c柯k柱z标b树s栓s校x样y核h根g格g框k案a桑s桡r桥q桶t梁l梅m梗g梨l梭s梯t械x检j棉m棕z棘j森s植z椎c楔x概g榔l槟b模m横h橙c檬m次c欣x欲y歇x止z正z步b歧q死s殊s残c殖z段d母m毒d比b毕b毛m氏s民m气q氟f氢q氧y氨a氮d氯l水s永y汀t汁z汉h池c沉c沙s沟g没m油y治z泄x泌m法f泛f泡p波b注z泳y泵b泻x洋y洗x洛l洞d活h流l浅q浆j测c济j浓n海h浸j消x涉s润r液y涵h淀d淋l淡d淤y深s混h淹y清q渗s渡d温w游y湿s溃k源y溢y溴x溶r溺n滋z滑h滞z满m滤l漏l演y漫m潜q潮c潴z激j灌g火h灭m灰h灵l灶z灼z炎y点d炼l烂l烟y烧s热r烯x烷w焦j然r煤m照z熊x熟s燥z爆b爪z爬p片p牙y牛n物w牵q特t犬q犯f状z狂k独d狭x狼l猝c猫m率l环h现x玻b珀p珠z球q理l琥h璃l瓣b瓦w瓷c甘g生s用y由y甲j电d男n界j留l畜c略l畴c畸j疏s疖j疗l疙g疝s疡y疣y疫y疬l疮c疯f疱p疲p疸d疹z疼t疽j疾j痂j病b症z痈y痉j痊q痔z痕h痛t痢l痣z痪h痫x痰t瘀y瘘l瘢b瘤l瘦s瘩d瘫t瘰l癌a癜d癫d登d白b百b皂z的d皮p皱z盂y盆p盐y监j盒h盖g盘p目m盲m直z相x真z眠m眼y着z睡s睾g知z短d矮a石s码m砂s研y破p础c硅g硒x硝x硫l硬y确q碍a碎s碘d碱j碳t磁c磷l磺h示s社s神s禁j离l禽q种z科k秘m积j称c移y稀x程c稳w究j穹q空k穿c突t窄z窒z窗c窘j窝w窦d窿l立l竞j童t竭j端d笔b第d等d筋j答d策c筛s签q算s管g米m类l粉f粒l粗c粘z粟s粥z精j糖t糙c糜m系x紊w素s索s紧j紫z红h纤x约y级j纯c纳n纵z纹w线x绀g练l组z细x织z终z绍s经j绒r结j给g络l绝j绞j统t绦t继j绪x续x维w绵m综z绿l缀z缓h缔d编b缘y缝f缩s缺q网w罕h罗l罩z置z罹l羊y羟q群q羧s翳y翻f老l者z耐n耗h耳e耶y耻c聋l职z联l聚j肉r肋l肌j肘z肛g肝g肠c股g肢z肤f肥f肩j肪f肱g育y肺f肼j肽t肾s肿z胀z胃w胆d背b胎t胖p胚p胞b胫j胰y胱g胶j胸x胺a能n脂z脆c脉m脊j脏z脐q脑n脓n脚j脱t脲n脾p腐f腓f腔q腕w腘g腰y腱j腹f腺x腿t膀b膈g膏g膜m膝x膨p膳s臀t臂b自z臭c致z臼j舌s舞w般b良l色s艾a节j芥j芯x花h芳f芽y苏s苗m苯b苷g范f茎j茚y茨c茶c草c荐j荡d荧y药y荷h获h菌j菜c菲f萄t萎w萜t营y萨s葡p蒂d蒽e蓄x蓖b蓝l蔓m蕈x薄b虎h虫c蚀s蚓y蚕c蚣g蚴y蛇s蛋d蛔h蛛z蜂f蜇z蜈w蜕t蜘z蜜m蝎x蝶d融r螺l血x行x衍y衔x衡h衣y补b表b衰s袋d袖x袢p被b袭x裂l装z裹g褐h褪t西x要y见j观g规g视s觉j角j解j触c言y计j认r训x讯x记j许x论l访f证z评p识s诊z译y试s语y误w诱y说s诺n读d调d谢x谱p谷g豆d象x贝b负f败b质z贫p贮z贯g贲b贺h赖l赘z赫h走z赶g起q超c越y趋q足z趾z跖z跛b距j跟g跨k路l踝h踪z蹄t蹈d蹲d身s躯q转z软r轴z载z较j辅f辐f辑j输s边b达d迁q过g运y近j返f还h进j远y连l迟c迪d迫p述s迷m迹j追z退t送s适s逃t逆n选x透t逐z递d途t通t速s造z逸y遏e道d遗y避b郁y部b配p酒j酚f酪l酮t酯z酰x酵j酶m酸s醇c醉z醌k醒x醛q释s重z野y量l金j鉴j针z钉d钙g钝d钠n钴g钾j铁t铂b铅q铜t铬g银y链l锁s锈x锌x锐r错c锚m锤c锥z锭d键j锯j锰m锻d镁m镇z镜j镰l长z门m闭b问w间j阑l防f阳y阴y阵z阶j阻z阿a附f降j限x除c险x陷x隆l随s隐y隔g隙x障z隧s难n雄x集j雌c雷l雾w需x震z霉m霍h露l青q静j非f面m革g靶b鞍a鞘q鞭b韦w韧r音y顶d项x顺s顽w顿d预y颅l领l颈j颌h频p颗k题t颞n颤c风f食s饥j饰s饱b饲s饿e馈k香x马m驮t驱q驼t验y骑q骤z骨g骶d骺h骼g髁k髂q髋k髌b髓s高g鱼y鲨s鲱f鳞l鸟n鸡j鹅e麦m麻m黄h黏n黑h默m鼠s鼻b鼾h齿c龄l";
+let __pyMap = null;
+function getPyMap() {
+  if (__pyMap) return __pyMap;
+  __pyMap = Object.create(null);
+  for (let i = 0; i + 1 < PY_INITIALS_RAW.length; i += 2) {
+    __pyMap[PY_INITIALS_RAW.charAt(i)] = PY_INITIALS_RAW.charAt(i + 1);
+  }
+  return __pyMap;
+}
+function pyInitials(s) {
+  const map = getPyMap();
+  let out = "";
+  const str = String(s == null ? "" : s);
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charAt(i);
+    if (map[ch]) out += map[ch];
+    else if (/[a-zA-Z0-9]/.test(ch)) out += ch.toLowerCase();
+  }
+  return out;
+}
+const __pyCache = new WeakMap();
+function getPyText(item) {
+  let c = __pyCache.get(item);
+  if (c !== undefined) return c;
+  c = pyInitials((item.title || "") + " " + (item.chapter || "") + " " + (item.subject || "") + " " + (item.tags || []).join(" "));
+  __pyCache.set(item, c);
+  return c;
+}
+const __qSearchCache = new WeakMap();
+function getQuestionSearchText(q) {
+  let c = __qSearchCache.get(q);
+  if (c !== undefined) return c;
+  c = [q.stem, q.caseStem, q.explanation, q.subject, q.chapter,
+       (q.options || []).map(o => o.text).join(" "),
+       (q.sharedOptions || []).map(o => o.text).join(" "),
+       (q.subQuestions || []).map(sq => sq.stem).join(" "),
+       (q.questions || []).map(sq => [sq.stem, (sq.options || []).map(o => o.text).join(" "), sq.explanation].join(" ")).join(" ")
+      ].join(" ").toLowerCase();
+  __qSearchCache.set(q, c);
+  return c;
+}
+const __qPyCache = new WeakMap();
+function getQuestionPyText(q) {
+  let c = __qPyCache.get(q);
+  if (c !== undefined) return c;
+  c = pyInitials([q.stem, q.caseStem, q.subject, q.chapter].join(" ").slice(0, 200));
+  __qPyCache.set(q, c);
+  return c;
+}
+function isSubsequence(needle, hay) {
+  let i = 0;
+  for (let j = 0; j < hay.length && i < needle.length; j++) if (hay.charAt(j) === needle.charAt(i)) i++;
+  return i === needle.length;
+}
+function approxContains(text, word, maxDist) {
+  const lt = text.length, lw = word.length;
+  if (lw >= lt) return lt === lw;
+  for (let i = 0; i + lw <= lt; i++) {
+    let d = 0, j = 0;
+    for (; j < lw; j++) { if (text.charAt(i + j) !== word.charAt(j)) { d++; if (d > maxDist) break; } }
+    if (d <= maxDist) return true;
+  }
+  return false;
+}
+function keywordMatchesCase(d, kw) {
+  const s = getSearchText(d);
+  if (s.indexOf(kw) !== -1) return true;
+  if (String(d.id || "").toLowerCase().indexOf(kw) !== -1) return true;
+  if (kw.length >= 2 && /^[a-z0-9]+$/.test(kw)) {
+    const py = getPyText(d);
+    if (py.indexOf(kw) !== -1) return true;
+    if (kw.length >= 3 && isSubsequence(kw, py)) return true;
+    const ex = ABBR_MAP[kw.toUpperCase()];
+    if (ex && s.indexOf(ex.toLowerCase()) !== -1) return true;
+  }
+  if (kw.length >= 3 && isSubsequence(kw, s)) return true;
+  if (kw.length >= 4 && approxContains(String(d.title || "").toLowerCase(), kw, 1)) return true;
+  return false;
+}
+function keywordMatchesQuestion(q, kw) {
+  const s = getQuestionSearchText(q);
+  if (s.indexOf(kw) !== -1) return true;
+  if (String(q.id || "").toLowerCase().indexOf(kw) !== -1) return true;
+  if (kw.length >= 2 && /^[a-z0-9]+$/.test(kw)) {
+    const py = getQuestionPyText(q);
+    if (py.indexOf(kw) !== -1) return true;
+    if (kw.length >= 3 && isSubsequence(kw, py)) return true;
+    const ex = ABBR_MAP[kw.toUpperCase()];
+    if (ex && s.indexOf(ex.toLowerCase()) !== -1) return true;
+  }
+  if (kw.length >= 3 && isSubsequence(kw, s)) return true;
+  return false;
+}
+function currentSearchKeywords() {
+  const q = parseSearchQuery(state.search || "");
+  return (q.keywords || []).map(k => String(k).toLowerCase()).filter(Boolean);
+}
+function hlTextHtml(text, kws) {
+  let s = escapeHtml(String(text == null ? "" : text));
+  if (kws && kws.length) {
+    const parts = s.split(/(<[^>]*>)/);
+    for (let i = 0; i < parts.length; i += 2) {
+      if (!parts[i]) continue;
+      for (const kw of kws) {
+        if (!kw) continue;
+        try { parts[i] = parts[i].replace(new RegExp(escapeRegExp(kw), "gi"), m => '<span class="srch-hl">' + m + '</span>'); } catch (e) {}
+      }
+    }
+    s = parts.join("");
+  }
+  return s;
+}
+
+/* ---------- 富文本剥离（TTS / CSV 用） ---------- */
+function stripRichMarkup(s) {
+  return String(s == null ? "" : s)
+    .replace(/\|\s*(?=[^|\n]*\|)/g, "、")
+    .replace(/^\s*\|/gm, "").replace(/\|\s*$/gm, "")
+    .replace(/^#+\s*/gm, "")
+    .replace(/@([^|\n]*)\|/g, "$1：")
+    .replace(/[=!@$*_~^`]/g, "")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\n{2,}/g, "\n");
+}
+
+/* ---------- 3) 间隔重复 SRS ---------- */
+const srs = {
+  data: {},
+  load() {
+    this.data = {};
+    try {
+      const raw = localStorage.getItem(SRS_KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (o && typeof o === "object" && !Array.isArray(o)) this.data = o;
+      }
+    } catch (e) { this.data = {}; }
+  },
+  save() { try { localStorage.setItem(SRS_KEY, JSON.stringify(this.data)); } catch (e) {} },
+  keyFor(q, subIdx) {
+    const n = questionSubCount(q);
+    return n > 1 ? q.id + "#" + (subIdx || 0) : q.id;
+  },
+  get(k) { return this.data[k] || null; },
+  schedule(k, grade) {
+    const now = Date.now();
+    const r = this.data[k] || { ease: 2.5, ivl: 0, reps: 0, lapses: 0, due: 0, last: 0 };
+    if (grade <= 0) {
+      r.lapses = (r.lapses || 0) + 1;
+      r.reps = 0;
+      r.ease = Math.max(1.3, Math.round((r.ease - 0.2) * 100) / 100);
+      r.ivl = 0;
+      r.due = now + 10 * 60 * 1000;
+    } else {
+      if (!r.reps) r.ivl = grade >= 3 ? 4 : 1;
+      else if (r.reps === 1) r.ivl = grade >= 3 ? 8 : 3;
+      else r.ivl = Math.max(1, Math.round(r.ivl * r.ease * (grade === 3 ? 1.3 : grade === 2 ? 1 : 0.6)));
+      r.ease = clamp(Math.round((r.ease + (grade >= 3 ? 0.15 : grade <= 1 ? -0.15 : 0)) * 100) / 100, 1.3, 2.8);
+      r.reps = (r.reps || 0) + 1;
+      r.due = now + r.ivl * 86400000;
+    }
+    r.last = now;
+    this.data[k] = r;
+    this.save();
+    return r;
+  },
+  makeDue(k) {
+    const r = this.data[k] || { ease: 2.5, ivl: 0, reps: 0, lapses: 0, due: 0, last: 0 };
+    r.due = Date.now();
+    this.data[k] = r;
+  },
+  dueCount() {
+    const now = Date.now();
+    let n = 0;
+    for (const k in this.data) if ((this.data[k].due || 0) <= now) n++;
+    return n;
+  },
+  dueQuestions() {
+    const now = Date.now();
+    const byId = {};
+    questionStore.data.forEach(q => { byId[q.id] = q; });
+    const qids = {};
+    for (const k in this.data) {
+      if ((this.data[k].due || 0) > now) continue;
+      const qid = String(k).split("#")[0];
+      if (byId[qid]) qids[qid] = true;
+    }
+    return Object.keys(qids).map(id => byId[id]);
+  },
+  totalCount() { return Object.keys(this.data).length; },
+  reset() { this.data = {}; this.save(); },
+};
+function startSrsReview() {
+  const due = srs.dueQuestions();
+  if (!due.length) {
+    confirmPopup("🎉 今天没有到期的复习任务。\n\n刷题时系统会自动按遗忘曲线安排下次复习时间。");
+    return;
+  }
+  openQuiz(due, { mode: "practice", srs: true, shuffle: state.optionShuffle, scope: "srs" });
+}
+
+/* ---------- 4) 打卡 / 学习统计 ---------- */
+const checkin = {
+  data: { days: {} },
+  load() {
+    this.data = { days: {} };
+    try {
+      const raw = localStorage.getItem(CHECKIN_KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (o && typeof o === "object" && o.days && typeof o.days === "object") this.data = o;
+      }
+    } catch (e) {}
+  },
+  save() { try { localStorage.setItem(CHECKIN_KEY, JSON.stringify(this.data)); } catch (e) {} },
+  todayKey() { return formatDate(new Date()); },
+  day(k) {
+    let d = this.data.days[k];
+    if (!d) { d = { q: 0, c: 0, r: 0 }; this.data.days[k] = d; }
+    if (!d.cset) d.cset = {};
+    return d;
+  },
+  add(kind, n) {
+    const d = this.day(this.todayKey());
+    d[kind] = (d[kind] || 0) + (n || 1);
+    this.trim();
+    this.save();
+  },
+  addCaseOnce(id) {
+    const d = this.day(this.todayKey());
+    if (d.cset[id]) return;
+    d.cset[id] = 1;
+    d.c = (d.c || 0) + 1;
+    this.trim();
+    this.save();
+  },
+  trim() {
+    const keys = Object.keys(this.data.days).sort();
+    while (keys.length > 400) delete this.data.days[keys.shift()];
+  },
+  todayStats() { const d = this.data.days[this.todayKey()]; return { q: (d && d.q) || 0, c: (d && d.c) || 0, r: (d && d.r) || 0 }; },
+  streak() {
+    let n = 0;
+    const dt = new Date();
+    let firstIter = true;
+    for (let i = 0; i < 999; i++) {
+      const k = formatDate(dt);
+      const d = this.data.days[k];
+      const act = !!d && ((d.q || 0) + (d.c || 0) + (d.r || 0)) > 0;
+      if (act) n++;
+      else if (!firstIter) break;
+      firstIter = false;
+      dt.setDate(dt.getDate() - 1);
+    }
+    return n;
+  },
+  lastDays(num) {
+    const out = [];
+    const dt = new Date();
+    for (let i = num - 1; i >= 0; i--) {
+      const d2 = new Date(dt.getTime() - i * 86400000);
+      const k = formatDate(d2);
+      const d = this.data.days[k];
+      const total = d ? (d.q || 0) + (d.c || 0) + (d.r || 0) : 0;
+      const level = total <= 0 ? 0 : total < 5 ? 1 : total < 15 ? 2 : total < 30 ? 3 : 4;
+      out.push({ date: k, level, total });
+    }
+    return out;
+  },
+};
+
+/* ---------- 5) 考试历史 ---------- */
+const examHistory = {
+  data: [],
+  load() {
+    this.data = [];
+    try {
+      const raw = localStorage.getItem(EXAM_HIST_KEY);
+      if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) this.data = p; }
+    } catch (e) {}
+  },
+  save() { try { localStorage.setItem(EXAM_HIST_KEY, JSON.stringify(this.data.slice(0, 60))); } catch (e) {} },
+  add(rec) { this.data.unshift(rec); this.save(); },
+};
+
+/* ---------- 6) 语音朗读 TTS ---------- */
+const tts = {
+  speaking: false,
+  bar: null,
+  rate: 1.0,
+  supported() { return typeof window !== "undefined" && "speechSynthesis" in window; },
+  speak(text, label) {
+    if (!this.supported()) { confirmPopup("当前浏览器不支持语音朗读"); return; }
+    this.stop();
+    text = stripRichMarkup(String(text || "")).replace(/\s+/g, " ").trim();
+    if (!text) { confirmPopup("没有可朗读的内容"); return; }
+    try {
+      const u = new SpeechSynthesisUtterance(text.slice(0, 5000));
+      u.lang = "zh-CN";
+      u.rate = this.rate;
+      try {
+        const voices = window.speechSynthesis.getVoices() || [];
+        const zh = voices.find(v => /zh[-_]?CN|Chinese/i.test(v.lang)) || voices.find(v => /zh/i.test(v.lang));
+        if (zh) u.voice = zh;
+      } catch (e) {}
+      u.onend = () => this.stop();
+      u.onerror = () => this.stop();
+      this.speaking = true;
+      window.speechSynthesis.speak(u);
+      this.showBar(label || "朗读中…");
+    } catch (e) { this.speaking = false; confirmPopup("朗读失败：" + e.message); }
+  },
+  pauseToggle() {
+    if (!this.supported() || !this.speaking) return;
+    try {
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+      else window.speechSynthesis.pause();
+    } catch (e) {}
+    this.refreshBar();
+  },
+  stop() {
+    this.speaking = false;
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    this.hideBar();
+  },
+  showBar(label) {
+    this.hideBar();
+    const bar = el("div", "speech-bar");
+    const lb = el("div", "sb-label", "🔊 " + label);
+    const pauseBtn = el("button", "btn", "⏸ 暂停");
+    const slower = el("button", "btn", "慢");
+    const faster = el("button", "btn", "快");
+    const stopBtn = el("button", "btn", "⏹ 停止");
+    pauseBtn.addEventListener("click", () => { this.pauseToggle(); });
+    slower.addEventListener("click", () => { this.setRate(this.rate - 0.15); });
+    faster.addEventListener("click", () => { this.setRate(this.rate + 0.15); });
+    stopBtn.addEventListener("click", () => this.stop());
+    bar.appendChild(lb); bar.appendChild(slower); bar.appendChild(pauseBtn); bar.appendChild(faster); bar.appendChild(stopBtn);
+    document.body.appendChild(bar);
+    this.bar = bar;
+  },
+  setRate(r) {
+    this.rate = clamp(Math.round(r * 100) / 100, 0.6, 1.8);
+    if (this.speaking && this.lastText) this.speak(this.lastText, this.lastLabel);
+  },
+  refreshBar() {
+    if (!this.bar) return;
+    const pb = this.bar.querySelector("button");
+    try {
+      const paused = window.speechSynthesis.paused;
+      const btns = this.bar.querySelectorAll("button");
+      if (btns[1]) btns[1].textContent = paused ? "▶ 继续" : "⏸ 暂停";
+    } catch (e) {}
+  },
+  hideBar() { if (this.bar) { try { this.bar.remove(); } catch (e) {} this.bar = null; } },
+};
+function caseToSpeech(item) {
+  const fields = getFieldsForSubject(item.subject);
+  const parts = [item.title + "。" + (item.subject || "") + (item.chapter ? "，" + item.chapter : "")];
+  for (const [k, label] of fields) {
+    const v = String(item[k] == null ? "" : item[k]).trim();
+    if (!v) continue;
+    parts.push(label + "：" + v);
+    if (parts.join("").length > 4500) break;
+  }
+  return parts.join("。");
+}
+function openMnemonicRead(item) {
+  tts.lastText = caseToSpeech(item);
+  tts.lastLabel = item.title || "";
+  tts.speak(tts.lastText, tts.lastLabel);
+}
+
+/* ---------- 7) 相关病例推荐 ---------- */
+function titleBigrams(s) {
+  const set = Object.create(null);
+  const t = String(s || "");
+  for (let i = 0; i + 1 < t.length; i++) set[t.slice(i, i + 2)] = 1;
+  return set;
+}
+function relatedCasesFor(item, limit) {
+  const out = [];
+  const tags = {};
+  (item.tags || []).forEach(t => { tags[t] = true; });
+  const bt = titleBigrams(item.title);
+  for (const d of store.data) {
+    if (d.id === item.id) continue;
+    let s = 0;
+    if (d.subject === item.subject) s += 2;
+    if (item.chapter && d.chapter === item.chapter) s += 3;
+    for (const t of (d.tags || [])) if (tags[t]) s += 2;
+    if (d.subject === item.subject) {
+      const bg = titleBigrams(d.title);
+      let inter = 0;
+      for (const g in bt) if (bg[g]) inter++;
+      if (inter >= 2) s += inter;
+    }
+    if (s >= 4) out.push({ d, s });
+  }
+  out.sort((a, b) => b.s - a.s);
+  return out.slice(0, limit || 6).map(x => x.d);
+}
+
+/* ---------- 8) AI 追问 / 全库问答 ---------- */
+function ragTokens(query) {
+  const out = [];
+  const parts = String(query || "").split(/[\s,，。;；、？！?!/]+/).filter(Boolean);
+  for (const p of parts) {
+    if (/[\u4e00-\u9fff]/.test(p)) {
+      if (p.length >= 2) {
+        if (out.indexOf(p) === -1) out.push(p);
+        for (let i = 0; i + 2 <= p.length; i++) {
+          const bg = p.slice(i, i + 2);
+          if (out.indexOf(bg) === -1) out.push(bg);
+        }
+      }
+    } else if (p.length >= 2) {
+      if (out.indexOf(p.toLowerCase()) === -1) out.push(p.toLowerCase());
+    }
+  }
+  return out.slice(0, 24);
+}
+function ragRetrieve(query, k) {
+  const toks = ragTokens(query);
+  if (!toks.length) return [];
+  const scored = [];
+  for (const d of store.data) {
+    const title = String(d.title || "").toLowerCase();
+    let score = 0;
+    const s = getSearchText(d);
+    for (const t of toks) {
+      if (title.indexOf(t) !== -1) score += 5;
+      else if (s.indexOf(t) !== -1) score += 1;
+    }
+    if (score > 0) scored.push({ d, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, k || 4).map(x => x.d);
+}
+function openAiChat(opts) {
+  opts = opts || {};
+  const item = opts.item || null;
+  const ragMode = !!opts.rag;
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", opts.title || (ragMode ? "🤖 AI 全库问答" : "🤖 AI 追问导师")));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "hint-text", ragMode
+    ? "描述你的问题，系统会先在本地病例库检索，再让 AI 结合资料回答（末尾附参考病例）。"
+    : "围绕《" + (item && item.title || "") + "》追问，AI 会结合本条病例内容解答。"));
+  const box = el("div", "chat-box");
+  body.appendChild(box);
+  const inputRow = el("div", "chat-input-row");
+  const ta = document.createElement("textarea");
+  ta.placeholder = ragMode ? "例：慢阻肺和哮喘怎么鉴别？" : "例：这个病的首选治疗为什么是这样？";
+  ta.rows = 1;
+  const sendBtn = el("button", "btn", "发送");
+  inputRow.appendChild(ta); inputRow.appendChild(sendBtn);
+  body.appendChild(inputRow);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const clearBtn = el("button", "btn", "清空对话");
+  const closeBtn = el("button", "btn", "关闭");
+  footer.appendChild(clearBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  const history = [];
+  let busy = false;
+  function addMsg(role, text, cls) {
+    const m = el("div", "chat-msg " + (cls || role));
+    if (role === "user") m.textContent = text;
+    else m.innerHTML = renderRich(text, "");
+    box.appendChild(m);
+    box.scrollTop = box.scrollHeight;
+    return m;
+  }
+  function contextFor(question) {
+    if (item && !ragMode) {
+      return "【当前病例】\n" + stripRichMarkup(itemToPlainText(item)).slice(0, 4500);
+    }
+    const found = ragRetrieve(question, 4);
+    if (!found.length) return { ctx: "", found: [] };
+    let ctx = "";
+    for (const d of found) {
+      ctx += "【病例：" + d.title + "】\n" + stripRichMarkup(itemToPlainText(d)).slice(0, 1100) + "\n\n";
+      if (ctx.length > 5000) break;
+    }
+    return { ctx: ctx.slice(0, 5200), found };
+  }
+  async function send() {
+    if (busy) return;
+    const text = ta.value.trim();
+    if (!text) return;
+    ta.value = "";
+    addMsg("user", text);
+    const cfg = loadAiConfig();
+    const got = contextFor(text);
+    const ctx = typeof got === "string" ? got : got.ctx;
+    const found = typeof got === "string" ? [] : got.found;
+    const sys = "你是考研西医综合 306 的答疑导师。回答要求：准确、分点、简洁，结合给定资料；资料没覆盖时明确说明并给通用结论。" +
+      (ragMode ? "回答末尾另起一行输出「参考病例：」并列出你用到的病例标题（若无资料则写“无”）。" : "") +
+      (ctx ? "\n\n【资料】\n" + ctx : "");
+    const msgs = [{ role: "system", content: sys }];
+    history.slice(-6).forEach(h => msgs.push(h));
+    msgs.push({ role: "user", content: text });
+    busy = true; sendBtn.disabled = true;
+    const loadEl = addMsg("ai", "⏳ 正在思考…");
+    try {
+      const reply = await callAi(cfg, msgs, 120000);
+      try { loadEl.remove(); } catch (e) {}
+      addMsg("ai", reply);
+      history.push({ role: "user", content: text });
+      history.push({ role: "assistant", content: reply });
+      if (ragMode && found && found.length) {
+        const chips = el("div", "related-chips");
+        chips.appendChild(el("span", "hint-text", "📎 本次检索到："));
+        found.forEach(d => {
+          const c = el("button", "related-chip", d.title);
+          c.addEventListener("click", () => { ov.remove(); showDetail(d); });
+          chips.appendChild(c);
+        });
+        box.appendChild(chips);
+      }
+    } catch (e) {
+      loadEl.className = "chat-msg err";
+      loadEl.textContent = "❌ " + e.message + "\n（请在病例模式「🤖 AI出题」或刷题模式「AI出题」面板中配置服务商与 Key）";
+    }
+    busy = false; sendBtn.disabled = false;
+    box.scrollTop = box.scrollHeight;
+  }
+  sendBtn.addEventListener("click", send);
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
+  });
+  closeBtn.addEventListener("click", () => ov.remove());
+  clearBtn.addEventListener("click", () => { history.length = 0; box.innerHTML = ""; });
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+  setTimeout(() => { try { ta.focus(); } catch (e) {} }, 50);
+}
+
+/* ---------- 9) AI 助记口诀 ---------- */
+function openMnemonic(item) {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "🪄 AI 助记 · " + (item.title || "")));
+  const body = el("div", "popup-body");
+  const status = el("div", "gh-status", "");
+  const box = el("div", "mnemonic-box");
+  box.appendChild(el("div", "empty-note", "点击下方「生成」按钮，AI 会结合本条病例内容生成：\n① 记忆口诀　② 鉴别对比表　③ 易错提醒"));
+  body.appendChild(status);
+  body.appendChild(box);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const genBtn = el("button", "btn", "生成");
+  const copyBtn = el("button", "btn", "复制");
+  const saveBtn = el("button", "btn", "保存到病例");
+  const closeBtn = el("button", "btn", "关闭");
+  footer.appendChild(genBtn); footer.appendChild(copyBtn); footer.appendChild(saveBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  let lastText = "";
+  async function generate() {
+    const cfg = loadAiConfig();
+    genBtn.disabled = true;
+    status.className = "gh-status";
+    status.textContent = "⏳ 正在生成助记内容…";
+    const sys = [
+      "你是考研西医综合 306 的记忆教练。请为给定病例生成记忆材料，输出要求：",
+      "① 【记忆口诀】朗朗上口的口诀或谐音记忆法（可以有多条）；",
+      "② 【鉴别对比表】与最常混淆的 2~3 个疾病对比，使用富文本表格语法（每行以 | 开头结尾，第一行为表头）；",
+      "③ 【易错提醒】2~4 条高频错误点。",
+      "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；药名用 $$药名$$；不要输出 markdown 代码块。",
+      "只依据提供的病例资料和公认的教材知识，不要编造数值。",
+    ].join("\n");
+    try {
+      const reply = await callAi(cfg, [
+        { role: "system", content: sys },
+        { role: "user", content: "【病例】\n" + stripRichMarkup(itemToPlainText(item)).slice(0, 5000) },
+      ], 120000);
+      lastText = reply;
+      box.innerHTML = "";
+      box.innerHTML = renderRich(reply, "");
+      status.className = "gh-status ok";
+      status.textContent = "✅ 生成完成（仅供参考，请对照教材核对）";
+    } catch (e) {
+      status.className = "gh-status err";
+      status.textContent = "❌ " + e.message;
+    }
+    genBtn.disabled = false;
+  }
+  genBtn.addEventListener("click", generate);
+  copyBtn.addEventListener("click", () => {
+    if (!lastText) { confirmPopup("还没有可复制的内容"); return; }
+    copyText(lastText).then(() => confirmPopup("已复制")).catch(e => confirmPopup("复制失败：" + e.message));
+  });
+  saveBtn.addEventListener("click", () => {
+    if (!lastText) { confirmPopup("请先生成内容"); return; }
+    updateItemById(item.id, { ai_mnemonic: lastText });
+    confirmPopup("已保存到病例「其他信息 → AI 助记口诀」");
+  });
+  closeBtn.addEventListener("click", () => ov.remove());
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* ---------- 10) AI 批改主观题 ---------- */
+async function aiGradeEssay(q, userText) {
+  const cfg = loadAiConfig();
+  const ref = (q.answer || []).join("\n");
+  const sys = [
+    "你是考研西医综合 306 的阅卷老师。请批改学生的病例分析/简答作答。",
+    "评分要求：按要点给分（0-100），指出遗漏的要点和错误，并给出改进建议。",
+    "严格输出 JSON（不要 markdown 代码块、不要多余文字）：",
+    '{"score": 0-100 的整数, "comment": "批改意见，可用分点，允许使用 ==高亮== 标记要点"}',
+  ].join("\n");
+  const user = "【题目】\n" + (q.caseStem ? q.caseStem + "\n" + q.stem : q.stem) + "\n\n【参考答案要点】\n" + ref.slice(0, 3500) + "\n\n【学生作答】\n" + String(userText || "").slice(0, 3500);
+  const reply = await callAi(cfg, [{ role: "system", content: sys }, { role: "user", content: user }], 120000);
+  const obj = tryParseJson(String(reply).replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
+  if (!obj || typeof obj !== "object") return { score: null, comment: String(reply) };
+  const score = clamp(Math.round(Number(obj.score)) || 0, 0, 100);
+  return { score, comment: String(obj.comment || "（无评语）") };
+}
+
+/* ---------- 11) 病例卡片分享图 ---------- */
+function wrapCanvasText(ctx, text, maxWidth, maxLines) {
+  const lines = [];
+  let cur = "";
+  for (const ch of String(text || "")) {
+    if (ch === "\n") { lines.push(cur); cur = ""; if (lines.length >= maxLines) break; continue; }
+    if (ctx.measureText(cur + ch).width > maxWidth) { lines.push(cur); cur = ch; if (lines.length >= maxLines) break; }
+    else cur += ch;
+  }
+  if (lines.length < maxLines && cur) lines.push(cur);
+  if (lines.length >= maxLines) lines[maxLines - 1] = lines[maxLines - 1].slice(0, Math.max(0, lines[maxLines - 1].length - 1)) + "…";
+  return lines;
+}
+function buildCardCanvas(item) {
+  return new Promise((resolve, reject) => {
+    try {
+      const W = 900;
+      const pad = 48;
+      const c = document.createElement("canvas");
+      const ctx = c.getContext("2d");
+      ctx.font = "600 40px 'Noto Sans SC','PingFang SC',sans-serif";
+      const titleLines = wrapCanvasText(ctx, item.title || "未命名病例", W - pad * 2, 2);
+      const fields = getFieldsForSubject(item.subject).filter(([k]) => String(item[k] || "").trim());
+      const picks = [];
+      let used = 0;
+      for (const [k, label] of fields) {
+        const v = stripRichMarkup(String(item[k] || "").trim());
+        if (!v) continue;
+        picks.push([label, v]);
+        used += Math.min(3, Math.ceil(v.length / 34));
+        if (used >= 18 || picks.length >= 8) break;
+      }
+      ctx.font = "24px 'Noto Sans SC','PingFang SC',sans-serif";
+      let bodyH = 0;
+      const prepared = picks.map(([label, v]) => {
+        const lines = wrapCanvasText(ctx, v, W - pad * 2 - 170, 3);
+        bodyH += Math.max(1, lines.length) * 36 + 18;
+        return { label, lines };
+      });
+      const headH = 60 + titleLines.length * 52 + 46;
+      const H = Math.min(2600, headH + bodyH + 120 + 90);
+      c.width = W; c.height = H;
+      const x = c.getContext("2d");
+      x.fillStyle = "#f4f6fa"; x.fillRect(0, 0, W, H);
+      const color = SUBJECT_COLORS[item.subject] || "#1a4db3";
+      x.fillStyle = color; x.fillRect(0, 0, W, headH);
+      x.fillStyle = "rgba(255,255,255,.16)"; x.beginPath(); x.arc(W - 60, 40, 120, 0, Math.PI * 2); x.fill();
+      x.fillStyle = "#fff";
+      x.font = "700 44px 'Noto Sans SC','PingFang SC',sans-serif";
+      titleLines.forEach((l, i) => x.fillText(l, pad, 84 + i * 54));
+      x.font = "24px 'Noto Sans SC','PingFang SC',sans-serif";
+      x.fillStyle = "rgba(255,255,255,.92)";
+      const meta = [item.subject || "", item.chapter || "", item.frequency || ""].filter(Boolean).join(" · ");
+      x.fillText(meta, pad, 84 + titleLines.length * 54 + 8);
+      let y = headH + 48;
+      x.font = "24px 'Noto Sans SC','PingFang SC',sans-serif";
+      for (const p of prepared) {
+        x.fillStyle = "#1a4db3";
+        x.font = "700 24px 'Noto Sans SC','PingFang SC',sans-serif";
+        x.fillText(p.label, pad, y + 24);
+        x.fillStyle = "#20242c";
+        x.font = "24px 'Noto Sans SC','PingFang SC',sans-serif";
+        p.lines.forEach((l, i2) => x.fillText(l, pad + 170, y + 24 + i2 * 36));
+        y += Math.max(1, p.lines.length) * 36 + 18;
+        if (y > H - 150) break;
+      }
+      x.fillStyle = "rgba(0,0,0,.06)"; x.fillRect(0, H - 84, W, 84);
+      x.fillStyle = "#5a6072"; x.font = "22px 'Noto Sans SC','PingFang SC',sans-serif";
+      x.fillText("考研西医综合 306 · 病例速查", pad, H - 34);
+      x.textAlign = "right";
+      x.fillText(item.id || "", W - pad, H - 34);
+      x.textAlign = "left";
+      resolve(c);
+    } catch (e) { reject(e); }
+  });
+}
+async function shareCaseImage(item) {
+  const canvas = await buildCardCanvas(item);
+  const blob = await new Promise(res => canvas.toBlob(b => res(b), "image/png"));
+  if (!blob) throw new Error("图片生成失败");
+  const file = new File([blob], "kaoyan306-" + (item.id || "case") + ".png", { type: "image/png" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: item.title || "病例卡片" }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = file.name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 600);
+}
+
+/* ---------- 12) Anki CSV ---------- */
+function csvEscape(v) {
+  v = String(v == null ? "" : v);
+  if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+  return v;
+}
+function downloadCsv(filename, text) {
+  const blob = new Blob(["\uFEFF" + text], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 600);
+}
+function exportCasesCsv(items) {
+  const lines = ["标题,内容,标签"];
+  for (const d of items) {
+    const front = d.title + "\n" + [d.subject, d.chapter].filter(Boolean).join(" · ");
+    const back = stripRichMarkup(itemToPlainText(d)).slice(0, 20000);
+    const tags = [d.subject, d.status || "", (d.tags || []).join(" ")].filter(Boolean).join(" ");
+    lines.push([csvEscape(front), csvEscape(back), csvEscape(tags)].join(","));
+  }
+  downloadCsv("kaoyan306-cases-anki.csv", lines.join("\n"));
+}
+function exportQuestionsCsv(qs) {
+  const lines = ["正面,背面,标签"];
+  for (const q of qs) {
+    let front = q.type === "A3" ? (q.caseStem || "") + "\n" + (q.stem || "") : (q.stem || "");
+    let back = "";
+    if (q.type === "B") {
+      back = "（共用选项）" + (q.sharedOptions || []).map(o => o.key + ". " + o.text).join("；") + "\n" +
+        (q.subQuestions || []).map(sq => sq.stem + " → " + (sq.answer || []).join("") + "\n" + stripRichMarkup(sq.explanation || "")).join("\n");
+    } else if (q.type === "A3") {
+      back = (q.questions || []).map(sq => sq.stem + "\n" + (sq.options || []).map(o => o.key + ". " + o.text).join("\n") + "\n答案：" + (sq.answer || []).join("") + "\n" + stripRichMarkup(sq.explanation || "")).join("\n\n");
+    } else if (q.type === "essay") {
+      back = (q.answer || []).join("\n");
+    } else {
+      back = (q.options || []).map(o => o.key + ". " + o.text).join("\n") + "\n答案：" + (q.answer || []).join("") + "\n" + stripRichMarkup(q.explanation || "");
+    }
+    const tags = [q.subject, q.chapter || "", QUIZ_TYPES[q.type] || q.type].filter(Boolean).join(" ");
+    lines.push([csvEscape(stripRichMarkup(front)), csvEscape(back), csvEscape(tags)].join(","));
+  }
+  downloadCsv("kaoyan306-questions-anki.csv", lines.join("\n"));
+}
+
+/* ---------- 13) 错题 PDF ---------- */
+function buildWrongPrintDocument(qs) {
+  const now = new Date();
+  const dateStr = formatDate(now);
+  let body = "";
+  qs.forEach((q, idx) => {
+    let html = '<section class="pf-item"><h2 class="pf-ititle">' + (idx + 1) + ". " + escapeHtml(q.subject || "") + (q.chapter ? " · " + escapeHtml(q.chapter) : "") + "（错 " + Math.max(1, answerStatusFor(q).wrongCount) + " 次）</h2>";
+    if (q.type === "B") {
+      html += '<div class="pf-field"><div class="pf-flabel">共用选项</div><div class="pf-fcontent">' + (q.sharedOptions || []).map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + "</div></div>";
+      (q.subQuestions || []).forEach(sq => {
+        html += '<div class="pf-field"><div class="pf-flabel">题干</div><div class="pf-fcontent">' + renderRich(sq.stem, "") + '</div></div>';
+        html += '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + escapeHtml((sq.answer || []).join("、")) + '</div></div>';
+        if (sq.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(sq.explanation, "") + "</div></div>";
+      });
+    } else if (q.type === "A3") {
+      if (q.caseStem) html += '<div class="pf-field"><div class="pf-flabel">病例</div><div class="pf-fcontent">' + renderRich(q.caseStem, "") + "</div></div>";
+      (q.questions || []).forEach(sq => {
+        html += '<div class="pf-field"><div class="pf-flabel">小问</div><div class="pf-fcontent">' + renderRich(sq.stem, "") + "</div></div>";
+        if (sq.options && sq.options.length) html += '<div class="pf-field"><div class="pf-flabel">选项</div><div class="pf-fcontent">' + sq.options.map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + "</div></div>";
+        html += '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + escapeHtml((sq.answer || []).join("、")) + '</div></div>';
+        if (sq.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(sq.explanation, "") + "</div></div>";
+      });
+    } else {
+      html += '<div class="pf-field"><div class="pf-flabel">题干</div><div class="pf-fcontent">' + renderRich(q.stem || "", "") + "</div></div>";
+      if (q.options && q.options.length) html += '<div class="pf-field"><div class="pf-flabel">选项</div><div class="pf-fcontent">' + q.options.map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + "</div></div>";
+      html += '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + escapeHtml((q.answer || []).join("、")) + '</div></div>';
+      if (q.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(q.explanation, "") + "</div></div>";
+    }
+    if (q.relatedCase) html += '<div class="pf-imeta">关联病例：' + escapeHtml(q.relatedCase) + "</div>";
+    html += "</section>";
+    body += html;
+  });
+  const css = [
+    "body{font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:11pt;color:#1f1f1f;margin:0;padding:0}",
+    ".pf-header{text-align:center;border-bottom:2px solid #1a4db3;padding:10px 0 8px;margin-bottom:14px}",
+    ".pf-header h1{font-size:16pt;color:#1a4db3;margin:0 0 4px}",
+    ".pf-sub{font-size:9pt;color:#666}",
+    ".pf-item{page-break-inside:avoid;border-bottom:1px dashed #ccc;padding:8px 0 12px;margin-bottom:6px}",
+    ".pf-ititle{font-size:12pt;color:#1a4db3;margin:0 0 6px}",
+    ".pf-imeta{font-size:9pt;color:#666;margin-top:4px}",
+    ".pf-field{margin:3px 0}",
+    ".pf-flabel{font-weight:700;color:#1a4db3;font-size:10pt}",
+    ".pf-fcontent{font-size:10.5pt;line-height:1.7;word-break:break-word}",
+    ".rich-hl{background:#fff3a0;padding:0 3px;border-radius:2px;font-weight:600}",
+    ".rich-key{color:#1a6dd6;font-weight:700}.rich-danger{color:#d62828;font-weight:700}",
+    ".rich-bold{font-weight:700}.rich-drug{color:#b83bbf;font-weight:700}",
+    ".rich-table{border-collapse:collapse;width:100%;font-size:10pt}",
+    ".rich-table th,.rich-table td{border:1px solid #bbb;padding:3px 6px}",
+    ".rich-hr{border:none;border-top:1px dashed #ccc}",
+    ".rich-list{display:block;padding-left:14px}.rich-quote{display:block;border-left:3px solid #1a4db3;padding:2px 8px;color:#555}",
+    ".rich-img{max-width:100%}",
+  ].join("\n");
+  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>错题本</title><style>' + css + "</style></head><body>" +
+    '<header class="pf-header"><h1>考研西医综合 306 · 错题本</h1><div class="pf-sub">共 ' + qs.length + " 题　·　导出于 " + dateStr + "</div></header>" + body + "</body></html>";
+}
+
+/* ---------- 14) 复习提醒通知 ---------- */
+const notifyMgr = {
+  _t: null,
+  supported() { return typeof window !== "undefined" && "Notification" in window; },
+  async requestPermission() {
+    if (!this.supported()) return false;
+    try { return (await Notification.requestPermission()) === "granted"; } catch (e) { return false; }
+  },
+  flag() { try { return localStorage.getItem(NOTIFY_FLAG_KEY) || ""; } catch (e) { return ""; } },
+  setFlag(v) { try { localStorage.setItem(NOTIFY_FLAG_KEY, v); } catch (e) {} },
+  show(title, body) {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(reg => {
+          try { reg.showNotification(title, { body: body, icon: "icons/icon.svg", badge: "icons/icon.svg" }); } catch (e) {}
+        }).catch(() => {});
+        return;
+      }
+    } catch (e) {}
+    try { new Notification(title, { body: body }); } catch (e) {}
+  },
+  check() {
+    if (!state.notifyEnabled) return;
+    const now = new Date();
+    const hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    if (hm < state.notifyTime) return;
+    const today = formatDate(now);
+    if (this.flag() === today) return;
+    const due = srs.dueCount();
+    const ts = checkin.todayStats();
+    const quizLeft = Math.max(0, state.dailyQuizGoal - ts.q);
+    if (due > 0 || quizLeft > 0) {
+      this.setFlag(today);
+      const parts = [];
+      if (due > 0) parts.push("今日待复习 " + due + " 题");
+      if (quizLeft > 0) parts.push("刷题还差 " + quizLeft + " 题");
+      this.show("⏰ 学习提醒", parts.join("，") + "，加油！");
+    }
+  },
+  start() {
+    this.stop();
+    this.check();
+    this._t = setInterval(() => this.check(), 60000);
+  },
+  stop() { if (this._t) { clearInterval(this._t); this._t = null; } },
+};
+
+/* ---------- 15) 自定义快捷键 ---------- */
+function normalizeShortcutKey(e) {
+  if (e.key === " ") return "Space";
+  return e.key.length === 1 ? e.key.toLowerCase() : e.key;
+}
+function prettyShortcutKey(k) {
+  if (k === "Space") return "空格";
+  if (k === "Enter") return "回车";
+  if (k === "ArrowLeft") return "←";
+  if (k === "ArrowRight") return "→";
+  return String(k || "");
+}
+function openKbEditor() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-sm");
+  pop.appendChild(el("div", "popup-title", "自定义快捷键"));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "hint-text", "点击输入框后按下新按键即可设置。\n选项键 A-E / 1-5 固定不变；Esc 固定为关闭弹窗。"));
+  const inputs = {};
+  let capturing = null;
+  function onCapture(e) {
+    if (!capturing) return;
+    e.preventDefault(); e.stopPropagation();
+    const k = normalizeShortcutKey(e);
+    if (e.key === "Escape") { capturing.value = prettyShortcutKey(state.shortcuts[capturing.dataset.k]); capturing = null; return; }
+    if (SHORTCUT_BLOCKED.indexOf(String(k).toLowerCase()) !== -1) { capturing.value = "已被占用，换一个"; return; }
+    const key = capturing.dataset.k;
+    for (const a of SHORTCUT_ACTIONS) if (a[0] !== key && state.shortcuts[a[0]] === k) state.shortcuts[a[0]] = "";
+    state.shortcuts[key] = k;
+    saveSettings();
+    capturing.value = prettyShortcutKey(k);
+    capturing = null;
+  }
+  SHORTCUT_ACTIONS.forEach(([key, label]) => {
+    const r = el("div", "settings-row");
+    r.appendChild(el("div", "row-label", label));
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.readOnly = true;
+    inp.className = "edit-input kb-input";
+    inp.value = prettyShortcutKey(state.shortcuts[key]);
+    inp.dataset.k = key;
+    inp.addEventListener("focus", () => { capturing = inp; inp.value = "按下新键…"; });
+    inp.addEventListener("blur", () => { if (capturing === inp) capturing = null; inp.value = prettyShortcutKey(state.shortcuts[key]); });
+    inp.addEventListener("keydown", onCapture);
+    inputs[key] = inp;
+    r.appendChild(inp);
+    body.appendChild(r);
+  });
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const resetBtn = el("button", "btn", "恢复默认");
+  const closeBtn = el("button", "btn", "完成");
+  resetBtn.addEventListener("click", () => {
+    state.shortcuts = Object.assign({}, SETTINGS_DEFAULTS.shortcuts);
+    saveSettings();
+    SHORTCUT_ACTIONS.forEach(([key]) => { if (inputs[key]) inputs[key].value = prettyShortcutKey(state.shortcuts[key]); });
+  });
+  closeBtn.addEventListener("click", () => ov.remove());
+  footer.appendChild(resetBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* ---------- 16) 考试结果 ---------- */
+function openExamResult(ctx) {
+  const total = ctx.total || 0;
+  const correct = ctx.correct || 0;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  examHistory.add({
+    at: Date.now(),
+    total: total,
+    correct: correct,
+    pct: pct,
+    timeUsed: ctx.timeUsed || 0,
+    subjects: ctx.subjects || {},
+  });
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "📝 考试结果"));
+  const body = el("div", "popup-body");
+  const score = el("div", "exam-score", pct + " 分");
+  body.appendChild(score);
+  const line = el("div", "detail-meta", "共作答 " + total + " 题 · 答对 " + correct + " · 用时 " + formatDuration(ctx.timeUsed || 0));
+  body.appendChild(line);
+  const scroll = el("div", "detail-scroll");
+  scroll.appendChild(el("div", "gh-section-title", "各科目得分率"));
+  const subs = Object.keys(ctx.subjects || {});
+  if (!subs.length) scroll.appendChild(el("div", "empty-note", "暂无数据"));
+  subs.sort().forEach(sj => {
+    const st = ctx.subjects[sj];
+    const p2 = st.total > 0 ? Math.round(st.correct / st.total * 100) : 0;
+    const row = el("div", "heat-row");
+    row.appendChild(el("div", "heat-label", sj));
+    const bar = el("div", "heat-bar");
+    const fill = el("div", "heat-fill");
+    fill.style.width = p2 + "%";
+    fill.style.background = p2 >= 80 ? "#4dcc66" : p2 >= 60 ? "#f2c433" : p2 >= 40 ? "#ff9933" : "#d62828";
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    row.appendChild(el("div", "heat-pct", p2 + "% (" + st.correct + "/" + st.total + ")"));
+    scroll.appendChild(row);
+  });
+  const wrongs = ctx.wrongQs || [];
+  if (wrongs.length) {
+    scroll.appendChild(el("div", "gh-section-title", "本次错题（" + wrongs.length + " 题，点击查看）"));
+    wrongs.forEach(q => {
+      const item = el("div", "drug-result-item");
+      const stem = q.type === "B" ? ((q.subQuestions[0] && q.subQuestions[0].stem) || "B型题") : q.type === "A3" ? (q.caseStem || "病例串题") : (q.stem || "");
+      item.appendChild(el("span", "dt", stem.slice(0, 42) + (stem.length > 42 ? "…" : "")));
+      item.appendChild(el("span", "ds", (QUIZ_TYPES[q.type] || q.type)));
+      item.addEventListener("click", () => { ov.remove(); openQuiz([q], { mode: "review" }); });
+      scroll.appendChild(item);
+    });
+  }
+  body.appendChild(scroll);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  if (wrongs.length) {
+    const redoBtn = el("button", "btn", "重做错题");
+    redoBtn.addEventListener("click", () => { ov.remove(); openQuiz(wrongs, { mode: "practice" }); });
+    footer.appendChild(redoBtn);
+  }
+  const closeBtn = el("button", "btn", "关闭");
+  closeBtn.addEventListener("click", () => ov.remove());
+  footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
    设置
    ========================================================= */
 function openSettings() {
@@ -6452,6 +8082,52 @@ function openSettings() {
   plus.addEventListener("click", () => { state.fontScale = clamp(state.fontScale + 0.05, 0.85, 1.35); saveSettings(); applyTheme(); fontLabel.textContent = Math.round(state.fontScale * 100) + "%"; });
   fontWrap.appendChild(minus); fontWrap.appendChild(fontLabel); fontWrap.appendChild(plus);
   addRow("字号", fontWrap);
+  const shufSel2 = document.createElement("select");
+  shufSel2.className = "edit-select";
+  [["off", "关闭"], ["on", "开启（每题选项随机打乱）"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; shufSel2.appendChild(o);
+  });
+  shufSel2.value = state.optionShuffle ? "on" : "off";
+  shufSel2.addEventListener("change", () => { state.optionShuffle = shufSel2.value === "on"; saveSettings(); });
+  addRow("选项乱序", shufSel2);
+  const srsOnBtn = el("button", "btn", state.srsEnabled ? "已开启" : "已关闭");
+  srsOnBtn.addEventListener("click", () => {
+    state.srsEnabled = !state.srsEnabled;
+    saveSettings();
+    srsOnBtn.textContent = state.srsEnabled ? "已开启" : "已关闭";
+  });
+  addRow("间隔复习（SRS）", srsOnBtn);
+  const goalWrap = el("div", "font-wrap");
+  const qGoalIn = document.createElement("input");
+  qGoalIn.className = "edit-input"; qGoalIn.style.textAlign = "center"; qGoalIn.type = "text"; qGoalIn.value = String(state.dailyQuizGoal);
+  const cGoalIn = document.createElement("input");
+  cGoalIn.className = "edit-input"; cGoalIn.style.textAlign = "center"; cGoalIn.type = "text"; cGoalIn.value = String(state.dailyCaseGoal);
+  qGoalIn.addEventListener("change", () => { state.dailyQuizGoal = clamp(parseInt(qGoalIn.value, 10) || 0, 0, 500); qGoalIn.value = String(state.dailyQuizGoal); saveSettings(); });
+  cGoalIn.addEventListener("change", () => { state.dailyCaseGoal = clamp(parseInt(cGoalIn.value, 10) || 0, 0, 500); cGoalIn.value = String(state.dailyCaseGoal); saveSettings(); });
+  goalWrap.appendChild(qGoalIn); goalWrap.appendChild(cGoalIn);
+  addRow("每日目标（题/例）", goalWrap);
+  const kbBtn = el("button", "btn", "编辑快捷键");
+  kbBtn.addEventListener("click", () => openKbEditor());
+  addRow("自定义快捷键", kbBtn);
+  const notifyWrap = el("div", "font-wrap");
+  const notifyBtn = el("button", "btn", state.notifyEnabled ? "已开启" : "已关闭");
+  const notifyTimeIn = document.createElement("input");
+  notifyTimeIn.className = "edit-input"; notifyTimeIn.style.textAlign = "center"; notifyTimeIn.type = "time"; notifyTimeIn.value = state.notifyTime;
+  notifyBtn.addEventListener("click", async () => {
+    if (!state.notifyEnabled) {
+      const ok = await notifyMgr.requestPermission();
+      if (!ok) { confirmPopup("未获得通知权限，无法开启提醒"); return; }
+      state.notifyEnabled = true;
+    } else {
+      state.notifyEnabled = false;
+    }
+    saveSettings();
+    notifyBtn.textContent = state.notifyEnabled ? "已开启" : "已关闭";
+    if (state.notifyEnabled) notifyMgr.start();
+  });
+  notifyTimeIn.addEventListener("change", () => { state.notifyTime = notifyTimeIn.value || "20:00"; saveSettings(); notifyMgr.check(); });
+  notifyWrap.appendChild(notifyBtn); notifyWrap.appendChild(notifyTimeIn);
+  addRow("复习提醒", notifyWrap);
   const sortSel = document.createElement("select");
   sortSel.className = "edit-select";
   SORT_OPTIONS.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sortSel.appendChild(o); });
@@ -6563,10 +8239,16 @@ function openSettings() {
     "方法 2 · 刷题模式 →「粘贴导入」或「🤖 AI出题」；\n" +
     "方法 3 · 刷题模式 →「上传题库」→ 填 owner / repo / Token → 上传。\n\n" +
     "【快捷键】\n" +
-    "  A/B/C/D 或 1/2/3/4 选择选项\n" +
-    "  Enter 提交 / 下一题\n" +
-    "  空格 下一题\n" +
+    "  A/B/C/D 或 1/2/3/4 选择选项（固定）\n" +
+    "  Enter 提交 / 下一题（可在设置中修改）\n" +
+    "  空格 下一题 / F 收藏 / Q 疑问 / R 朗读（均可在设置中修改）\n" +
     "  Esc 关闭弹窗\n\n" +
+    "【复习与打卡】\n" +
+    "  刷题时自动按遗忘曲线安排复习；首页「⏰ 复习」可复习到期题目。\n" +
+    "  「📊 统计」中可查看打卡日历、题型正确率与考试历史。\n\n" +
+    "【AI 助手】\n" +
+    "  病例详情可「🤖 追问」「🪄 助记」「📤 分享」；首页「🤖 问答」支持全库检索问答。\n" +
+    "  主观题提交后可自评，或使用「🤖 AI 批改」。\n\n" +
     "【富文本标记】\n" +
     "  行内：==高亮== !!红!! @@蓝@@ $$药名$$ **粗** //斜// __下划__ ~~删除~~ ^上标^ _下标_ `代码`\n" +
     "  块级：--- 分隔线、> 引用、- 或 1. 列表、### 折叠小节、[[病例名]] 内部跳转\n" +
@@ -6681,6 +8363,12 @@ document.addEventListener("keydown", function (e) {
 /* =========================================================
    事件绑定
    ========================================================= */
+function refreshSrsBtn() {
+  const btn = document.getElementById("srsBtn");
+  if (!btn) return;
+  const d = srs.dueCount();
+  btn.textContent = d > 0 ? "⏰ 复习(" + d + ")" : "⏰ 复习";
+}
 function bindEvents() {
   document.getElementById("modeCasesBtn").addEventListener("click", () => setMode("cases"));
   document.getElementById("modeQuizBtn").addEventListener("click", () => setMode("quiz"));
@@ -6743,6 +8431,8 @@ function bindEvents() {
   });
   document.getElementById("wrongBookBtn").addEventListener("click", openWrongBook);
   document.getElementById("heatmapBtn").addEventListener("click", openHeatmap);
+  document.getElementById("ragAskBtn").addEventListener("click", () => openAiChat({ rag: true }));
+  document.getElementById("srsBtn").addEventListener("click", () => { startSrsReview(); refreshSrsBtn(); });
   document.getElementById("qImportBtn").addEventListener("click", openQuestionImport);
   document.getElementById("qAiBtn").addEventListener("click", () => openAiImport("questions"));
   document.getElementById("qUploadBtn").addEventListener("click", () => openUpload("questions"));
@@ -6771,6 +8461,9 @@ async function init() {
   loadSettings();
   applyTheme();
   answerLog.load();
+  srs.load();
+  checkin.load();
+  examHistory.load();
   try {
     await Promise.race([
       Promise.all([store.load(), questionStore.load()]),
@@ -6785,6 +8478,9 @@ async function init() {
     ]);
   }
   bindEvents();
+  refreshSrsBtn();
+  try { notifyMgr.start(); } catch (e) {}
+  window.addEventListener("focus", refreshSrsBtn);
   document.getElementById("starBtn").textContent = state.starredOnly ? "★ 收藏" : "☆ 收藏";
   document.getElementById("sortSel").value = state.sort;
   document.getElementById("statusSel").value = state.status;
