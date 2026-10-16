@@ -444,8 +444,7 @@ const FIELD_SCHEMAS = {
   "内科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "外科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "生理学": [["overview","概述"],["phys_basic","基本概念"],["phys_mechanism","发生机制"],["phys_regulation","调节因素"],["phys_factors","影响因素"],["phys_experiment","实验现象 / 指标"],["phys_clinical","临床联系"],["phys_summary","小结"]],
-"生物化学": [["overview","概述"],["biochem_structure","结构 / 构象要点"],["biochem_bond","关键化学键与作用力"],["biochem_property","理化性质与应用"],["biochem_nucleic_property","核酸理化性质"],["biochem_vitamin_mineral","维生素 / 无机元素"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_kinetics","动力学 / 定量参数"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_location","亚细胞定位"],["biochem_energy_molecule","高能化合物"],["biochem_lipoprotein","血浆脂蛋白"],["biochem_metabolic_disease","代谢性疾病"],["biochem_mb_element","分子生物学元件与序列"],["biochem_mb_process","遗传信息传递要点"],["biochem_pro_vs_euk","原核 vs 真核对"],["biochem_tech","相关技术 / 方法原理"],["biochem_tool_enzyme","工具酶与载体"],["biochem_regulation_level","表达调控层次"],["biochem_signal","信号转导通路"],["biochem_gene_abnormal","基因异常与疾病"],["biochem_organ","组织器官代谢特点"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_compare","对比鉴别"],["biochem_summary","小结 / 口诀"],
-],
+  "生物化学": [["overview","概述"],["biochem_structure","结构 / 构象要点"],["biochem_bond","关键化学键与作用力"],["biochem_property","理化性质与应用"],["biochem_nucleic_property","核酸理化性质"],["biochem_vitamin_mineral","维生素 / 无机元素"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_kinetics","动力学 / 定量参数"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_location","亚细胞定位"],["biochem_energy_molecule","高能化合物"],["biochem_lipoprotein","血浆脂蛋白"],["biochem_metabolic_disease","代谢性疾病"],["biochem_mb_element","分子生物学元件与序列"],["biochem_mb_process","遗传信息传递要点"],["biochem_pro_vs_euk","原核 vs 真核对"],["biochem_tech","相关技术 / 方法原理"],["biochem_tool_enzyme","工具酶与载体"],["biochem_regulation_level","表达调控层次"],["biochem_signal","信号转导通路"],["biochem_gene_abnormal","基因异常与疾病"],["biochem_organ","组织器官代谢特点"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_compare","对比鉴别"],["biochem_summary","小结 / 口诀"]],
   "病理学总论": [
     ["general_concept","概念与定义"],
     ["general_classification","分类与分型"],
@@ -474,7 +473,6 @@ const FIELD_SCHEMAS = {
   ],
   "人文精神": [["overview","概述"],["hum_principle","核心原则"],["hum_scenario","典型情景"],["hum_regulation","法规条款"],["hum_ethics","伦理要点"],["hum_exam","考点提示"]],
 };
-
 const ALL_FIELDS = (() => { const s={},o=[]; for (const sj in FIELD_SCHEMAS) FIELD_SCHEMAS[sj].forEach(([k]) => { if (!s[k]) { s[k]=1; o.push(k);} }); return o; })();
 const FIELD_LABELS = (() => { const m={}; for (const sj in FIELD_SCHEMAS) FIELD_SCHEMAS[sj].forEach(([k,n]) => { if (!m[k]) m[k]=n; }); return m; })();
 const getFieldsForSubject = sj => FIELD_SCHEMAS[sj] || FIELD_SCHEMAS["内科学"];
@@ -504,6 +502,7 @@ const SAMPLE_JSON = '[{"title":"COPD（内外科模板）","subject":"内科学"
 const SAMPLE_QUESTION_JSON = '[{"subject":"内科学","chapter":"呼吸系统疾病","type":"single","stem":"男，68 岁，吸烟 40 年。近 5 年反复咳嗽、咳痰，活动后气促。吸入支气管扩张剂后 ==FEV1/FVC = 62%==。最可能的诊断是？","options":[{"key":"A","text":"支气管哮喘"},{"key":"B","text":"COPD"},{"key":"C","text":"支气管扩张"},{"key":"D","text":"肺结核"}],"answer":["B"],"explanation":"1. 长期吸烟史 + 持续气流受限；\\n2. @@FEV1/FVC < 70%@@ 是 COPD 的诊断金标准；\\n3. 哮喘多有过敏史、可逆性气流受限。","relatedCase":"COPD（内外科模板）","frequency":"★★★★★","difficulty":3,"tags":["高频"]}]';
 const SAMPLE_B_JSON = '[{"subject":"内科学","chapter":"循环系统疾病","type":"B","group":"g-001","sharedOptions":[{"key":"A","text":"主动脉瓣狭窄"},{"key":"B","text":"二尖瓣狭窄"},{"key":"C","text":"主动脉瓣关闭不全"},{"key":"D","text":"二尖瓣关闭不全"}],"subQuestions":[{"stem":"心尖部舒张期隆隆样杂音见于","answer":["B"],"explanation":"二尖瓣狭窄的典型杂音。"},{"stem":"胸骨右缘第2肋间收缩期喷射样杂音见于","answer":["A"],"explanation":"主动脉瓣狭窄的典型杂音。"}]}]';
 const SAMPLE_A3_JSON = '[{"subject":"内科学","chapter":"循环系统疾病","type":"A3","caseStem":"男，55 岁。突发胸骨后压榨样疼痛 2 小时，伴大汗、恶心。既往高血压 10 年。查体：BP 150/95 mmHg，心率 95 次/分，心音低钝。心电图：V1-V4 ST 段抬高。","questions":[{"stem":"最可能的诊断是？","options":[{"key":"A","text":"急性心包炎"},{"key":"B","text":"急性心肌梗死"},{"key":"C","text":"肺栓塞"},{"key":"D","text":"主动脉夹层"}],"answer":["B"],"explanation":"典型胸痛 + ST 段抬高 + 危险因素。"},{"stem":"最关键的治疗措施是？","options":[{"key":"A","text":"溶栓"},{"key":"B","text":"直接 PCI"},{"key":"C","text":"抗凝"},{"key":"D","text":"止痛"}],"answer":["B"],"explanation":"STEMI 首选直接 PCI。"}]}]';
+
 /* =========================================================
    基础工具
    ========================================================= */
@@ -789,8 +788,433 @@ function ensurePdfJs(forceReload) {
   })();
   return __pdfjsPromise;
 }
+/* =========================================================
+   OCR 优化版 v3
+   - Worker 池并行
+   - 图像预处理（灰度 + 对比度拉伸）
+   - IndexedDB 逐页缓存
+   - 文本后处理（全角转半角 / 医学词表 / 空白整理）
+   - 引擎可选：Tesseract（默认） / PaddleOCR（自建/在线）
+   ========================================================= */
+const TESSERACT_CDNS = [
+  "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js",
+  "https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js",
+];
+const OCR_WORKER_COUNT_DEFAULT = 2;
+const OCR_WORKER_COUNT_MAX = 4;
+const OCR_CACHE_DB = "kaoyan_ocr_cache";
+const OCR_CACHE_STORE = "pages";
+const OCR_CACHE_VERSION = 1;
+const OCR_ENGINE_VERSION = "v3";
+const OCR_FIX_KEY = "kaoyan_ocr_fix";
 
-async function extractPdfText(file, onProgress) {
+let __ocrCacheDb = null;
+function openOcrCache() {
+  if (__ocrCacheDb) return __ocrCacheDb;
+  __ocrCacheDb = new Promise((resolve, reject) => {
+    let req;
+    try { req = indexedDB.open(OCR_CACHE_DB, OCR_CACHE_VERSION); }
+    catch (e) { reject(e); return; }
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(OCR_CACHE_STORE)) {
+        const store = db.createObjectStore(OCR_CACHE_STORE, { keyPath: "k" });
+        store.createIndex("ts", "ts");
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }).catch(() => null);
+  return __ocrCacheDb;
+}
+async function getOcrCache(key) {
+  const db = await openOcrCache();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(OCR_CACHE_STORE, "readonly");
+      const req = tx.objectStore(OCR_CACHE_STORE).get(key);
+      req.onsuccess = () => resolve(req.result ? req.result.v : null);
+      req.onerror = () => resolve(null);
+    } catch (e) { resolve(null); }
+  });
+}
+async function putOcrCache(key, value) {
+  const db = await openOcrCache();
+  if (!db) return;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(OCR_CACHE_STORE, "readwrite");
+      tx.objectStore(OCR_CACHE_STORE).put({ k: key, v: value, ts: Date.now() });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch (e) { resolve(false); }
+  });
+}
+async function clearOcrCache() {
+  const db = await openOcrCache();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(OCR_CACHE_STORE, "readwrite");
+      tx.objectStore(OCR_CACHE_STORE).clear();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch (e) { resolve(false); }
+  });
+}
+async function ocrCacheStats() {
+  const db = await openOcrCache();
+  if (!db) return { count: 0, bytes: 0 };
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(OCR_CACHE_STORE, "readonly");
+      const store = tx.objectStore(OCR_CACHE_STORE);
+      let count = 0, bytes = 0;
+      const req = store.openCursor();
+      req.onsuccess = (e) => {
+        const cur = e.target.result;
+        if (cur) {
+          count++;
+          bytes += (cur.value && cur.value.v ? cur.value.v.length : 0) * 2;
+          cur.continue();
+        } else resolve({ count, bytes });
+      };
+      req.onerror = () => resolve({ count: 0, bytes: 0 });
+    } catch (e) { resolve({ count: 0, bytes: 0 }); }
+  });
+}
+async function hashBuffer(buf) {
+  try {
+    if (crypto && crypto.subtle && crypto.subtle.digest) {
+      const h = await crypto.subtle.digest("SHA-256", buf.slice(0, Math.min(buf.byteLength, 4 * 1024 * 1024)));
+      return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 24);
+    }
+  } catch (e) {}
+  const arr = new Uint8Array(buf);
+  let h = 2166136261 >>> 0;
+  const step = Math.max(1, Math.floor(arr.length / 8192));
+  for (let i = 0; i < arr.length; i += step) { h ^= arr[i]; h = Math.imul(h, 16777619) >>> 0; }
+  return (h >>> 0).toString(16) + "_" + arr.length.toString(16);
+}
+
+const MED_FIX_BUILTIN = {
+  "心股": "心梗","心肌梗寒": "心肌梗死","糖屎病": "糖尿病","肺气肿肿": "肺气肿",
+  "月干": "肝","月市": "肺","胃溃瘍": "胃溃疡","甲狀腺": "甲状腺",
+  "恶牲": "恶性","良牲": "良性","肿溜": "肿瘤","贫皿": "贫血",
+  "血小扳": "血小板","休克克": "休克","気管": "气管","循環": "循环",
+  "動脈": "动脉","靜脈": "静脉",
+};
+function loadUserFix() {
+  try {
+    const raw = localStorage.getItem(OCR_FIX_KEY);
+    if (!raw) return {};
+    const o = JSON.parse(raw);
+    return (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
+  } catch (e) { return {}; }
+}
+function saveUserFix(obj) {
+  try { localStorage.setItem(OCR_FIX_KEY, JSON.stringify(obj || {})); } catch (e) {}
+}
+function halfWidthAlnum(s) {
+  return s.replace(/[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]+/g, m => m.normalize("NFKC"));
+}
+function tidyWhitespace(s) {
+  return s
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/([。，、；：？！）】》」』…—])[ \t]+/g, "$1")
+    .replace(/[ \t]+([（【《「『])/g, "$1")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\s+|\s+$/g, "");
+}
+function applyMedFix(s, extra) {
+  const dict = Object.assign({}, MED_FIX_BUILTIN, extra || {});
+  for (const k in dict) {
+    if (!k) continue;
+    if (s.indexOf(k) === -1) continue;
+    s = s.split(k).join(dict[k]);
+  }
+  return s;
+}
+function postProcessOcrText(text, opts) {
+  opts = opts || {};
+  let s = String(text == null ? "" : text);
+  if (opts.halfWidth !== false) s = halfWidthAlnum(s);
+  if (opts.medFix !== false)    s = applyMedFix(s, opts.userFix);
+  if (opts.tidy !== false)      s = tidyWhitespace(s);
+  return s;
+}
+function preprocessCanvas(canvas) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const w = canvas.width, h = canvas.height;
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  let min = 255, max = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const g = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
+    d[i] = d[i + 1] = d[i + 2] = g;
+    if (g < min) min = g;
+    if (g > max) max = g;
+  }
+  const range = (max - min) || 1;
+  const scale = 255 / range;
+  for (let i = 0; i < d.length; i += 4) {
+    let v = ((d[i] - min) * scale) | 0;
+    d[i] = d[i + 1] = d[i + 2] = v < 0 ? 0 : (v > 255 ? 255 : v);
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas;
+}
+
+let __tesseractPromise = null;
+function ensureTesseract(forceReload) {
+  if (forceReload) __tesseractPromise = null;
+  if (__tesseractPromise) return __tesseractPromise;
+  __tesseractPromise = (async () => {
+    let lastErr = null;
+    const bust = "?t=" + Date.now();
+    for (let i = 0; i < TESSERACT_CDNS.length; i++) {
+      try {
+        try { window.Tesseract = undefined; } catch (e) {}
+        await loadScript(TESSERACT_CDNS[i] + bust, 30000);
+        if (!window.Tesseract) throw new Error("Tesseract.js 未挂载到 window");
+        return window.Tesseract;
+      } catch (e) { lastErr = e; }
+    }
+    __tesseractPromise = null;
+    throw new Error("无法加载 OCR 组件。\n" + (lastErr ? "最后错误：" + lastErr.message : ""));
+  })();
+  return __tesseractPromise;
+}
+let __ocrPool = null;
+let __ocrCancelToken = null;
+async function getOcrPool(count, lang, onLog) {
+  count = Math.max(1, Math.min(OCR_WORKER_COUNT_MAX, count | 0));
+  lang = lang || "chi_sim+eng";
+  if (__ocrPool && __ocrPool.count === count && __ocrPool.lang === lang) return __ocrPool.workers;
+  await destroyOcrPool();
+  const Tesseract = await ensureTesseract(false);
+  const workers = [];
+  const langs = lang.split("+").filter(Boolean);
+  for (let i = 0; i < count; i++) {
+    onLog && onLog("初始化 OCR 引擎 " + (i + 1) + "/" + count + "…");
+    const w = await Tesseract.createWorker(langs, 1, { logger: null });
+    try {
+      await w.setParameters({
+        tessedit_pageseg_mode: "6",
+        preserve_interword_spaces: "1",
+        user_defined_dpi: "300",
+      });
+    } catch (e) {}
+    workers.push(w);
+  }
+  __ocrPool = { workers, count, lang };
+  return workers;
+}
+async function destroyOcrPool() {
+  if (!__ocrPool) return;
+  const list = __ocrPool.workers.slice();
+  __ocrPool = null;
+  for (const w of list) { try { await w.terminate(); } catch (e) {} }
+}
+function cancelOcr() { if (__ocrCancelToken) __ocrCancelToken.cancelled = true; }
+
+async function ocrCanvasWithPaddle(canvas, endpoint, apiKey) {
+  const blob = await new Promise((res, rej) => {
+    try { canvas.toBlob(b => b ? res(b) : rej(new Error("toBlob 失败")), "image/png", 0.95); }
+    catch (e) { rej(e); }
+  });
+  const fd = new FormData();
+  fd.append("image", blob, "page.png");
+  const headers = {};
+  if (apiKey) headers["Authorization"] = "Bearer " + apiKey;
+  const resp = await fetch(endpoint, { method: "POST", headers, body: fd });
+  if (!resp.ok) {
+    let msg = "HTTP " + resp.status;
+    try { const j = await resp.json(); msg = j.msg || j.message || j.error || msg; } catch (e) {}
+    throw new Error("PaddleOCR 服务错误：" + msg);
+  }
+  const data = await resp.json();
+  return paddleExtractText(data);
+}
+function paddleExtractText(data) {
+  if (!data) return "";
+  if (typeof data === "string") return data;
+  if (typeof data.text === "string") return data.text;
+  if (Array.isArray(data.words_result)) {
+    return data.words_result.map(x => (x && x.words) || "").join("\n");
+  }
+  if (Array.isArray(data.result)) {
+    if (typeof data.result[0] === "string") return data.result.join("\n");
+    try {
+      const lines = [];
+      const walk = (arr) => {
+        for (const it of arr) {
+          if (Array.isArray(it)) {
+            if (it.length === 2 && typeof it[1] === "string") lines.push(it[1]);
+            else walk(it);
+          }
+        }
+      };
+      walk(data.result);
+      if (lines.length) return lines.join("\n");
+    } catch (e) {}
+  }
+  if (Array.isArray(data.data) && typeof data.data[0] === "string") return data.data.join("\n");
+  throw new Error("无法解析 PaddleOCR 返回格式");
+}
+
+async function ocrPdfText(file, onProgress, opts) {
+  opts = opts || {};
+  const scale       = opts.scale || 2.5;
+  const workerCount = Math.max(1, Math.min(OCR_WORKER_COUNT_MAX, opts.workers || OCR_WORKER_COUNT_DEFAULT));
+  const lang        = opts.lang || "chi_sim+eng";
+  const pageFrom    = Math.max(1, opts.pageFrom || 1);
+  const pageTo      = opts.pageTo || 0;
+  const preprocess  = opts.preprocess !== false;
+  const engine      = opts.engine || "tesseract";
+  const useCache    = opts.useCache !== false;
+  const doPost      = opts.postProcess !== false;
+  const userFix     = opts.userFix || loadUserFix();
+
+  const cancel = { cancelled: false };
+  __ocrCancelToken = cancel;
+
+  const buf = await withTimeout(file.arrayBuffer(), 60000, "读取文件超时");
+  const lib = await ensurePdfJs(false);
+  const pdf = await withTimeout(
+    lib.getDocument({ data: new Uint8Array(buf.slice(0)), disableWorker: true }).promise,
+    90000, "打开 PDF 超时"
+  );
+  const total = pdf.numPages || 0;
+  if (!total) throw new Error("PDF 页数为 0");
+
+  const from = pageFrom;
+  const to   = pageTo > 0 ? Math.min(pageTo, total) : total;
+  if (from > to) throw new Error("页码范围无效：" + from + "-" + to);
+  const pageCount = to - from + 1;
+
+  let cacheKey = "";
+  if (useCache) {
+    const h = await hashBuffer(buf);
+    cacheKey = h + "|" + OCR_ENGINE_VERSION + "|" + engine + "|" + lang + "|" + scale.toFixed(1);
+  }
+
+  let workers = null;
+  if (engine === "paddle") {
+    if (!opts.paddleEndpoint) throw new Error("PaddleOCR 模式需要填写服务地址");
+    if (onProgress) onProgress(0, pageCount, "使用 PaddleOCR 后端…");
+  } else {
+    if (onProgress) onProgress(0, pageCount, "准备 OCR 引擎（首次需下载中文语言包，约 10~20 MB）…");
+    workers = await getOcrPool(workerCount, lang, msg => onProgress && onProgress(0, pageCount, msg));
+  }
+
+  const pages = new Array(pageCount).fill("");
+  const errors = [];
+  let next = 0;
+  let doneCount = 0;
+  let cacheHits = 0;
+
+  async function renderPage(i) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(vp.width);
+    canvas.height = Math.ceil(vp.height);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    try { page.cleanup(); } catch (e) {}
+    if (preprocess) preprocessCanvas(canvas);
+    return canvas;
+  }
+
+  async function processPage(idx) {
+    const absPage = from + idx;
+    if (cacheKey) {
+      const cached = await getOcrCache(cacheKey + "#" + absPage);
+      if (cached != null) {
+        pages[idx] = cached;
+        cacheHits++;
+        doneCount++;
+        if (onProgress) onProgress(doneCount, pageCount, "第 " + absPage + " 页命中缓存（" + doneCount + "/" + pageCount + "）");
+        return;
+      }
+    }
+    let canvas = null;
+    try {
+      canvas = await renderPage(absPage);
+    } catch (e) {
+      errors.push({ page: absPage, msg: "渲染失败：" + e.message });
+      doneCount++;
+      if (onProgress) onProgress(doneCount, pageCount, "第 " + absPage + " 页渲染失败（" + doneCount + "/" + pageCount + "）");
+      return;
+    }
+    let raw = "";
+    for (let attempt = 0; attempt < 2 && !raw; attempt++) {
+      try {
+        if (engine === "paddle") {
+          raw = await ocrCanvasWithPaddle(canvas, opts.paddleEndpoint, opts.paddleApiKey);
+        } else {
+          const { data } = await workers[idx % workers.length].recognize(canvas);
+          raw = (data && data.text) || "";
+        }
+      } catch (e) {
+        if (attempt === 1) errors.push({ page: absPage, msg: e.message || "OCR 失败" });
+      }
+    }
+    const finalText = doPost ? postProcessOcrText(raw, { userFix }) : raw;
+    pages[idx] = finalText;
+    doneCount++;
+    try { canvas.width = 0; canvas.height = 0; } catch (e) {}
+    if (cacheKey && finalText) await putOcrCache(cacheKey + "#" + absPage, finalText);
+    if (onProgress) onProgress(doneCount, pageCount, "OCR " + doneCount + "/" + pageCount + " 页完成");
+  }
+
+  try {
+    if (engine === "paddle" || workerCount === 1) {
+      while (!cancel.cancelled) {
+        const idx = next++;
+        if (idx >= pageCount) break;
+        await processPage(idx);
+      }
+    } else {
+      const runners = [];
+      for (let k = 0; k < workerCount; k++) {
+        runners.push((async () => {
+          while (!cancel.cancelled) {
+            const idx = next++;
+            if (idx >= pageCount) return;
+            await processPage(idx);
+          }
+        })());
+      }
+      await Promise.all(runners);
+    }
+  } finally {
+    __ocrCancelToken = null;
+    try { pdf.destroy(); } catch (e) {}
+  }
+
+  if (cancel.cancelled) throw new Error("OCR 已被用户取消");
+
+  const text = pages.join("\n\n");
+  if (onProgress) {
+    let tail = "";
+    if (cacheHits) tail += "，缓存命中 " + cacheHits + " 页";
+    if (errors.length) tail += "，⚠ " + errors.length + " 页识别失败已跳过";
+    if (tail) onProgress(pageCount, pageCount, "OCR 完成" + tail);
+  }
+  return text;
+}
+
+/* =========================================================
+   PDF 文本提取（含 OCR 回退）
+   ========================================================= */
+async function extractPdfText(file, onProgress, opts) {
   if (!file) throw new Error("文件为空");
   let buf;
   try {
@@ -842,7 +1266,7 @@ async function extractPdfText(file, onProgress) {
     } catch (e) {
       pages.push("");
       emptyPages++;
-      if (onProgress) onProgress(i, total);
+      if (onProgress) onProgress(i, total, "第 " + i + "/" + total + " 页加载失败");
       continue;
     }
     let content = null;
@@ -864,20 +1288,41 @@ async function extractPdfText(file, onProgress) {
     if (!lines.length) emptyPages++;
     pages.push(lines.join("\n"));
     try { page.cleanup(); } catch (e) {}
-    if (onProgress) onProgress(i, total);
+    if (onProgress) onProgress(i, total, "解析第 " + i + "/" + total + " 页");
   }
   try { pdf.destroy(); } catch (e) {}
 
   const text = pages.join("\n\n");
   if (text.replace(/\s/g, "").length < 10) {
-    throw new Error("未能从 PDF 中提取到文字（共 " + total + " 页，可能是扫描版 / 纯图片版）。\n请改用文字版 PDF，或直接把讲义文字粘贴到下方输入框。");
+    if (onProgress) onProgress(0, total, "检测到扫描版 PDF，正在启用 OCR…");
+    try {
+      const ocrText = await ocrPdfText(file, onProgress, Object.assign({
+        scale: 2.5,
+        workers: OCR_WORKER_COUNT_DEFAULT,
+        lang: "chi_sim+eng",
+        preprocess: true,
+        engine: "tesseract",
+        useCache: true,
+        postProcess: true,
+      }, opts || {}));
+      if (ocrText.replace(/\s/g, "").length < 10) throw new Error("OCR 后仍未得到有效文字");
+      return ocrText;
+    } catch (ocrErr) {
+      throw new Error(
+        "未能从 PDF 中提取到文字（共 " + total + " 页，可能是扫描版 / 纯图片版）。\n" +
+        "OCR 尝试失败：" + (ocrErr && ocrErr.message ? ocrErr.message : ocrErr) + "\n\n" +
+        "建议：\n1. 刷新页面重试\n2. 检查网络能否访问 cdn.jsdelivr.net\n3. 直接把讲义文字粘贴到下方输入框"
+      );
+    }
   }
   return text;
 }
 
-async function extractTextFromFile(file, onProgress) {
+async function extractTextFromFile(file, onProgress, opts) {
   const name = (file.name || "").toLowerCase();
-  if (name.endsWith(".pdf") || file.type === "application/pdf") return await extractPdfText(file, onProgress);
+  if (name.endsWith(".pdf") || file.type === "application/pdf") {
+    return await extractPdfText(file, onProgress, opts);
+  }
   return await new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(String(r.result || ""));
@@ -885,6 +1330,10 @@ async function extractTextFromFile(file, onProgress) {
     r.readAsText(file, "utf-8");
   });
 }
+
+/* =========================================================
+   图片压缩
+   ========================================================= */
 function compressImage(file, maxWidth, quality) {
   return new Promise((resolve, reject) => {
     if (!file || !/^image\//.test(file.type)) { reject(new Error("请选择图片文件")); return; }
@@ -913,6 +1362,7 @@ function compressImage(file, maxWidth, quality) {
     reader.readAsDataURL(file);
   });
 }
+
 async function copyText(text) {
   try {
     if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; }
@@ -934,7 +1384,6 @@ function downloadText(filename, text) {
   document.body.appendChild(a); a.click();
   setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 500);
 }
-
 /* =========================================================
    富文本渲染
    ========================================================= */
@@ -1673,6 +2122,7 @@ function quizPriority(q) {
   const days = (Date.now() - r.lastAt) / 86400000;
   return 500 + Math.min(days, 100);
 }
+
 /* =========================================================
    GitHub 上传相关
    ========================================================= */
@@ -1814,7 +2264,7 @@ async function ghPutFileViaGitData(cfg, contentText, onStep) {
   return newCommit;
 }
 
-/* ===== 新增：读取 / 写入任意仓库文件（用于 AI 配置云端同步） ===== */
+/* ===== 读取 / 写入任意仓库文件 ===== */
 async function ghReadFile(cfg, path) {
   const apiPath = "/contents/" + String(path).split("/").map(encodeURIComponent).join("/");
   const url = ghRepoUrl(cfg, apiPath) + "?ref=" + encodeURIComponent(cfg.branch || "main");
@@ -1923,115 +2373,32 @@ async function ghUploadImage(cfg, dataUrl) {
    ========================================================= */
 const AI_PRESETS = {
   gemini: { label:"Google Gemini（免费额度最大·推荐）", base_url:"https://generativelanguage.googleapis.com/v1beta/openai/", model:"gemini-2.5-flash", models:["gemini-2.5-flash","gemini-2.5-pro","gemini-2.0-flash"], cors:true, free:"💰 免费层：60 次/分钟，1500 次/天，无需绑卡", note:"在 ai.google.dev 获取 API Key，中文支持好。", key_hint:"AIza...", key_url:"https://aistudio.google.com/app/apikey", peak:null },
-  opencode: { label:"OpenCode Zen（推荐·多模型网关）",base_url:"https://opencode.ai/zen/v1",model:"claude-sonnet-4-5",models:[// ===== 免费 / 试用模型（Free） =====
-      "big-pickle",
-      "cat-jam-free",
-      "deepseek-v4-1-flash-free",
-      "jev-1-13-free",
-      "longcat-2-5-preview-free",
-      "mimo-v2-6-flash-free",
-      "muse-spark-1-3-contributor-free",
-      "nemotron-3-ultra-free",
-      "nemotron-3-5-lightning-free",
-      "nemotron-3-5-super-vl-free",
-      "space-bunny-free",
-      "step-5-preview-free",
-      // ===== Anthropic Claude =====
-      "claude-fable-5",
-      "claude-fable-5-1",
-      "claude-haiku-4-5",
-      "claude-haiku-5-5",
-      "claude-opus-4-5",
-      "claude-opus-4-6",
-      "claude-opus-4-7",
-      "claude-opus-4-8",
-      "claude-opus-5",
-      "claude-opus-5-5",
-      "claude-sonnet-4",
-      "claude-sonnet-4-5",
-      "claude-sonnet-4-6",
-      "claude-sonnet-5",
-      "claude-sonnet-5-5",
-      // ===== DeepSeek =====
-      "deepseek-v4-flash",
-      "deepseek-v4-flash-vision-exp",
-      "deepseek-v4-pro",
-      "deepseek-v4-1-flash",
-      // ===== Google Gemini =====
-      "gemini-3-flash",
-      "gemini-3-1-pro",
-      "gemini-3-5-flash",
-      "gemini-3-5-flash-lite",
-      "gemini-3-6-flash",
-      "gemini-3-7-flash",
-      "gemini-3-8-flash",
-      "gemini-4-argon",
-      // ===== 智谱 GLM =====
-      "glm-5",
-      "glm-5-1",
-      "glm-5-2",
-      "glm-5-3",
-      "glm-5-3-flash",
-      // ===== OpenAI GPT =====
-      "gpt-5",
-      "gpt-5-codex",
-      "gpt-5-nano",
-      "gpt-5-1",
-      "gpt-5-1-codex",
-      "gpt-5-1-codex-max",
-      "gpt-5-1-codex-mini",
-      "gpt-5-2",
-      "gpt-5-2-codex",
-      "gpt-5-3-codex",
-      "gpt-5-3-codex-spark",
-      "gpt-5-4",
-      "gpt-5-4-mini",
-      "gpt-5-4-nano",
-      "gpt-5-4-pro",
-      "gpt-5-5",
-      "gpt-5-5-pro",
-      "gpt-5-6-luna",
-      "gpt-5-6-sol",
-      "gpt-5-6-terra",
-      "gpt-6-astra",
-      "gpt-6-luna",
-      "gpt-6-sol",
-      "gpt-6-1-sol",
-      // ===== xAI Grok =====
-      "grok-4-5",
-      "grok-4-6",
-      "grok-4-7",
-      "grok-build-0-1",
-      // ===== Jev =====
-      "jev-1-13",
-      // ===== 月之暗面 Kimi =====
-      "kimi-k2-5",
-      "kimi-k2-6",
-      "kimi-k2-7-code",
-      "kimi-k3",
-      // ===== MiniMax =====
-      "minimax-m2-5",
-      "minimax-m2-7",
-      "minimax-m3",
-      // ===== Mistral =====
-      "mistral-large-4",
-      // ===== Muse =====
-      "muse-spark-1-2",
-      "muse-spark-1-3",
-      // ===== 阿里 Qwen =====
-      "qwen3-5-plus",
-      "qwen3-6-plus",
-      "qwen3-8-flash",
-      "qwen3-8-max",
+  opencode: { label:"OpenCode Zen（推荐·多模型网关）",base_url:"https://opencode.ai/zen/v1",model:"claude-sonnet-4-5",models:[
+      "big-pickle","cat-jam-free","deepseek-v4-1-flash-free","jev-1-13-free","longcat-2-5-preview-free",
+      "mimo-v2-6-flash-free","muse-spark-1-3-contributor-free","nemotron-3-ultra-free","nemotron-3-5-lightning-free",
+      "nemotron-3-5-super-vl-free","space-bunny-free","step-5-preview-free",
+      "claude-fable-5","claude-fable-5-1","claude-haiku-4-5","claude-haiku-5-5","claude-opus-4-5","claude-opus-4-6",
+      "claude-opus-4-7","claude-opus-4-8","claude-opus-5","claude-opus-5-5","claude-sonnet-4","claude-sonnet-4-5",
+      "claude-sonnet-4-6","claude-sonnet-5","claude-sonnet-5-5",
+      "deepseek-v4-flash","deepseek-v4-flash-vision-exp","deepseek-v4-pro","deepseek-v4-1-flash",
+      "gemini-3-flash","gemini-3-1-pro","gemini-3-5-flash","gemini-3-5-flash-lite","gemini-3-6-flash","gemini-3-7-flash",
+      "gemini-3-8-flash","gemini-4-argon",
+      "glm-5","glm-5-1","glm-5-2","glm-5-3","glm-5-3-flash",
+      "gpt-5","gpt-5-codex","gpt-5-nano","gpt-5-1","gpt-5-1-codex","gpt-5-1-codex-max","gpt-5-1-codex-mini",
+      "gpt-5-2","gpt-5-2-codex","gpt-5-3-codex","gpt-5-3-codex-spark","gpt-5-4","gpt-5-4-mini","gpt-5-4-nano",
+      "gpt-5-4-pro","gpt-5-5","gpt-5-5-pro","gpt-5-6-luna","gpt-5-6-sol","gpt-5-6-terra","gpt-6-astra",
+      "gpt-6-luna","gpt-6-sol","gpt-6-1-sol",
+      "grok-4-5","grok-4-6","grok-4-7","grok-build-0-1","jev-1-13",
+      "kimi-k2-5","kimi-k2-6","kimi-k2-7-code","kimi-k3",
+      "minimax-m2-5","minimax-m2-7","minimax-m3","mistral-large-4",
+      "muse-spark-1-2","muse-spark-1-3",
+      "qwen3-5-plus","qwen3-6-plus","qwen3-8-flash","qwen3-8-max",
     ],
     cors:true,
     free:"💰 部分模型免费（big-pickle / cat-jam-free / *-free / jev-1-13-free 等），其余按 token 计费",
     note:"OpenCode Zen 官方网关，OpenAI 兼容接口。\n在 opencode.ai/auth 用 GitHub 登录后创建 API Key。\n下拉框按厂商分组，共收录 80+ 模型。",
-    key_hint:"sk-...",
-    key_url:"https://opencode.ai/auth",
-    peak:null
-  },
-    openrouter: { label:"OpenRouter（聚合多模型·含 DeepSeek 免费版）", base_url:"https://openrouter.ai/api/v1", model:"deepseek/deepseek-r1-0528:free", models:["deepseek/deepseek-r1-0528:free","deepseek/deepseek-chat-v3.1:free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free","z-ai/glm-4.5-air:free"], cors:true, free:"💰 免费模型：20 次/分钟，50 次/天（未充值）", note:"一个 Key 调用 30+ 免费模型，含 DeepSeek 免费版。", key_hint:"sk-or-v1-...", key_url:"https://openrouter.ai/keys", peak:{ weekdays:false, ranges:[[20,23]], note:"免费模型额外限流，延迟升高" } },
+    key_hint:"sk-...", key_url:"https://opencode.ai/auth", peak:null },
+  openrouter: { label:"OpenRouter（聚合多模型·含 DeepSeek 免费版）", base_url:"https://openrouter.ai/api/v1", model:"deepseek/deepseek-r1-0528:free", models:["deepseek/deepseek-r1-0528:free","deepseek/deepseek-chat-v3.1:free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free","z-ai/glm-4.5-air:free"], cors:true, free:"💰 免费模型：20 次/分钟，50 次/天（未充值）", note:"一个 Key 调用 30+ 免费模型，含 DeepSeek 免费版。", key_hint:"sk-or-v1-...", key_url:"https://openrouter.ai/keys", peak:{ weekdays:false, ranges:[[20,23]], note:"免费模型额外限流，延迟升高" } },
   zhipu: { label:"智谱 GLM（中文友好·长期免费）", base_url:"https://open.bigmodel.cn/api/paas/v4", model:"glm-4-flash", models:["glm-4-flash","glm-4-flashx","glm-4-air","glm-4-plus"], cors:true, free:"💰 GLM-4-Flash 长期免费，10 QPS；新用户另有赠金", note:"中文医学文本表现不错，注册即用。", key_hint:"xxxxx.xxxxx", key_url:"https://open.bigmodel.cn/usercenter/apikeys", peak:{ weekdays:true, ranges:[[15,18]], note:"并发限流，模型速度变慢" } },
   groq: { label:"Groq（速度极快·永久免费）", base_url:"https://api.groq.com/openai/v1", model:"openai/gpt-oss-120b", models:["openai/gpt-oss-120b","openai/gpt-oss-20b","llama-3.3-70b-versatile","llama-3.1-8b-instant","qwen/qwen3-32b"], cors:true, free:"💰 按模型分别限每日请求数，永久免费", note:"推理速度最快，适合长文档批量处理。", key_hint:"gsk_...", key_url:"https://console.groq.com/keys", peak:null },
   siliconflow: { label:"硅基流动 SiliconFlow（国内免费模型）", base_url:"https://api.siliconflow.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-14B-Instruct","THUDM/glm-4-9b-chat","deepseek-ai/DeepSeek-V3","deepseek-ai/DeepSeek-R1"], cors:true, free:"💰 多个小模型免费；注册送 14 元额度", note:"国内直连速度快，部分模型永久免费。", key_hint:"sk-...", key_url:"https://cloud.siliconflow.cn/account/ak", peak:{ weekdays:false, ranges:[[10,12],[19,21]], note:"免费模型 429 / 1305 报错概率高" } },
@@ -2065,7 +2432,6 @@ function getPeakStatus(providerKey) {
   return { isPeak:false, note:p.note, label:"空闲时段" };
 }
 
-/* ===== 新版 loadAiConfig / saveAiConfig（含 custom_models） ===== */
 function loadAiConfig() {
   const d = {
     provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model,
@@ -2135,7 +2501,6 @@ function setChapterSelValue(chapSel, list, keepValue) {
   else if (list && list.indexOf(kv) !== -1) want = kv;
   chapSel.value = want;
 }
-
 /* =========================================================
    AI Prompt 构造
    ========================================================= */
@@ -2251,7 +2616,7 @@ function buildQuestionPrompt(subject) {
 "1. 题干和解析中严禁出现化学结构式或复杂化学方程式。",
 "2. 必须使用中文专业名词（如“氧化型辅酶Ⅰ”而非“NAD+”）。",
 "3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
-        "2. 单选题必须恰好 4 个选项，答案唯一。",
+    "2. 单选题必须恰好 4 个选项，答案唯一。",
     "3. 多选题至少 2 个正确选项，type 用 multiple，answer 用数组。",
     "4. 每题的 4 个选项必须分别来自不同鉴别诊断。",
     "5. 解析分点：① 诊断依据 ② 排除理由 ③ 易错点。",
@@ -2531,6 +2896,7 @@ async function aiGenerate(opts, onLog, isQ) {
   onLog("合并去重后共 " + merged.length + " 条");
   return isQ ? merged.map(normalizeQuestion) : merged.map(normalizeItem);
 }
+
 /* =========================================================
    PDF 导出
    ========================================================= */
@@ -2701,16 +3067,13 @@ function openImagePicker(target, preloadFile) {
   const pop = el("div", "popup popup-sm");
   pop.appendChild(el("div", "popup-title", "插入图片"));
   const body = el("div", "popup-body");
-
   const tabRow = el("div", "img-tab-row");
   const urlTab = el("button", "img-tab active", "URL");
   const fileTab = el("button", "img-tab", "本地内嵌");
   const ghTab = el("button", "img-tab", "上传到仓库");
   tabRow.appendChild(urlTab); tabRow.appendChild(fileTab); tabRow.appendChild(ghTab);
   body.appendChild(tabRow);
-
   const noteEl = el("div", "gh-note", "");
-
   const urlPanel = el("div", "");
   urlPanel.appendChild(el("div", "edit-label", "图片 URL"));
   const urlIn = document.createElement("input");
@@ -2718,7 +3081,6 @@ function openImagePicker(target, preloadFile) {
   urlIn.placeholder = "https://example.com/xray.jpg 或 images/xxx.webp";
   urlIn.spellcheck = false;
   urlPanel.appendChild(urlIn);
-
   const filePanel = el("div", "");
   filePanel.style.display = "none";
   const fileRow1 = el("div", "file-row");
@@ -2728,7 +3090,6 @@ function openImagePicker(target, preloadFile) {
   const fileInfo1 = el("div", "file-name", "未选择");
   fileRow1.appendChild(fileBtn1); fileRow1.appendChild(fileIn1); fileRow1.appendChild(fileInfo1);
   filePanel.appendChild(fileRow1);
-
   const ghPanel = el("div", "");
   ghPanel.style.display = "none";
   const fileRow2 = el("div", "file-row");
@@ -2747,24 +3108,18 @@ function openImagePicker(target, preloadFile) {
   } else {
     ghPanel.appendChild(el("div", "gh-note", "图片会以随机名上传到仓库目录 " + (ghCfg.image_dir || "images") + "/，JSON 里只存相对路径。"));
   }
-
   body.appendChild(urlPanel); body.appendChild(filePanel); body.appendChild(ghPanel);
   body.appendChild(noteEl);
-
   const previewBox = el("div", "img-preview-box");
   previewBox.appendChild(el("div", "empty", "图片预览区"));
   body.appendChild(previewBox);
-
   const statusEl = el("div", "gh-status", "");
   body.appendChild(statusEl);
-
   let currentDataUrl = "";
   let currentRelPath = "";
   let currentTab = "url";
-
   function setNote(text) { noteEl.textContent = text; }
   setNote("URL 外链：JSON 只存一个网址，体积最小。");
-
   function switchTab(which) {
     currentTab = which;
     urlTab.classList.toggle("active", which === "url");
@@ -2782,7 +3137,6 @@ function openImagePicker(target, preloadFile) {
   urlTab.addEventListener("click", () => switchTab("url"));
   fileTab.addEventListener("click", () => switchTab("file"));
   ghTab.addEventListener("click", () => switchTab("gh"));
-
   function updatePreview(src) {
     previewBox.innerHTML = "";
     if (!src) { previewBox.appendChild(el("div", "empty", "图片预览区")); return; }
@@ -2791,12 +3145,10 @@ function openImagePicker(target, preloadFile) {
     img.onerror = () => { previewBox.innerHTML = ""; previewBox.appendChild(el("div", "empty", "⚠ 无法加载图片")); };
     previewBox.appendChild(img);
   }
-
   urlIn.addEventListener("input", () => {
     currentDataUrl = ""; currentRelPath = "";
     updatePreview(resolveImageUrl(urlIn.value.trim()));
   });
-
   async function handleFile(f, mode) {
     if (!f) return;
     statusEl.textContent = "⏳ 正在压缩…"; statusEl.className = "gh-status";
@@ -2836,7 +3188,6 @@ function openImagePicker(target, preloadFile) {
       updatePreview("");
     }
   }
-
   fileBtn1.addEventListener("click", () => fileIn1.click());
   fileIn1.addEventListener("change", () => {
     const f = fileIn1.files && fileIn1.files[0];
@@ -2851,7 +3202,6 @@ function openImagePicker(target, preloadFile) {
     fileInfo2.textContent = f.name + "  ·  " + Math.round(f.size / 1024) + " KB";
     handleFile(f, "gh");
   });
-
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
@@ -2881,7 +3231,6 @@ function openImagePicker(target, preloadFile) {
   pop.appendChild(footer);
   ov.appendChild(pop);
   document.body.appendChild(ov);
-
   if (preloadFile) {
     const targetTab = ghReady ? "gh" : "file";
     switchTab(targetTab);
@@ -3230,7 +3579,6 @@ function showDetail(item) {
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", item.title || "病例详情"));
   const body = el("div", "popup-body");
-
   const metaLines = ["科目：" + (item.subject || "")];
   if (item.chapter) metaLines.push("章节：" + item.chapter);
   if (item.frequency) metaLines.push(item.frequency);
@@ -3242,7 +3590,6 @@ function showDetail(item) {
   meta.appendChild(document.createTextNode("  "));
   meta.appendChild(el("span", "star-badge" + (item.starred ? "" : " off"), item.starred ? "★ 已收藏" : "☆ 未收藏"));
   body.appendChild(meta);
-
   const relatedQs = questionStore.data.filter(q => q.relatedCase === item.title);
   if (relatedQs.length) {
     const relRow = el("div", "detail-ctrl");
@@ -3252,13 +3599,11 @@ function showDetail(item) {
     relRow.appendChild(relBtn);
     body.appendChild(relRow);
   }
-
   const ctrl = el("div", "detail-ctrl");
   const showAll = el("button", "btn", "全部展开");
   const hideAll = el("button", "btn", "全部收起");
   ctrl.appendChild(showAll); ctrl.appendChild(hideAll);
   body.appendChild(ctrl);
-
   const scroll = el("div", "detail-scroll");
   const rows = [];
   const statusHtml = '<span class="status-badge status-' + statusVal + '">' + statusVal + '</span>';
@@ -3267,7 +3612,6 @@ function showDetail(item) {
   const starRow = makeFieldRow("收藏", "", "", starHtml, ov);
   rows.push(statusRow, starRow);
   scroll.appendChild(statusRow); scroll.appendChild(starRow);
-
   const fields = getFieldsForSubject(item.subject);
   const thisKeys = {};
   let hasContent = false;
@@ -3282,7 +3626,6 @@ function showDetail(item) {
     scroll.appendChild(row);
   }
   if (!hasContent) scroll.appendChild(el("div", "empty-note", "该条目尚未填写具体内容"));
-
   const others = [];
   for (let i = 0; i < ALL_FIELDS.length; i++) {
     const key = ALL_FIELDS[i];
@@ -3302,12 +3645,10 @@ function showDetail(item) {
   }
   const timelineEntries = collectTimelineEntries(item);
   if (timelineEntries.length) scroll.appendChild(buildMergedTimelineSection(timelineEntries, ov));
-
   showAll.addEventListener("click", () => rows.forEach(r => r._setVisible(true)));
   hideAll.addEventListener("click", () => rows.forEach(r => r._setVisible(false)));
   body.appendChild(scroll);
   pop.appendChild(body);
-
   const navList = getFiltered();
   const curIdx = navList.findIndex(d => d.id === item.id);
   const navRow = el("div", "popup-footer");
@@ -3324,7 +3665,6 @@ function showDetail(item) {
   navRow.appendChild(posLabel);
   navRow.appendChild(nextBtn);
   pop.appendChild(navRow);
-
   const footer = el("div", "popup-footer");
   const closeBtn = el("button", "btn", "关闭");
   const copyBtn = el("button", "btn", "复制");
@@ -3459,7 +3799,6 @@ function openEdit(item) {
   rebuildChapterSelect(curSubj, src.chapter || "");
   body.appendChild(form);
   pop.appendChild(body);
-
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
   const saveBtn = el("button", "btn", "保存");
@@ -3548,7 +3887,6 @@ function openUpload(target) {
   const pathIn = mkInput("数据文件路径（仅 Git Data）", isQ ? defPath : cfg.path, "text", defPath);
   const tokenIn = mkInput("GitHub Token（需 contents:write）", cfg.token, "password", "ghp_... 或 github_pat_...");
   const msgIn = mkInput("提交信息", cfg.message, "text", "更新数据");
-
   form.appendChild(el("div", "gh-note",
     "Token 只保存在本机浏览器中，不会上传到任何第三方。\n" +
     "请勿在公共设备上保存 Token；用完可到 GitHub 设置里吊销。"));
@@ -3577,7 +3915,6 @@ function openUpload(target) {
   modeSel.value = cfg.upload_mode || "git";
   modeRow.appendChild(modeSel);
   form.appendChild(modeRow);
-
   const modeNote = el("div", "gh-note", "");
   function refreshModeNote() {
     if (modeSel.value === "release") modeNote.textContent = "Release 模式：文件以 asset 形式发布到 tag「" + RELEASE_TAG + "」，最大 2 GB。";
@@ -3597,18 +3934,15 @@ function openUpload(target) {
   const fileName = el("div", "file-name", "未选择文件");
   fileRow.appendChild(fileBtn); fileRow.appendChild(loadCurBtn); fileRow.appendChild(fileIn); fileRow.appendChild(fileName);
   form.appendChild(fileRow);
-
   const ta = document.createElement("textarea");
   ta.className = "import-textarea gh-textarea";
   ta.placeholder = isQ ? SAMPLE_QUESTION_JSON : SAMPLE_JSON;
   ta.spellcheck = false;
   form.appendChild(ta);
-
   const countEl = el("div", "gh-status", "尚未载入数据");
   form.appendChild(countEl);
   const statusEl = el("div", "gh-status", "");
   form.appendChild(statusEl);
-
   function setStatus(text, cls) { statusEl.textContent = text || ""; statusEl.className = "gh-status" + (cls ? " " + cls : ""); }
   function refreshCount() {
     const t = ta.value.trim();
@@ -3638,16 +3972,13 @@ function openUpload(target) {
   });
   ta.addEventListener("input", refreshCount);
   if (storage.data.length) { ta.value = JSON.stringify(storage.data, null, 2); fileName.textContent = "（来自本地数据）"; refreshCount(); }
-
   body.appendChild(form);
   pop.appendChild(body);
-
   const footer = el("div", "popup-footer");
   const closeBtn = el("button", "btn", "关闭");
   const saveCfgBtn = el("button", "btn", "保存配置");
   const testBtn = el("button", "btn", "测试连接");
   const uploadBtn = el("button", "btn", "上传数据");
-
   function readCfg() {
     return {
       owner: ownerIn.value.trim(), repo: repoIn.value.trim(),
@@ -3743,14 +4074,12 @@ function openImport() {
   });
   row.appendChild(overrideSel);
   body.appendChild(row);
-
   const chapRow = el("div", "import-row");
   chapRow.appendChild(el("div", "row-label", "统一指定章节"));
   const chapSel = document.createElement("select");
   chapSel.className = "edit-select";
   chapRow.appendChild(chapSel);
   body.appendChild(chapRow);
-
   function rebuildImportChapter(keepValue) {
     const sj = overrideSel.value;
     const list = (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) ? CHAPTER_WHITELIST[sj] : [];
@@ -3769,15 +4098,12 @@ function openImport() {
     chapSel.appendChild(emptyOpt);
     setChapterSelValue(chapSel, list, keepValue);
   }
-
   applyImportCfg(savedCfg, overrideSel, rebuildImportChapter);
-
   overrideSel.addEventListener("change", () => {
     rebuildImportChapter();
     saveImportCfg(overrideSel.value, chapSel.value);
   });
   chapSel.addEventListener("change", () => saveImportCfg(overrideSel.value, chapSel.value));
-
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
@@ -3924,9 +4250,9 @@ function openPdfExport() {
   ov.appendChild(pop);
   document.body.appendChild(ov);
 }
+
 /* =========================================================
-   AI 生成面板（病例 / 题库通用）
-   支持：多文件队列 / 自定义模型 / 云端同步
+   AI 生成面板
    ========================================================= */
 function openAiImport(target) {
   const isQ = target === "questions";
@@ -3948,7 +4274,6 @@ function openAiImport(target) {
   provSel.value = cfg.provider && AI_PRESETS[cfg.provider] ? cfg.provider : "gemini";
   provRow.appendChild(provSel);
   form.appendChild(provRow);
-
   const infoCard = el("div", "ai-info-card");
   form.appendChild(infoCard);
   function refreshInfoCard() {
@@ -3970,7 +4295,6 @@ function openAiImport(target) {
       infoCard.appendChild(link);
     }
   }
-
   form.appendChild(el("div", "gh-section-title", "② 参数配置"));
   function mkInput(label, value, type, ph) {
     form.appendChild(el("div", "edit-label", label));
@@ -3982,8 +4306,6 @@ function openAiImport(target) {
     return i;
   }
   const baseIn = mkInput("Base URL", cfg.base_url, "text", "https://.../v1");
-
-  /* ===== 模型名一行（下拉 + 自定义输入 + ＋ / × ） ===== */
   const modelRow = el("div", "import-row");
   modelRow.appendChild(el("div", "row-label", "模型名"));
   const modelSel = document.createElement("select");
@@ -4001,10 +4323,7 @@ function openAiImport(target) {
   modelRow.appendChild(modelSel); modelRow.appendChild(modelIn);
   modelRow.appendChild(addModelBtn); modelRow.appendChild(delModelBtn);
   form.appendChild(modelRow);
-
-  /* ===== 自定义模型列表（按服务商隔离） ===== */
   let customModels = Object.assign({}, cfg.custom_models || {});
-
   function getCustomList(providerKey) {
     const l = customModels[providerKey];
     return Array.isArray(l) ? l.slice() : [];
@@ -4043,7 +4362,6 @@ function openAiImport(target) {
     customOpt.value = "__custom__";
     customOpt.textContent = "（自定义模型名…）";
     modelSel.appendChild(customOpt);
-
     const want = String(currentModel || "").trim();
     if (want) {
       let found = false;
@@ -4064,7 +4382,6 @@ function openAiImport(target) {
     modelIn.style.display = "none";
     modelIn.value = "";
   }
-
   modelSel.addEventListener("change", () => {
     if (modelSel.value === "__custom__") {
       modelIn.style.display = "";
@@ -4108,9 +4425,7 @@ function openAiImport(target) {
     persistCustomModels();
     refreshModelList(key, "");
   });
-
   const keyIn = mkInput("API Key", cfg.api_key, "password", "sk-...");
-
   const tempRow = el("div", "import-row");
   tempRow.appendChild(el("div", "row-label", "温度 / 最大输出"));
   const tempIn = document.createElement("input");
@@ -4119,7 +4434,6 @@ function openAiImport(target) {
   maxIn.className = "edit-input"; maxIn.type = "text"; maxIn.value = String(cfg.max_tokens);
   tempRow.appendChild(tempIn); tempRow.appendChild(maxIn);
   form.appendChild(tempRow);
-
   const chunkRow = el("div", "import-row");
   chunkRow.appendChild(el("div", "row-label", "分块大小 / 重叠"));
   const chunkIn = document.createElement("input");
@@ -4128,7 +4442,6 @@ function openAiImport(target) {
   overlapIn.className = "edit-input"; overlapIn.type = "text"; overlapIn.value = String(cfg.chunk_overlap);
   chunkRow.appendChild(chunkIn); chunkRow.appendChild(overlapIn);
   form.appendChild(chunkRow);
-
   function applyPreset(key, keepUserValue) {
     const p = AI_PRESETS[key];
     refreshInfoCard();
@@ -4148,10 +4461,8 @@ function openAiImport(target) {
   provSel.addEventListener("change", () => { const oldKey = keyIn.value; applyPreset(provSel.value, false); keyIn.value = oldKey; });
   applyPreset(provSel.value, true);
   keyIn.value = cfg.api_key || "";
-
   form.appendChild(el("div", "gh-note", "Key 只保存在本机浏览器，不会上传第三方。公共设备用完请到服务商后台吊销。"));
 
-  /* ===== ☁️ 云端同步 ===== */
   form.appendChild(el("div", "gh-section-title", "☁️ 云端同步（跨设备）"));
   const cloudRow = el("div", "file-row");
   const cloudSaveBtn = el("button", "btn", "☁ 保存到云端");
@@ -4163,7 +4474,6 @@ function openAiImport(target) {
   cloudRow.appendChild(cloudLoadBtn);
   cloudRow.appendChild(cloudInfo);
   form.appendChild(cloudRow);
-
   let includeKeyInCloud = false;
   const cloudOptRow = el("div", "file-row");
   const keyToggleBtn = el("button", "btn", "同步 API Key：否");
@@ -4186,15 +4496,10 @@ function openAiImport(target) {
     const c = readCfg();
     const payload = {
       _meta: { savedAt: new Date().toISOString(), version: 1 },
-      provider: c.provider,
-      base_url: c.base_url,
-      model: c.model,
-      temperature: c.temperature,
-      max_tokens: c.max_tokens,
-      chunk_size: c.chunk_size,
-      chunk_overlap: c.chunk_overlap,
-      subject_target: c.subject_target,
-      chapter_sel: c.chapter_sel,
+      provider: c.provider, base_url: c.base_url, model: c.model,
+      temperature: c.temperature, max_tokens: c.max_tokens,
+      chunk_size: c.chunk_size, chunk_overlap: c.chunk_overlap,
+      subject_target: c.subject_target, chapter_sel: c.chapter_sel,
       custom_models: customModels,
     };
     if (includeKeyInCloud) payload.api_key = c.api_key;
@@ -4208,9 +4513,7 @@ function openAiImport(target) {
     } catch (e) {
       cloudInfo.textContent = "❌ " + e.message;
       cloudInfo.className = "gh-status err";
-    } finally {
-      cloudSaveBtn.disabled = false;
-    }
+    } finally { cloudSaveBtn.disabled = false; }
   });
 
   cloudLoadBtn.addEventListener("click", async () => {
@@ -4236,7 +4539,6 @@ function openAiImport(target) {
       if (!obj.custom_models || typeof obj.custom_models !== "object" || Array.isArray(obj.custom_models))
         merged.custom_models = cur.custom_models || {};
       saveAiConfig(merged);
-
       customModels = Object.assign({}, merged.custom_models || {});
       provSel.value = (merged.provider && AI_PRESETS[merged.provider]) ? merged.provider : "gemini";
       const pk = provSel.value;
@@ -4256,18 +4558,15 @@ function openAiImport(target) {
       chunkIn.value = String(merged.chunk_size != null ? merged.chunk_size : 5000);
       overlapIn.value = String(merged.chunk_overlap != null ? merged.chunk_overlap : 300);
       refreshModelList(pk, merged.model || preset.model || "");
-
       cloudInfo.textContent = "✅ 已从云端加载" + (obj.api_key ? "（含 Key）" : "（云端无 Key，沿用本地）");
       cloudInfo.className = "gh-status ok";
     } catch (e) {
       cloudInfo.textContent = "❌ " + e.message;
       cloudInfo.className = "gh-status err";
-    } finally {
-      cloudLoadBtn.disabled = false;
-    }
+    } finally { cloudLoadBtn.disabled = false; }
   });
 
-  /* ===== ③ 出题范围（仅题库模式） ===== */
+  /* ③ 出题范围（仅题库模式） */
   let casePoolText = "";
   let casePoolCount = 0;
   let casePoolLabel = "";
@@ -4301,7 +4600,7 @@ function openAiImport(target) {
     });
   }
 
-  /* ===== 输入资料：多文件队列 ===== */
+  /* 输入资料 */
   form.appendChild(el("div", "gh-section-title", (isQ ? "④" : "③") + " 输入资料（支持多文件）"));
   const srcRow = el("div", "file-row");
   const fileBtn = el("button", "btn", "选择多个 PDF / TXT");
@@ -4314,12 +4613,140 @@ function openAiImport(target) {
   srcRow.appendChild(fileBtn); srcRow.appendChild(clearFilesBtn); srcRow.appendChild(fileIn); srcRow.appendChild(fileInfo);
   form.appendChild(srcRow);
 
+  /* ============ OCR 选项 ============ */
+  const ocrSection = el("div", "");
+  ocrSection.style.cssText = "display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
+  const ocrTitleRow = el("div", "");
+  ocrTitleRow.style.cssText = "display:flex;align-items:center;gap:8px";
+  ocrTitleRow.appendChild(el("div", "edit-label", "🔎 OCR 选项（仅扫描版 PDF 生效）"));
+  const ocrToggle = el("button", "btn", "展开");
+  ocrToggle.style.cssText = "flex:none;width:auto;padding:0 10px;height:26px;font-size:.75em;margin-left:auto";
+  ocrTitleRow.appendChild(ocrToggle);
+  ocrSection.appendChild(ocrTitleRow);
+  const ocrBody = el("div", "");
+  ocrBody.style.cssText = "display:none;flex-direction:column;gap:6px";
+  ocrSection.appendChild(ocrBody);
+  const engineRow = el("div", "import-row");
+  engineRow.appendChild(el("div", "row-label", "OCR 引擎"));
+  const engineSel = document.createElement("select");
+  engineSel.className = "edit-select";
+  engineSel.innerHTML =
+    '<option value="tesseract">Tesseract.js（浏览器内置·免费）</option>' +
+    '<option value="paddle">PaddleOCR（HTTP 后端·中文更准）</option>';
+  engineRow.appendChild(engineSel);
+  ocrBody.appendChild(engineRow);
+  const paddleRow = el("div", "import-row");
+  paddleRow.style.display = "none";
+  paddleRow.appendChild(el("div", "row-label", "Paddle 服务地址"));
+  const paddleUrlIn = document.createElement("input");
+  paddleUrlIn.className = "edit-input"; paddleUrlIn.type = "text";
+  paddleUrlIn.placeholder = "https://your-server/ocr";
+  paddleUrlIn.spellcheck = false;
+  paddleRow.appendChild(paddleUrlIn);
+  ocrBody.appendChild(paddleRow);
+  const paddleKeyRow = el("div", "import-row");
+  paddleKeyRow.style.display = "none";
+  paddleKeyRow.appendChild(el("div", "row-label", "Paddle API Key（可选）"));
+  const paddleKeyIn = document.createElement("input");
+  paddleKeyIn.className = "edit-input"; paddleKeyIn.type = "password";
+  paddleKeyIn.spellcheck = false;
+  paddleKeyRow.appendChild(paddleKeyIn);
+  ocrBody.appendChild(paddleKeyRow);
+  const ocrParamRow = el("div", "import-row");
+  ocrParamRow.appendChild(el("div", "row-label", "并发 / 起始页 / 结束页"));
+  const workerIn = document.createElement("input");
+  workerIn.className = "edit-input"; workerIn.type = "number";
+  workerIn.min = "1"; workerIn.max = String(OCR_WORKER_COUNT_MAX);
+  workerIn.value = String(OCR_WORKER_COUNT_DEFAULT);
+  workerIn.style.cssText = "flex:none;width:56px";
+  const pageFromIn = document.createElement("input");
+  pageFromIn.className = "edit-input"; pageFromIn.type = "number"; pageFromIn.min = "1";
+  pageFromIn.placeholder = "1"; pageFromIn.style.cssText = "flex:none;width:64px";
+  const pageToIn = document.createElement("input");
+  pageToIn.className = "edit-input"; pageToIn.type = "number"; pageToIn.min = "0";
+  pageToIn.placeholder = "末尾"; pageToIn.style.cssText = "flex:none;width:64px";
+  ocrParamRow.appendChild(workerIn);
+  ocrParamRow.appendChild(pageFromIn);
+  ocrParamRow.appendChild(pageToIn);
+  ocrBody.appendChild(ocrParamRow);
+  const ocrSwitchRow = el("div", "");
+  ocrSwitchRow.style.cssText = "display:flex;flex-wrap:wrap;gap:6px";
+  function mkToggle(label, defVal) {
+    const b = el("button", "btn", label + "：" + (defVal ? "开" : "关"));
+    b.dataset.on = defVal ? "1" : "0";
+    b.style.cssText = "flex:none;width:auto;padding:0 10px;height:30px;font-size:.75em";
+    if (defVal) b.classList.add("active");
+    b.addEventListener("click", () => {
+      const on = b.dataset.on !== "1";
+      b.dataset.on = on ? "1" : "0";
+      b.textContent = label + "：" + (on ? "开" : "关");
+      b.classList.toggle("active", on);
+    });
+    return b;
+  }
+  const preprocessToggle = mkToggle("图像预处理", true);
+  const cacheToggle      = mkToggle("缓存复用", true);
+  const postToggle       = mkToggle("文本后处理", true);
+  ocrSwitchRow.appendChild(preprocessToggle);
+  ocrSwitchRow.appendChild(cacheToggle);
+  ocrSwitchRow.appendChild(postToggle);
+  ocrBody.appendChild(ocrSwitchRow);
+  const cacheInfoRow = el("div", "");
+  cacheInfoRow.style.cssText = "display:flex;align-items:center;gap:8px";
+  const clearCacheBtn = el("button", "btn", "清空 OCR 缓存");
+  clearCacheBtn.style.cssText = "flex:none;width:auto;padding:0 10px;height:30px;font-size:.75em";
+  const cacheInfo = el("div", "gh-status", "");
+  cacheInfo.style.flex = "1";
+  cacheInfoRow.appendChild(clearCacheBtn);
+  cacheInfoRow.appendChild(cacheInfo);
+  ocrBody.appendChild(cacheInfoRow);
+  async function refreshOcrCacheInfo() {
+    const st = await ocrCacheStats();
+    cacheInfo.textContent = "缓存：" + st.count + " 页（约 " + Math.round(st.bytes / 1024) + " KB）";
+    cacheInfo.className = "gh-status";
+  }
+  refreshOcrCacheInfo();
+  clearCacheBtn.addEventListener("click", async () => {
+    clearCacheBtn.disabled = true;
+    await clearOcrCache();
+    await refreshOcrCacheInfo();
+    clearCacheBtn.disabled = false;
+    confirmPopup("已清空 OCR 缓存");
+  });
+  ocrToggle.addEventListener("click", () => {
+    const show = ocrBody.style.display === "none";
+    ocrBody.style.display = show ? "flex" : "none";
+    ocrToggle.textContent = show ? "收起" : "展开";
+    if (show) refreshOcrCacheInfo();
+  });
+  engineSel.addEventListener("change", () => {
+    const isPaddle = engineSel.value === "paddle";
+    paddleRow.style.display = isPaddle ? "flex" : "none";
+    paddleKeyRow.style.display = isPaddle ? "flex" : "none";
+  });
+  form.appendChild(ocrSection);
+  function readOcrOpts() {
+    const engine = engineSel.value;
+    const workerN = Math.max(1, Math.min(OCR_WORKER_COUNT_MAX, parseInt(workerIn.value, 10) || OCR_WORKER_COUNT_DEFAULT));
+    const pf = Math.max(1, parseInt(pageFromIn.value, 10) || 1);
+    const pt = Math.max(0, parseInt(pageToIn.value, 10) || 0);
+    return {
+      engine: engine,
+      workers: workerN,
+      pageFrom: pf,
+      pageTo: pt,
+      preprocess: preprocessToggle.dataset.on === "1",
+      useCache:   cacheToggle.dataset.on === "1",
+      postProcess: postToggle.dataset.on === "1",
+      paddleEndpoint: paddleUrlIn.value.trim(),
+      paddleApiKey:   paddleKeyIn.value.trim(),
+    };
+  }
+
   const queueBox = el("div", "");
   queueBox.style.cssText = "display:flex;flex-direction:column;gap:8px;padding:6px;border:1px solid var(--divider);border-radius:6px;background:var(--panel);min-height:56px;max-height:340px;overflow-y:auto";
   form.appendChild(queueBox);
-
   const fileQueue = [];
-
   function renderQueue() {
     queueBox.innerHTML = "";
     if (!fileQueue.length) {
@@ -4329,14 +4756,11 @@ function openAiImport(target) {
     fileQueue.forEach(item => {
       const card = el("div", "");
       card.style.cssText = "padding:8px 10px;border:1px solid var(--divider);border-radius:6px;background:var(--bg)";
-
       const header = el("div", "");
       header.style.cssText = "display:flex;align-items:center;gap:6px;flex-wrap:wrap";
-
       const nameEl = el("div", "", item.name);
       nameEl.style.cssText = "flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:.85em";
       header.appendChild(nameEl);
-
       const statusText = {
         pending:    "等待",
         parsing:    "解析中…",
@@ -4349,14 +4773,12 @@ function openAiImport(target) {
       const statusEl = el("div", statusCls, statusText);
       statusEl.style.cssText = "flex:none;font-size:.72em;padding:0 4px";
       header.appendChild(statusEl);
-
       const mkBtn = (label, fn) => {
         const b = el("button", "btn", label);
         b.style.cssText = "flex:none;width:auto;padding:0 8px;height:26px;font-size:.72em";
         b.addEventListener("click", fn);
         return b;
       };
-
       let previewEl = null;
       const expandBtn = mkBtn("展开", () => {
         if (!previewEl) return;
@@ -4397,7 +4819,6 @@ function openAiImport(target) {
       header.appendChild(importBtnOne);
       header.appendChild(removeBtn);
       card.appendChild(header);
-
       previewEl = el("div", "");
       previewEl.style.cssText = "display:none;margin-top:6px;max-height:200px;overflow:auto;font-size:.7em;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;background:var(--input-bg);padding:6px;border-radius:4px;word-break:break-all";
       card.appendChild(previewEl);
@@ -4420,14 +4841,12 @@ function openAiImport(target) {
   SUBJECTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; subjSel.appendChild(o); });
   subjRow.appendChild(subjSel);
   form.appendChild(subjRow);
-
   const chapRow = el("div", "import-row");
   chapRow.appendChild(el("div", "row-label", "统一指定章节"));
   const chapSel = document.createElement("select");
   chapSel.className = "edit-select";
   chapRow.appendChild(chapSel);
   form.appendChild(chapRow);
-
   function rebuildAiChapter(keepValue) {
     const sj = subjSel.value;
     const list = CHAPTER_WHITELIST[sj] || [];
@@ -4446,10 +4865,8 @@ function openAiImport(target) {
     chapSel.appendChild(emptyOpt);
     setChapterSelValue(chapSel, list, keepValue);
   }
-
   if (SUBJECTS.indexOf(cfg.subject_target) !== -1) subjSel.value = cfg.subject_target;
   rebuildAiChapter(cfg.chapter_sel);
-
   subjSel.addEventListener("change", () => {
     rebuildAiChapter();
     saveAiConfig(readCfg());
@@ -4467,7 +4884,6 @@ function openAiImport(target) {
   form.appendChild(outTa);
   const countEl = el("div", "gh-status", "");
   form.appendChild(countEl);
-
   function log(msg) {
     logEl.textContent += (logEl.textContent ? "\n" : "") + msg;
     logEl.scrollTop = logEl.scrollHeight;
@@ -4488,9 +4904,11 @@ function openAiImport(target) {
       item.error = "";
       renderQueue();
       try {
-        item.text = await extractTextFromFile(item.file, (pg, total) => {
-          log("[" + item.name + "] 解析第 " + pg + "/" + total + " 页");
-        });
+        item.text = await extractTextFromFile(
+          item.file,
+          (pg, total, msg) => log("[" + item.name + "] " + (msg || ("解析第 " + pg + "/" + total + " 页"))),
+          readOcrOpts()
+        );
         item.status = "parsed";
         log("[" + item.name + "] 解析完成，共 " + item.text.length + " 字");
       } catch (e) {
@@ -4550,7 +4968,6 @@ function openAiImport(target) {
 
   body.appendChild(form);
   pop.appendChild(body);
-
   const footer = el("div", "popup-footer");
   const closeBtn = el("button", "btn", "关闭");
   const copyPrompt = el("button", "btn", "复制 Prompt");
@@ -4651,13 +5068,16 @@ function openAiImport(target) {
       for (let i = 0; i < fileQueue.length; i++) {
         const item = fileQueue[i];
         if (item.status !== "pending") continue;
-
         if (!item.text) {
           item.status = "parsing";
           item.error = "";
           renderQueue();
           try {
-            item.text = await extractTextFromFile(item.file, (pg, total) => log("[" + item.name + "] 解析第 " + pg + "/" + total + " 页"));
+            item.text = await extractTextFromFile(
+              item.file,
+              (pg, total, msg) => log("[" + item.name + "] " + (msg || ("解析第 " + pg + "/" + total + " 页"))),
+              readOcrOpts()
+            );
             item.status = "parsed";
             log("[" + item.name + "] 解析完成，共 " + item.text.length + " 字");
           } catch (e) {
@@ -4669,7 +5089,6 @@ function openAiImport(target) {
           }
           renderQueue();
         }
-
         item.status = "generating";
         renderQueue();
         log("[" + (i + 1) + "/" + fileQueue.length + "] " + item.name + " 调用 AI 中…");
@@ -4689,7 +5108,6 @@ function openAiImport(target) {
           log("❌ " + item.name + " 失败：" + e.message);
         }
         renderQueue();
-
         if (i < fileQueue.length - 1) await new Promise(r => setTimeout(r, 1500));
       }
 
@@ -4728,7 +5146,6 @@ function openAiImport(target) {
         setCount();
         log("🎉 手动来源共 " + merged.length + " 条（去重后）");
       }
-
       if (!fileQueue.some(f => f.status === "pending") && !manualSources.length) {
         log("⚠ 没有可处理的内容（请在 ③ 选病例库，或上传文件 / 粘贴文本）");
       }
@@ -4746,8 +5163,7 @@ function openAiImport(target) {
     const peak = getPeakStatus(provider);
     if (peak.isPeak && peak.note) {
       confirmPopup(
-        "当前为" + peak.label + "。\n" +
-        peak.note + "\n\n" +
+        "当前为" + peak.label + "。\n" + peak.note + "\n\n" +
         "高峰期可能更慢、更容易触发限流" +
         (provider === "deepseek" ? "，且费用更高" : "") + "。\n" +
         "确定现在开始生成吗？",
@@ -4764,7 +5180,6 @@ function openAiImport(target) {
     const c = readCfg();
     const successful = fileQueue.filter(f => f.status === "success" && f.jsonItems && f.jsonItems.length);
     if (!successful.length) { confirmPopup("没有可导入的成功结果"); return; }
-
     const seen = {};
     const allItems = [];
     for (const item of successful) {
@@ -4776,12 +5191,10 @@ function openAiImport(target) {
       }
     }
     if (!allItems.length) { confirmPopup("去重后没有有效条目"); return; }
-
     stripAiIds(allItems);
     const jsonText = JSON.stringify(allItems, null, 2);
     const p = isQ ? parseQuestionList(jsonText) : parseJsonList(jsonText);
     if (p.err) { confirmPopup("合并后的 JSON 不合法：" + p.err); return; }
-
     if (isQ) {
       const r = questionStore.importFromText(jsonText, "append", c.subject_target, c.chapter_override);
       if (!r.ok) { confirmPopup(r.msg); return; }
@@ -4830,6 +5243,7 @@ function openAiImport(target) {
   ov.appendChild(pop);
   document.body.appendChild(ov);
 }
+
 /* =========================================================
    题库粘贴导入 / 导出 / 清空
    ========================================================= */
@@ -4843,7 +5257,6 @@ function openQuestionImport() {
   const ta = document.createElement("textarea");
   ta.className = "import-textarea"; ta.placeholder = SAMPLE_QUESTION_JSON; ta.spellcheck = false;
   body.appendChild(ta);
-
   const sjRow = el("div", "import-row");
   sjRow.appendChild(el("div", "row-label", "统一指定科目"));
   const sjSel = document.createElement("select");
@@ -4853,14 +5266,12 @@ function openQuestionImport() {
   });
   sjRow.appendChild(sjSel);
   body.appendChild(sjRow);
-
   const chRow = el("div", "import-row");
   chRow.appendChild(el("div", "row-label", "统一指定章节"));
   const chSel = document.createElement("select");
   chSel.className = "edit-select";
   chRow.appendChild(chSel);
   body.appendChild(chRow);
-
   function rebuildQChapter(keepValue) {
     const sj = sjSel.value;
     const list = (sj !== "保持原值" && CHAPTER_WHITELIST[sj]) ? CHAPTER_WHITELIST[sj] : [];
@@ -4879,15 +5290,12 @@ function openQuestionImport() {
     chSel.appendChild(emptyOpt);
     setChapterSelValue(chSel, list, keepValue);
   }
-
   applyImportCfg(savedCfg, sjSel, rebuildQChapter);
-
   sjSel.addEventListener("change", () => {
     rebuildQChapter();
     saveImportCfg(sjSel.value, chSel.value);
   });
   chSel.addEventListener("change", () => saveImportCfg(sjSel.value, chSel.value));
-
   const exRow = el("div", "export-row");
   exRow.appendChild(el("div", "row-label", "示例"));
   const bBtn = el("button", "btn", "B型题示例");
@@ -4984,29 +5392,22 @@ function openQuiz(pool, opts) {
   const mode = opts.mode || state.quizMode || "practice";
   const examTimer = opts.timer || 0;
   let base = pool && pool.length ? pool.slice() : questionStore.data.slice();
-
   const scope = opts.scope || state.quizScope || "all";
   if (scope === "wrong") base = base.filter(q => { const r = answerLog.data[q.id]; return r && !r.correct; });
   else if (scope === "unanswered") base = base.filter(q => !answerLog.data[q.id]);
   if (!base.length) { confirmPopup("该范围下没有题目"); return; }
-
   base.sort((a, b) => quizPriority(b) - quizPriority(a));
-
   const cnt = opts.count !== undefined ? opts.count : 0;
   if (cnt > 0 && base.length > cnt) base = base.slice(0, cnt);
-
   const shuffled = base;
-
   let idx = opts.startIdx || 0;
   let userAnswers = opts.userAnswers || {};
   let subIdx = 0;
-
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   const titleEl = el("div", "popup-title", "刷题");
   pop.appendChild(titleEl);
   const body = el("div", "popup-body");
-
   const topBar = el("div", "");
   topBar.style.cssText = "display:flex;flex-direction:column;gap:4px;flex:none";
   const progressWrap = el("div", "quiz-progress-wrap");
@@ -5016,10 +5417,8 @@ function openQuiz(pool, opts) {
   const timerEl = el("div", "quiz-timer", "");
   topBar.appendChild(progressWrap); topBar.appendChild(metaEl); topBar.appendChild(timerEl);
   body.appendChild(topBar);
-
   const scroll = el("div", "detail-scroll");
   body.appendChild(scroll);
-
   const footer = el("div", "popup-footer");
   const starBtn = el("button", "btn", "☆");
   const doubtBtn = el("button", "btn", "❓");
@@ -5031,12 +5430,10 @@ function openQuiz(pool, opts) {
   footer.appendChild(submitBtn); footer.appendChild(nextBtn); footer.appendChild(closeBtn);
   pop.appendChild(body);
   pop.appendChild(footer);
-
   let answered = false;
   let timerHandle = null;
   let startTs = Date.now();
   let sessionId = genId();
-
   function saveProgress() {
     quizProgress.save({
       sessionId: sessionId,
@@ -5081,14 +5478,12 @@ function openQuiz(pool, opts) {
   function updateProgress() {
     progressFill.style.width = ((idx + 1) / shuffled.length * 100) + "%";
   }
-
   function render() {
     const q = currentQ();
     answered = false;
     const key = answerKey(q);
     if (!userAnswers[key]) userAnswers[key] = [];
     const ansArr = userAnswers[key];
-
     titleEl.textContent = (mode === "review" ? "背题 · " : mode === "exam" ? "考试 · " : "练习 · ") +
       (q.subject || "") + (q.chapter ? " · " + q.chapter : "");
     const totalSub = subCount(q);
@@ -5100,7 +5495,6 @@ function openQuiz(pool, opts) {
     starBtn.textContent = q.starred ? "★" : "☆";
     doubtBtn.textContent = q.doubt ? "❓✓" : "❓";
     updateProgress();
-
     scroll.innerHTML = "";
     if (q.type === "A3" && q.caseStem) {
       const s = el("div", "quiz-stem");
@@ -5117,7 +5511,6 @@ function openQuiz(pool, opts) {
     if (mode === "practice" && isMultiQ(q) && getAnswer(q).length > 1) {
       scroll.appendChild(el("div", "multi-hint", "💡 本题为多选题，正确选项可能不止 1 个。"));
     }
-
     const optWrap = el("div", "quiz-opts");
     optWrap.style.marginTop = "10px";
     getOpts(q).forEach(o => {
@@ -5139,11 +5532,9 @@ function openQuiz(pool, opts) {
       optWrap.appendChild(btn);
     });
     scroll.appendChild(optWrap);
-
     const ansBox = el("div", "");
     ansBox.id = "__quiz_result";
     scroll.appendChild(ansBox);
-
     if (mode === "review") {
       answered = true;
       showResult(q, ansArr, true);
@@ -5160,7 +5551,6 @@ function openQuiz(pool, opts) {
     nextBtn.disabled = idx >= shuffled.length - 1 && subIdx >= subCount(q) - 1;
     startTs = Date.now();
   }
-
   function showResult(q, ansArr, isReview) {
     const correct = judgeMulti(q, subIdx, ansArr);
     const correctAns = getAnswer(q);
@@ -5211,7 +5601,6 @@ function openQuiz(pool, opts) {
     box.appendChild(noteWrap);
     scroll.scrollTop = scroll.scrollHeight;
   }
-
   function submit() {
     if (answered) return;
     const q = currentQ();
@@ -5249,7 +5638,6 @@ function openQuiz(pool, opts) {
       confirmPopup(msg, () => { quizProgress.clear(); ov.remove(); }, "关闭", "刷题完成");
     }
   }
-
   skipBtn.addEventListener("click", nextSub);
   submitBtn.addEventListener("click", submit);
   nextBtn.addEventListener("click", () => {
@@ -5275,7 +5663,6 @@ function openQuiz(pool, opts) {
     questionStore.save();
     doubtBtn.textContent = q.doubt ? "❓✓" : "❓";
   });
-
   function onKey(e) {
     if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
     const k = e.key.toUpperCase();
@@ -5301,7 +5688,6 @@ function openQuiz(pool, opts) {
     }
   }
   document.addEventListener("keydown", onKey);
-
   if (mode === "exam" && examTimer > 0) {
     let remain = examTimer * 60;
     timerEl.textContent = "⏱ " + formatDuration(remain);
@@ -5311,7 +5697,6 @@ function openQuiz(pool, opts) {
       if (remain <= 0) { clearInterval(timerHandle); confirmPopup("考试时间到！", () => ov.remove()); }
     }, 1000);
   }
-
   ov.appendChild(pop);
   document.body.appendChild(ov);
   render();
@@ -5322,10 +5707,7 @@ function openQuiz(pool, opts) {
     clearInterval(autoSave);
   };
   const origRemove = ov.remove.bind(ov);
-  ov.remove = function () {
-    origCleanup();
-    origRemove();
-  };
+  ov.remove = function () { origCleanup(); origRemove(); };
 }
 
 /* =========================================================
@@ -5336,14 +5718,12 @@ function openQuizPicker() {
   const pop = el("div", "popup popup-sm");
   pop.appendChild(el("div", "popup-title", "开始刷题"));
   const body = el("div", "popup-body");
-
   function addRow(label, widget) {
     const r = el("div", "import-row");
     r.appendChild(el("div", "row-label", label));
     r.appendChild(widget);
     body.appendChild(r);
   }
-
   const sjSel = document.createElement("select");
   sjSel.className = "edit-select";
   const seen = {};
@@ -5353,7 +5733,6 @@ function openQuizPicker() {
   });
   sjSel.value = state.qSubject;
   addRow("科目", sjSel);
-
   const tpSel = document.createElement("select");
   tpSel.className = "edit-select";
   [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["B", "B型题"], ["A3", "病例串题"]].forEach(([v, t]) => {
@@ -5361,7 +5740,6 @@ function openQuizPicker() {
   });
   tpSel.value = state.qType;
   addRow("题型", tpSel);
-
   const scSel = document.createElement("select");
   scSel.className = "edit-select";
   [["all", "全部"], ["unanswered", "未做优先"], ["wrong", "仅错题"]].forEach(([v, t]) => {
@@ -5369,11 +5747,9 @@ function openQuizPicker() {
   });
   scSel.value = state.quizScope;
   addRow("范围", scSel);
-
   const cntIn = document.createElement("input");
   cntIn.className = "edit-input"; cntIn.type = "text"; cntIn.value = String(state.quizCount);
   addRow("题数", cntIn);
-
   const mdSel = document.createElement("select");
   mdSel.className = "edit-select";
   [["practice", "练习（即时对答案）"], ["exam", "考试（全部答完才看答案）"], ["review", "背题（直接看答案）"]].forEach(([v, t]) => {
@@ -5381,7 +5757,6 @@ function openQuizPicker() {
   });
   mdSel.value = state.quizMode;
   addRow("模式", mdSel);
-
   const examRow = el("div", "import-row");
   examRow.appendChild(el("div", "row-label", "模拟整卷"));
   const examBtn = el("button", "btn", "按大纲比例出卷（180题）");
@@ -5404,7 +5779,6 @@ function openQuizPicker() {
   });
   examRow.appendChild(examBtn);
   body.appendChild(examRow);
-
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
@@ -5444,9 +5818,7 @@ function openWrongBook() {
   const pop = el("div", "popup popup-sm");
   pop.appendChild(el("div", "popup-title", "错题本（" + wrongs.length + " 题）"));
   const body = el("div", "popup-body");
-
   const footer = el("div", "popup-footer");
-
   if (!wrongs.length) {
     body.appendChild(el("div", "empty-note", "暂无错题 🎉"));
     const closeBtn = el("button", "btn", "关闭");
@@ -5475,7 +5847,6 @@ function openWrongBook() {
     body.appendChild(tabRow);
     const listBox = el("div", "drug-result-list");
     body.appendChild(listBox);
-
     function stemOf(q) {
       if (q.type === "B") return (q.subQuestions[0] && q.subQuestions[0].stem) || "B型题";
       if (q.type === "A3") return q.caseStem || "病例串题";
@@ -5509,7 +5880,6 @@ function openWrongBook() {
       }
     }
     renderGroup();
-
     const clearBtn = el("button", "btn", "清空记录");
     const quizBtn = el("button", "btn", "重做全部");
     const closeBtn = el("button", "btn", "关闭");
@@ -5532,7 +5902,6 @@ function openHeatmap() {
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", "做题统计"));
   const body = el("div", "popup-body");
-
   const overview = el("div", "");
   overview.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;font-size:.875em";
   const cards = [
@@ -5550,7 +5919,6 @@ function openHeatmap() {
     overview.appendChild(card);
   });
   body.appendChild(overview);
-
   const scroll = el("div", "detail-scroll");
   scroll.appendChild(el("div", "gh-section-title", "章节正确率"));
   const chapterStats = {};
@@ -5577,7 +5945,6 @@ function openHeatmap() {
       scroll.appendChild(row);
     });
   }
-
   if (entries.length) {
     scroll.appendChild(el("div", "gh-section-title", "最薄弱章节（≥3 题）"));
     const weak = entries.filter(([, v]) => v.total >= 3).sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total)).slice(0, 5);
@@ -5590,7 +5957,6 @@ function openHeatmap() {
       scroll.appendChild(row);
     });
   }
-
   body.appendChild(scroll);
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
@@ -5943,7 +6309,6 @@ function openSettings() {
     darkBtn.textContent = state.dark ? "关闭深色模式" : "开启深色模式";
   });
   addRow("深色模式", darkBtn);
-
   const fontWrap = el("div", "font-wrap");
   const minus = el("button", "btn", "A-"); const plus = el("button", "btn", "A+");
   const fontLabel = el("div", "font-label", Math.round(state.fontScale * 100) + "%");
@@ -5951,17 +6316,37 @@ function openSettings() {
   plus.addEventListener("click", () => { state.fontScale = clamp(state.fontScale + 0.05, 0.85, 1.35); saveSettings(); applyTheme(); fontLabel.textContent = Math.round(state.fontScale * 100) + "%"; });
   fontWrap.appendChild(minus); fontWrap.appendChild(fontLabel); fontWrap.appendChild(plus);
   addRow("字号", fontWrap);
-
   const sortSel = document.createElement("select");
   sortSel.className = "edit-select";
   SORT_OPTIONS.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sortSel.appendChild(o); });
   sortSel.value = state.sort;
   sortSel.addEventListener("change", () => { state.sort = sortSel.value; saveSettings(); render(); });
   addRow("排序方式", sortSel);
-
   const backupBtn = el("button", "btn", "清理备份（当前 " + store.backupCount() + " 份）");
   backupBtn.addEventListener("click", () => { store.clearBackups(); backupBtn.textContent = "清理备份（当前 0 份）"; confirmPopup("备份已清理"); });
   addRow("自动备份", backupBtn);
+
+  /* === OCR 缓存 === */
+  const cacheBtn = el("button", "btn", "查看 / 清理 OCR 缓存");
+  cacheBtn.addEventListener("click", async () => {
+    const st = await ocrCacheStats();
+    const kb = Math.round(st.bytes / 1024);
+    confirmPopup(
+      "OCR 缓存\n\n页数：" + st.count + "\n体积：约 " + kb + " KB\n\n清理后，同一份 PDF 的 OCR 需要重跑一遍。",
+      async () => {
+        await clearOcrCache();
+        confirmPopup("已清理 OCR 缓存");
+      },
+      "清理缓存",
+      "OCR 缓存"
+    );
+  });
+  addRow("OCR 缓存", cacheBtn);
+
+  /* === OCR 自定义修正词表 === */
+  const fixBtn = el("button", "btn", "编辑 OCR 修正词表");
+  fixBtn.addEventListener("click", () => openOcrFixEditor());
+  addRow("OCR 修正词表", fixBtn);
 
   const pullWrap = el("div", "font-wrap");
   const pullCaseBtn = el("button", "btn", "病例");
@@ -5978,7 +6363,6 @@ function openSettings() {
   });
   pullWrap.appendChild(pullCaseBtn); pullWrap.appendChild(pullQuizBtn);
   addRow("🔄 强制拉取", pullWrap);
-
   const autoPullBtn = el("button", "btn", state.autoPull ? "已开启" : "已关闭");
   autoPullBtn.addEventListener("click", () => {
     state.autoPull = !state.autoPull;
@@ -5989,27 +6373,26 @@ function openSettings() {
       : "已关闭「启动时自动拉取」。");
   });
   addRow("启动时自动拉取", autoPullBtn);
-
   const ghBtn = el("button", "btn", "打开上传面板");
   ghBtn.addEventListener("click", () => { ov.remove(); openUpload("cases"); });
   addRow("GitHub 上传（病例）", ghBtn);
-
   const ghQBtn = el("button", "btn", "打开题库上传面板");
   ghQBtn.addEventListener("click", () => { ov.remove(); openUpload("questions"); });
   addRow("GitHub 上传（题库）", ghQBtn);
-
   const aiBtn = el("button", "btn", "打开 AI 生成面板");
   aiBtn.addEventListener("click", () => { ov.remove(); openAiImport("cases"); });
   addRow("AI 生成病例", aiBtn);
-
   const aiQBtn = el("button", "btn", "打开 AI 出题面板");
   aiQBtn.addEventListener("click", () => { ov.remove(); openAiImport("questions"); });
   addRow("AI 出题", aiQBtn);
-
   const info = el("div", "settings-info",
     "【数据保存】\n" +
     "病例与题库均保存在浏览器本地存储中，清除浏览器数据时一并清除。\n" +
     "每次修改自动生成备份（最多 5 份）。\n\n" +
+    "【OCR】\n" +
+    "扫描版 PDF 会自动尝试 OCR。可在 AI 面板 → 🔎 OCR 选项 调整引擎、并发、页码范围。\n" +
+    "同一份 PDF 二次使用会命中缓存秒开。\n" +
+    "可使用自定义修正词表补正常见误识。\n\n" +
     "【自定义模型】\n" +
     "AI 面板「模型名」一行：\n" +
     "  · 下拉选择预设模型；\n" +
@@ -6068,6 +6451,60 @@ function openSettings() {
 }
 
 /* =========================================================
+   OCR 修正词表编辑器
+   ========================================================= */
+function openOcrFixEditor() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "OCR 修正词表"));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "hint-text",
+    "每行一条，格式：错误 → 正确\n" +
+    "例如：心肌梗寒→心肌梗死\n" +
+    "保存后仅影响后续 OCR 结果（已识别文本不会被改动）。"));
+  const userFix = loadUserFix();
+  const lines = Object.keys(userFix).map(k => k + "→" + userFix[k]).join("\n");
+  const ta = document.createElement("textarea");
+  ta.className = "import-textarea";
+  ta.style.minHeight = "260px";
+  ta.placeholder = "心肌梗寒→心肌梗死\n肺气肿肿→肺气肿\n(支持中英文混排，每行一条)";
+  ta.value = lines;
+  body.appendChild(ta);
+  body.appendChild(el("div", "gh-note",
+    "内置词表（可被下方覆盖）：\n" +
+    Object.keys(MED_FIX_BUILTIN).slice(0, 12).map(k => k + "→" + MED_FIX_BUILTIN[k]).join("　")));
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const resetBtn = el("button", "btn", "恢复默认");
+  const saveBtn = el("button", "btn", "保存");
+  cancelBtn.addEventListener("click", () => ov.remove());
+  resetBtn.addEventListener("click", () => { ta.value = ""; });
+  saveBtn.addEventListener("click", () => {
+    const dict = {};
+    const rows = ta.value.split("\n");
+    for (let r of rows) {
+      r = r.trim();
+      if (!r) continue;
+      let sep = r.indexOf("→");
+      if (sep === -1) sep = r.indexOf("->");
+      if (sep === -1) sep = r.indexOf("=>");
+      if (sep === -1) continue;
+      let k = r.slice(0, sep).trim();
+      let v = r.slice(sep + 1).replace(/^[->]/, "").trim();
+      if (k && v) dict[k] = v;
+    }
+    saveUserFix(dict);
+    ov.remove();
+    confirmPopup("已保存 " + Object.keys(dict).length + " 条修正规则");
+  });
+  footer.appendChild(cancelBtn); footer.appendChild(resetBtn); footer.appendChild(saveBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
    通用确认弹窗
    ========================================================= */
 function confirmPopup(text, onYes, yesText, title) {
@@ -6111,7 +6548,6 @@ document.addEventListener("keydown", function (e) {
 function bindEvents() {
   document.getElementById("modeCasesBtn").addEventListener("click", () => setMode("cases"));
   document.getElementById("modeQuizBtn").addEventListener("click", () => setMode("quiz"));
-
   document.getElementById("subjectSel").addEventListener("change", function (e) {
     state.subject = e.target.value; state.chapter = "全部";
     saveSettings(); render();
@@ -6128,14 +6564,12 @@ function bindEvents() {
   document.getElementById("sortSel").addEventListener("change", function (e) {
     state.sort = e.target.value; saveSettings(); render();
   });
-
   let __st = null;
   document.getElementById("searchInput").addEventListener("input", function (e) {
     const v = e.target.value.trim();
     if (__st) clearTimeout(__st);
     __st = setTimeout(() => { state.search = v; render(); }, 180);
   });
-
   document.getElementById("addBtn").addEventListener("click", function () { openEdit(null); });
   document.getElementById("randomBtn").addEventListener("click", randomPick);
   document.getElementById("recordBtn").addEventListener("click", openBigRecord);
@@ -6150,7 +6584,6 @@ function bindEvents() {
   document.getElementById("uploadBtn").addEventListener("click", () => openUpload("cases"));
   document.getElementById("clearBtn").addEventListener("click", confirmClear);
   document.getElementById("settingsBtn").addEventListener("click", openSettings);
-
   document.getElementById("qSubjectSel").addEventListener("change", function (e) {
     state.qSubject = e.target.value; saveSettings(); renderQuizListOnly();
   });
@@ -6180,7 +6613,6 @@ function bindEvents() {
   document.getElementById("qExportBtn").addEventListener("click", openQuestionExport);
   document.getElementById("qClearBtn").addEventListener("click", confirmClearQ);
   document.getElementById("settingsBtn2").addEventListener("click", openSettings);
-
   let scrollTimer = null;
   document.getElementById("listScroll").addEventListener("scroll", function () {
     updateBackToTop();
@@ -6189,7 +6621,6 @@ function bindEvents() {
   }, { passive: true });
   window.addEventListener("beforeunload", saveScroll);
   window.addEventListener("pagehide", saveScroll);
-
   document.getElementById("backToTop").addEventListener("click", function () {
     const s = document.getElementById("listScroll");
     try { s.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -6211,14 +6642,12 @@ async function init() {
     ]);
   } catch (e) { if (!Array.isArray(store.data)) store.data = []; if (!Array.isArray(questionStore.data)) questionStore.data = []; }
   try { migrateAllData(); } catch (e) {}
-
   if (state.autoPull) {
     await Promise.all([
       pullFromRemote("cases", true),
       pullFromRemote("questions", true),
     ]);
   }
-
   bindEvents();
   document.getElementById("starBtn").textContent = state.starredOnly ? "★ 收藏" : "☆ 收藏";
   document.getElementById("sortSel").value = state.sort;
