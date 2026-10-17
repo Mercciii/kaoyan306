@@ -1,17 +1,16 @@
 {
   "_meta": {
-    "savedAt": "2026-10-17T04:21:16.030Z",
+    "savedAt": "2026-10-17T23:55:26.170Z",
     "version": 1
   },
-  "provider": "custom",
-  "base_url": "https://api.deepseek.com/v1",
-  "model": "deepseek-chat",
+  "provider": "zhipu",
+  "base_url": "https://open.bigmodel.cn/api/paas/v4",
+  "model": "glm-5.3-flash",
   "temperature": 0.2,
   "max_tokens": 8000,
-  "chunk_size": 5000,
+  "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "内科学",
-  "chapter_sel": "__keep__",
-  "custom_models": {},
-  "api_key": "sk-3245a7b18a1646ceb7939698fdbff7c5"
+  "subject_target": "生理学",
+  "chapter_sel": "能量代谢与体温",
+  "custom_models": {}
 }
