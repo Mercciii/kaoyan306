@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-10-17T01:20:56.951Z",
+    "savedAt": "2026-10-17T04:21:16.030Z",
     "version": 1
   },
   "provider": "custom",
@@ -12,5 +12,6 @@
   "chunk_overlap": 300,
   "subject_target": "内科学",
   "chapter_sel": "__keep__",
-  "custom_models": {}
+  "custom_models": {},
+  "api_key": "sk-3245a7b18a1646ceb7939698fdbff7c5"
 }
