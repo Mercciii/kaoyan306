@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-10-16T09:50:40.381Z",
+    "savedAt": "2026-10-17T01:20:56.951Z",
     "version": 1
   },
   "provider": "custom",
@@ -8,9 +8,9 @@
   "model": "deepseek-chat",
   "temperature": 0.2,
   "max_tokens": 8000,
-  "chunk_size": 50000,
+  "chunk_size": 5000,
   "chunk_overlap": 300,
-  "subject_target": "生理学",
-  "chapter_sel": "内分泌",
+  "subject_target": "内科学",
+  "chapter_sel": "__keep__",
   "custom_models": {}
 }
