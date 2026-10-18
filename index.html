@@ -233,6 +233,14 @@ html[data-theme=dark] .ai-info-warn { color:#ff6b6b; }
 html[data-theme=dark] .ai-peak-badge.peak { background:rgba(255,107,107,.18); color:#ff6b6b; }
 html[data-theme=dark] .ai-peak-badge.offpeak { background:rgba(99,217,127,.18); color:#63d97f; }
 
+.ai-info-stats { display:flex; align-items:center; flex-wrap:wrap; gap:4px; color:var(--sub); }
+.ai-balance-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:3px; }
+.ai-balance-out { font-size:.92em; color:var(--sub); word-break:break-all; }
+.ai-balance-out.ok { color:#2e9e4a; font-weight:600; }
+.ai-balance-out.err { color:#d62828; }
+html[data-theme=dark] .ai-balance-out.ok { color:#63d97f; }
+html[data-theme=dark] .ai-balance-out.err { color:#ff6b6b; }
+
 .merged-timeline-section { flex:none; margin-top:16px; padding:10px; border:1px solid var(--divider); border-radius:6px; background:var(--panel); }
 .merged-timeline-title { font-size:.9375em; font-weight:700; color:var(--title); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--divider); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .merged-timeline-count { font-size:.75em; font-weight:500; color:var(--sub); background:var(--btn-bg); padding:1px 8px; border-radius:10px; }
@@ -312,6 +320,7 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
 .chat-msg.user { background:rgba(26,77,179,.12); align-self:flex-end; max-width:88%; }
 .chat-msg.ai { background:var(--panel); border:1px solid var(--divider); max-width:94%; align-self:flex-start; }
 .chat-msg.err { background:rgba(214,40,40,.12); color:#d62828; align-self:stretch; }
+.chat-msg.meta { background:transparent; border:none; padding:0 10px; font-size:.75em; color:var(--sub); align-self:flex-start; }
 .chat-input-row { flex:none; display:flex; gap:6px; }
 .chat-input-row textarea { flex:1; min-height:44px; max-height:110px; }
 .chat-input-row .btn { flex:none; width:auto; padding:0 14px; height:44px; }
@@ -533,7 +542,7 @@ const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="
       DRAFT_KEY="kaoyan_record_drafts", MAX_BACKUPS=5, DRAFT_MAX=50,
       RELEASE_TAG="data", RELEASE_ASSET_NAME="cases.json", RELEASE_ASSET_NAME_Q="questions.json";
 const SRS_KEY="kaoyan_srs", CHECKIN_KEY="kaoyan_checkin", EXAM_HIST_KEY="kaoyan_exam_hist",
-      NOTIFY_FLAG_KEY="kaoyan_notify_flag";
+      NOTIFY_FLAG_KEY="kaoyan_notify_flag", AI_USAGE_KEY="kaoyan_ai_usage";
 
 const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/cases.json";
 const REMOTE_QUESTIONS_URL = "https://mercciii.github.io/kaoyan306/data/questions.json";
@@ -1276,8 +1285,31 @@ async function ocrPdfText(file, onProgress, opts) {
 /* =========================================================
    PDF 文本提取（含 OCR 回退）
    ========================================================= */
+async function runPdfOcr(file, onProgress, opts) {
+  const ocrText = await ocrPdfText(file, onProgress, Object.assign({
+    scale: 2.5,
+    workers: OCR_WORKER_COUNT_DEFAULT,
+    lang: "chi_sim+eng",
+    preprocess: true,
+    engine: "tesseract",
+    useCache: true,
+    postProcess: true,
+  }, opts || {}));
+  if (ocrText.replace(/\s/g, "").length < 10) throw new Error("OCR 后仍未得到有效文字");
+  return ocrText;
+}
+
 async function extractPdfText(file, onProgress, opts) {
   if (!file) throw new Error("文件为空");
+  const forceOcr = (opts && opts.forceOcr) || "auto";
+  if (forceOcr === "on") {
+    if (onProgress) onProgress(0, 1, "已强制启用 OCR，跳过文本层直接识别…");
+    try {
+      return await runPdfOcr(file, onProgress, opts);
+    } catch (e) {
+      throw new Error("强制 OCR 失败：" + ((e && e.message) ? e.message : e));
+    }
+  }
   let buf;
   try {
     buf = await withTimeout(file.arrayBuffer(), 60000, "读取文件超时");
@@ -1356,19 +1388,15 @@ async function extractPdfText(file, onProgress, opts) {
 
   const text = pages.join("\n\n");
   if (text.replace(/\s/g, "").length < 10) {
+    if (forceOcr === "off") {
+      throw new Error(
+        "未提取到有效文字（共 " + total + " 页，可能是扫描版 / 纯图片版）。\n" +
+        "当前「强制 OCR：关」已禁用 OCR，请切换为「强制 OCR：开」后重试，或直接把讲义文字粘贴到下方输入框。"
+      );
+    }
     if (onProgress) onProgress(0, total, "检测到扫描版 PDF，正在启用 OCR…");
     try {
-      const ocrText = await ocrPdfText(file, onProgress, Object.assign({
-        scale: 2.5,
-        workers: OCR_WORKER_COUNT_DEFAULT,
-        lang: "chi_sim+eng",
-        preprocess: true,
-        engine: "tesseract",
-        useCache: true,
-        postProcess: true,
-      }, opts || {}));
-      if (ocrText.replace(/\s/g, "").length < 10) throw new Error("OCR 后仍未得到有效文字");
-      return ocrText;
+      return await runPdfOcr(file, onProgress, opts);
     } catch (ocrErr) {
       throw new Error(
         "未能从 PDF 中提取到文字（共 " + total + " 页，可能是扫描版 / 纯图片版）。\n" +
@@ -2683,7 +2711,7 @@ const AI_PRESETS = {
   groq: { label:"Groq（速度极快·永久免费）", base_url:"https://api.groq.com/openai/v1", model:"openai/gpt-oss-120b", models:["openai/gpt-oss-120b","openai/gpt-oss-20b","llama-3.3-70b-versatile","llama-3.1-8b-instant","qwen/qwen3-32b"], cors:true, free:"💰 按模型分别限每日请求数，永久免费", note:"推理速度最快，适合长文档批量处理。", key_hint:"gsk_...", key_url:"https://console.groq.com/keys", peak:null },
   siliconflow: { label:"硅基流动 SiliconFlow（国内免费模型）", base_url:"https://api.siliconflow.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-14B-Instruct","THUDM/glm-4-9b-chat","deepseek-ai/DeepSeek-V3","deepseek-ai/DeepSeek-R1"], cors:true, free:"💰 多个小模型免费；注册送 14 元额度", note:"国内直连速度快，部分模型永久免费。", key_hint:"sk-...", key_url:"https://cloud.siliconflow.cn/account/ak", peak:{ weekdays:false, ranges:[[10,12],[19,21]], note:"免费模型 429 / 1305 报错概率高" } },
   modelscope: { label:"魔搭 ModelScope（阿里·免费额度）", base_url:"https://api-inference.modelscope.cn/v1", model:"Qwen/Qwen2.5-7B-Instruct", models:["Qwen/Qwen2.5-7B-Instruct","Qwen/Qwen2.5-72B-Instruct","deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"], cors:true, free:"💰 每日 2000 次免费调用", note:"阿里达摩院，国内直连，额度大方。", key_hint:"ms-...", key_url:"https://modelscope.cn/my/myaccesstoken", peak:null },
-  deepseek: { label:"DeepSeek 官方（需充值·有 CORS 限制）", base_url:"https://api.deepseek.com/v1", model:"deepseek-chat", models:["deepseek-chat","deepseek-reasoner"], cors:false, free:"💸 新用户一次性赠金（30 天有效），之后按量付费", note:"⚠ 官方 API 不支持浏览器直连，需要自建代理；\n建议改用 OpenRouter 里的 DeepSeek 免费版。", key_hint:"sk-...", key_url:"https://platform.deepseek.com/api_keys", need_proxy:true, peak:{ weekdays:true, ranges:[[9,12],[14,18]], note:"空闲时段价格减半，高峰价翻倍" } },
+  deepseek: { label:"DeepSeek 官方（需充值）", base_url:"https://api.deepseek.com/v1", model:"deepseek-chat", models:["deepseek-chat","deepseek-reasoner"], cors:true, free:"💸 新用户一次性赠金（30 天有效），之后按量付费", note:"✅ 官方接口已支持浏览器直连，无需代理；\n可点下方「查询余额」查看剩余额度。", key_hint:"sk-...", key_url:"https://platform.deepseek.com/api_keys", peak:{ weekdays:true, ranges:[[9,12],[14,18]], note:"空闲时段价格减半，高峰价翻倍" } },
   moonshot: { label:"Kimi 月之暗面（需充值）", base_url:"https://api.moonshot.cn/v1", model:"moonshot-v1-8k", models:["moonshot-v1-8k","moonshot-v1-32k","moonshot-v1-128k","kimi-k2-0905-preview"], cors:true, free:"💸 新用户赠 15 元，之后按量付费", note:"长上下文能力强，适合长 PDF。", key_hint:"sk-...", key_url:"https://platform.moonshot.cn/console/api-keys", peak:{ weekdays:true, ranges:[[9.5,11.5],[14,16.5]], note:"服务节点负载高，低等级排队更久" } },
   dashscope: { label:"通义千问 DashScope（需充值）", base_url:"https://dashscope.aliyuncs.com/compatible-mode/v1", model:"qwen-plus", models:["qwen-plus","qwen-turbo","qwen-max","qwen-long"], cors:true, free:"💸 新用户各模型有免费额度，之后按量付费", note:"qwen-long 支持超长文档，适合整本书。", key_hint:"sk-...", key_url:"https://bailian.console.aliyun.com/?apiKey=1", peak:null },
   openai: { label:"OpenAI 官方（需充值）", base_url:"https://api.openai.com/v1", model:"gpt-4o-mini", models:["gpt-4o-mini","gpt-4o","gpt-4.1-mini"], cors:true, free:"💸 无免费层，需绑卡充值", note:"质量稳定，但国内访问需要网络条件。", key_hint:"sk-...", key_url:"https://platform.openai.com/api-keys", peak:null },
@@ -2692,6 +2720,72 @@ const AI_PRESETS = {
   manual: { label:"手动模式（复制 Prompt 到网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，使用 ChatGPT / DeepSeek / Kimi 网页版", note:"不调用 API，只生成 Prompt；\n把 Prompt 贴到任意网页版 AI，再把返回 JSON 贴回结果框。", key_hint:"", key_url:"", manual:true, peak:null },
   custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"", peak:null },
 };
+
+const AI_BALANCE = {
+  deepseek: { url:"https://api.deepseek.com/user/balance", parse(b) {
+    const infos = (b && Array.isArray(b.balance_infos)) ? b.balance_infos : [];
+    if (!infos.length) return "";
+    return infos.map(x => {
+      const cur = x.currency === "CNY" ? "¥" : (x.currency === "USD" ? "$" : String(x.currency || "") + " ");
+      return "总余额 " + cur + x.total_balance + "（赠金 " + x.granted_balance + " · 充值 " + x.topped_up_balance + "）";
+    }).join("；");
+  } },
+  openrouter: { url:"https://openrouter.ai/api/v1/credits", parse(b) {
+    const d = b && b.data; if (!d) return "";
+    const total = Number(d.total_credits || 0), used = Number(d.total_usage || 0);
+    return "剩余 $" + (total - used).toFixed(2) + "（总额 $" + total.toFixed(2) + " · 已用 $" + used.toFixed(2) + "）";
+  } },
+  moonshot: { url:"https://api.moonshot.cn/v1/users/me/balance", parse(b) {
+    const d = b && b.data; if (!d) return "";
+    return "可用 ¥" + d.available_balance + "（现金 ¥" + d.cash_balance + " · 代金券 ¥" + d.voucher_balance + "）";
+  } },
+  siliconflow: { url:"https://api.siliconflow.cn/v1/user/info", parse(b) {
+    const d = b && b.data; if (!d) return "";
+    const p = [];
+    if (d.totalBalance != null) p.push("总额 ¥" + d.totalBalance);
+    if (d.balance != null) p.push("可用 ¥" + d.balance);
+    if (d.chargeBalance != null) p.push("充值 ¥" + d.chargeBalance);
+    return p.join(" · ");
+  } },
+};
+let lastAiUsage = null;
+function aiUsageLoad() {
+  try {
+    const raw = localStorage.getItem(AI_USAGE_KEY);
+    const o = raw ? JSON.parse(raw) : null;
+    return (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
+  } catch (e) { return {}; }
+}
+function aiUsageSave(all) { try { localStorage.setItem(AI_USAGE_KEY, JSON.stringify(all)); } catch (e) {} }
+function aiUsageRecord(provider, usage, model) {
+  if (!usage || typeof usage !== "object") { lastAiUsage = null; return; }
+  const prompt = Number(usage.prompt_tokens || 0);
+  const completion = Number(usage.completion_tokens || 0);
+  const total = Number(usage.total_tokens) || (prompt + completion);
+  lastAiUsage = total ? { prompt, completion, total } : null;
+  if (!total) return;
+  const key = provider || "custom";
+  const all = aiUsageLoad();
+  const s = all[key] || (all[key] = { calls:0, prompt:0, completion:0, total:0 });
+  s.calls += 1; s.prompt += prompt; s.completion += completion; s.total += total; s.ts = Date.now();
+  if (model) s.model = String(model);
+  aiUsageSave(all);
+}
+function aiUsageClear(provider) {
+  const all = aiUsageLoad();
+  if (provider) delete all[provider]; else for (const k in all) delete all[k];
+  aiUsageSave(all);
+}
+function fmtTokens(n) {
+  n = Number(n) || 0;
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + "M";
+  if (n >= 10000) return (n / 1000).toFixed(1) + "k";
+  return String(n);
+}
+function lastUsageText() {
+  return (lastAiUsage && lastAiUsage.total) ? "（本次 " + lastAiUsage.total + " tokens）" : "";
+}
+function aiUrlHost(u) { try { return new URL(u).host; } catch (e) { return ""; } }
 
 function getPeakStatus(providerKey) {
   const preset = AI_PRESETS[providerKey];
@@ -3201,6 +3295,12 @@ async function callAiOpencodeServer(cfg, messages, timeoutMs) {
       const em = (info.error.data && info.error.data.message) || info.error.name || "未知错误";
       throw fail("opencode 执行出错：" + em);
     }
+    const tk = info && info.tokens;
+    if (tk && (tk.input != null || tk.output != null)) {
+      aiUsageRecord("opencode_srv", { prompt_tokens: tk.input || 0, completion_tokens: (tk.output || 0) + (tk.reasoning || 0) }, cfg.model);
+    } else {
+      lastAiUsage = null;
+    }
     const parts = (mb && Array.isArray(mb.parts)) ? mb.parts : [];
     const text = parts.filter(p => p && p.type === "text" && p.text).map(p => p.text).join("\n").trim();
     if (!text) {
@@ -3249,6 +3349,7 @@ async function callAi(cfg, messages, timeoutMs) {
   const choice = body && body.choices && body.choices[0];
   const text = choice && choice.message && choice.message.content;
   if (!text) throw new Error("AI 返回内容为空");
+  aiUsageRecord(cfg.provider, body && body.usage, cfg.model);
   return text;
 }
 function tryParseJson(s) {
@@ -3456,6 +3557,7 @@ async function aiGenerate(opts, onLog, isQ) {
   const chunks = chunkText(opts.text, cfg.chunk_size, cfg.chunk_overlap);
   onLog("共切分为 " + chunks.length + " 个文本块");
   const allItems = [];
+  let totalTokens = 0;
   const systemPrompt = isQ ? buildQuestionPrompt(subject) : buildCasePrompt(subject);
   for (let i = 0; i < chunks.length; i++) {
     onLog("[" + (i + 1) + "/" + chunks.length + "] 调用 AI 中…（约 " + chunks[i].length + " 字）");
@@ -3466,13 +3568,13 @@ async function aiGenerate(opts, onLog, isQ) {
     let text = "";
     let ok = false;
     for (let attempt = 1; attempt <= 2 && !ok; attempt++) {
-      try { text = await callAi(cfg, messages); ok = true; }
+      try { text = await callAi(cfg, messages); ok = true; if (lastAiUsage && lastAiUsage.total) totalTokens += lastAiUsage.total; }
       catch (e) { if (attempt === 2) onLog("[" + (i + 1) + "] 失败：" + e.message); else onLog("[" + (i + 1) + "] 第 1 次失败，重试…"); }
     }
     if (!ok) continue;
     try {
       const items = parseAiJson(text);
-      onLog("[" + (i + 1) + "/" + chunks.length + "] 解析出 " + items.length + " 条");
+      onLog("[" + (i + 1) + "/" + chunks.length + "] 解析出 " + items.length + " 条" + lastUsageText());
       allItems.push(...items);
     } catch (e) { onLog("[" + (i + 1) + "] JSON 解析失败：" + e.message); }
   }
@@ -3490,6 +3592,7 @@ async function aiGenerate(opts, onLog, isQ) {
   }
   if (fixed) onLog("章节归一化修正 " + fixed + " 条");
   onLog("合并去重后共 " + merged.length + " 条");
+  if (totalTokens) onLog("📊 本次共消耗 " + totalTokens + " tokens");
   return isQ ? merged.map(normalizeQuestion) : merged.map(normalizeItem);
 }
 
@@ -4967,10 +5070,62 @@ function openAiImport(target) {
   renderProviderOptions(cfg.active || "gemini");
   const infoCard = el("div", "ai-info-card");
   form.appendChild(infoCard);
+  function usageKeyFor(key) {
+    if (key.indexOf("custom:") === 0 || key === "__new_custom__") {
+      const st = getSchemeState(key);
+      const host = (st && st.base_url) ? aiUrlHost(st.base_url) : "";
+      return host ? "custom@" + host : "custom";
+    }
+    return key;
+  }
+  function appendUsageCard(key) {
+    const uk = usageKeyFor(key);
+    const s = aiUsageLoad()[uk];
+    if (!s || !s.calls) return;
+    const row = el("div", "ai-info-stats");
+    row.appendChild(el("span", "", "📊 累计 " + s.calls + " 次调用 · 输入 " + fmtTokens(s.prompt) + " / 输出 " + fmtTokens(s.completion) + " · 共 " + fmtTokens(s.total) + " tokens" + (s.model ? "（" + s.model + "）" : "")));
+    const clr = el("button", "btn", "清零");
+    clr.style.cssText = "flex:none;padding:0 8px;height:24px;font-size:.82em;margin-left:8px";
+    clr.addEventListener("click", () => { aiUsageClear(uk); refreshInfoCard(); });
+    row.appendChild(clr);
+    infoCard.appendChild(row);
+  }
+  function appendBalanceCard(key) {
+    const bal = AI_BALANCE[key];
+    if (!bal) return;
+    const row = el("div", "ai-balance-row");
+    const btn = el("button", "btn", "💳 查询余额");
+    btn.style.cssText = "flex:none;padding:0 10px;height:28px;font-size:.88em";
+    const out = el("span", "ai-balance-out", "");
+    btn.addEventListener("click", async () => {
+      const st = getSchemeState(key) || {};
+      const apiKey = (keyIn.value || "").trim() || st.api_key || "";
+      if (!apiKey) { out.className = "ai-balance-out err"; out.textContent = "请先填写 API Key"; return; }
+      out.className = "ai-balance-out"; out.textContent = "查询中…";
+      btn.disabled = true;
+      try {
+        const r = await fetch(bal.url, { headers: { "Authorization": "Bearer " + apiKey } });
+        let b = null; try { b = await r.json(); } catch (e) {}
+        if (!r.ok) throw new Error((b && b.error && b.error.message) || (b && b.message) || ("HTTP " + r.status + (r.status === 401 ? "，Key 无效" : "")));
+        const txt = bal.parse(b);
+        if (!txt) throw new Error("返回格式无法识别");
+        out.className = "ai-balance-out ok";
+        out.textContent = "💰 " + txt;
+      } catch (e) {
+        out.className = "ai-balance-out err";
+        out.textContent = "查询失败：" + ((e && e.message) || e) + "（可为网络/CORS/Key 问题）";
+      }
+      btn.disabled = false;
+    });
+    row.appendChild(btn);
+    row.appendChild(out);
+    infoCard.appendChild(row);
+  }
   function refreshInfoCard() {
     const key = provSel.value;
     infoCard.innerHTML = "";
     infoCard.className = "ai-info-card";
+    appendUsageCard(key);
     if (key.indexOf("custom:") === 0 || key === "__new_custom__") {
       infoCard.appendChild(el("div", "ai-info-note", "自定义方案：Base URL、模型与 API Key 独立保存，可同时创建多个方案。"));
       return;
@@ -4992,6 +5147,7 @@ function openAiImport(target) {
       link.href = p.key_url; link.target = "_blank"; link.rel = "noopener noreferrer";
       infoCard.appendChild(link);
     }
+    appendBalanceCard(key);
   }
   form.appendChild(el("div", "gh-section-title", "② 参数配置"));
   function mkInput(label, value, type, ph) {
@@ -5470,7 +5626,7 @@ function openAiImport(target) {
   ocrSection.style.cssText = "display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
   const ocrTitleRow = el("div", "");
   ocrTitleRow.style.cssText = "display:flex;align-items:center;gap:8px";
-  ocrTitleRow.appendChild(el("div", "edit-label", "🔎 OCR 选项（仅扫描版 PDF 生效）"));
+  ocrTitleRow.appendChild(el("div", "edit-label", "🔎 OCR 选项（扫描版自动启用·可强制开关）"));
   const ocrToggle = el("button", "btn", "展开");
   ocrToggle.style.cssText = "flex:none;width:auto;padding:0 10px;height:26px;font-size:.75em;margin-left:auto";
   ocrTitleRow.appendChild(ocrToggle);
@@ -5539,9 +5695,22 @@ function openAiImport(target) {
   const preprocessToggle = mkToggle("图像预处理", true);
   const cacheToggle      = mkToggle("缓存复用", true);
   const postToggle       = mkToggle("文本后处理", true);
+  const FORCE_OCR_LABEL  = { auto: "自动", on: "开", off: "关" };
+  const FORCE_OCR_NEXT   = { auto: "on", on: "off", off: "auto" };
+  const forceOcrToggle = el("button", "btn", "强制 OCR：" + FORCE_OCR_LABEL.auto);
+  forceOcrToggle.dataset.mode = "auto";
+  forceOcrToggle.style.cssText = "flex:none;width:auto;padding:0 10px;height:30px;font-size:.75em";
+  forceOcrToggle.title = "点击切换：自动 → 强制开（无视文本层直接 OCR）→ 强制关（禁用 OCR 回退）";
+  forceOcrToggle.addEventListener("click", () => {
+    const mode = FORCE_OCR_NEXT[forceOcrToggle.dataset.mode] || "auto";
+    forceOcrToggle.dataset.mode = mode;
+    forceOcrToggle.textContent = "强制 OCR：" + FORCE_OCR_LABEL[mode];
+    forceOcrToggle.classList.toggle("active", mode !== "auto");
+  });
   ocrSwitchRow.appendChild(preprocessToggle);
   ocrSwitchRow.appendChild(cacheToggle);
   ocrSwitchRow.appendChild(postToggle);
+  ocrSwitchRow.appendChild(forceOcrToggle);
   ocrBody.appendChild(ocrSwitchRow);
   const cacheInfoRow = el("div", "");
   cacheInfoRow.style.cssText = "display:flex;align-items:center;gap:8px";
@@ -5590,6 +5759,7 @@ function openAiImport(target) {
       preprocess: preprocessToggle.dataset.on === "1",
       useCache:   cacheToggle.dataset.on === "1",
       postProcess: postToggle.dataset.on === "1",
+      forceOcr:    forceOcrToggle.dataset.mode || "auto",
       paddleEndpoint: paddleUrlIn.value.trim(),
       paddleApiKey:   paddleKeyIn.value.trim(),
     };
@@ -8091,6 +8261,7 @@ function openAiChat(opts) {
       const reply = await callAi(cfg, msgs, 120000);
       try { loadEl.remove(); } catch (e) {}
       addMsg("ai", reply);
+      if (lastAiUsage && lastAiUsage.total) addMsg("ai", "📊 本次 " + lastAiUsage.total + " tokens", "meta");
       history.push({ role: "user", content: text });
       history.push({ role: "assistant", content: reply });
       if (ragMode && found && found.length) {
@@ -8163,7 +8334,7 @@ function openMnemonic(item) {
       box.innerHTML = "";
       box.innerHTML = renderRich(reply, "");
       status.className = "gh-status ok";
-      status.textContent = "✅ 生成完成（仅供参考，请对照教材核对）";
+      status.textContent = "✅ 生成完成（仅供参考，请对照教材核对）" + lastUsageText();
     } catch (e) {
       status.className = "gh-status err";
       status.textContent = "❌ " + e.message;
