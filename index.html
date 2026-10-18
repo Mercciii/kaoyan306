@@ -2674,6 +2674,10 @@ const AI_PRESETS = {
     free:"💰 部分模型免费（big-pickle / cat-jam-free / *-free / jev-1-13-free 等），其余按 token 计费",
     note:"OpenCode Zen 官方网关，OpenAI 兼容接口。\n在 opencode.ai/auth 用 GitHub 登录后创建 API Key。\n下拉框按厂商分组，共收录 80+ 模型。",
     key_hint:"sk-...", key_url:"https://opencode.ai/auth", peak:null },
+  opencode_srv: { label:"opencode 服务器（本机/局域网 · serve 接口）", base_url:"http://127.0.0.1:4096", model:"", models:[], cors:true, oc_server:true,
+    free:"💰 使用你自己的 opencode 配置与额度，本地服务无额外费用",
+    note:"先在服务器上启动：\nopencode serve --hostname 0.0.0.0 --port 4096 --cors <本页地址>\n（网页版的 origin 必须加入 --cors，可传多次；本机 Termux 也可用）\nAPI Key 处填 OPENCODE_SERVER_PASSWORD（未设密码可留空）；\n模型格式 provider/model（如 deepseek/deepseek-flash），留空用服务器默认模型。",
+    key_hint:"OPENCODE_SERVER_PASSWORD（可留空）", key_url:"", peak:null },
   openrouter: { label:"OpenRouter（聚合多模型·含 DeepSeek 免费版）", base_url:"https://openrouter.ai/api/v1", model:"deepseek/deepseek-r1-0528:free", models:["deepseek/deepseek-r1-0528:free","deepseek/deepseek-chat-v3.1:free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","qwen/qwen-2.5-72b-instruct:free","z-ai/glm-4.5-air:free"], cors:true, free:"💰 免费模型：20 次/分钟，50 次/天（未充值）", note:"一个 Key 调用 30+ 免费模型，含 DeepSeek 免费版。", key_hint:"sk-or-v1-...", key_url:"https://openrouter.ai/keys", peak:{ weekdays:false, ranges:[[20,23]], note:"免费模型额外限流，延迟升高" } },
   zhipu: { label:"智谱 GLM（中文友好·长期免费）", base_url:"https://open.bigmodel.cn/api/paas/v4", model:"glm-4-flash", models:["glm-4-flash","glm-4-flashx","glm-4-air","glm-4-plus"], cors:true, free:"💰 GLM-4-Flash 长期免费，10 QPS；新用户另有赠金", note:"中文医学文本表现不错，注册即用。", key_hint:"xxxxx.xxxxx", key_url:"https://open.bigmodel.cn/usercenter/apikeys", peak:{ weekdays:true, ranges:[[15,18]], note:"并发限流，模型速度变慢" } },
   groq: { label:"Groq（速度极快·永久免费）", base_url:"https://api.groq.com/openai/v1", model:"openai/gpt-oss-120b", models:["openai/gpt-oss-120b","openai/gpt-oss-20b","llama-3.3-70b-versatile","llama-3.1-8b-instant","qwen/qwen3-32b"], cors:true, free:"💰 按模型分别限每日请求数，永久免费", note:"推理速度最快，适合长文档批量处理。", key_hint:"gsk_...", key_url:"https://console.groq.com/keys", peak:null },
@@ -2708,11 +2712,46 @@ function getPeakStatus(providerKey) {
   return { isPeak:false, note:p.note, label:"空闲时段" };
 }
 
+function aiNormalizeCustomPreset(p) {
+  if (!p || typeof p !== "object" || Array.isArray(p) || !p.id) return null;
+  return {
+    id: String(p.id),
+    name: String(p.name || "自定义方案"),
+    base_url: String(p.base_url != null ? p.base_url : ""),
+    model: String(p.model != null ? p.model : ""),
+    api_key: String(p.api_key != null ? p.api_key : ""),
+    models: Array.isArray(p.models) ? p.models.filter(m => typeof m === "string") : [],
+  };
+}
+function aiSchemeInfo(cfg, key) {
+  key = key || cfg.active || "gemini";
+  if (key.indexOf("custom:") === 0) {
+    const id = key.slice(7);
+    const list = Array.isArray(cfg.custom_presets) ? cfg.custom_presets : [];
+    const p = list.find(x => x.id === id);
+    if (!p) return null;
+    return {
+      key, isCustom: true, custom: p, preset: null, manual: false,
+      base_url: p.base_url || "", model: p.model || "", api_key: p.api_key || "",
+    };
+  }
+  const p = AI_PRESETS[key];
+  if (!p || key === "custom") return null;
+  const s = (cfg.providers && cfg.providers[key]) || {};
+  return {
+    key, isCustom: false, custom: null, preset: p, manual: !!p.manual,
+    base_url: s.base_url != null ? s.base_url : p.base_url,
+    model: s.model != null ? s.model : p.model,
+    api_key: s.api_key || "",
+  };
+}
 function loadAiConfig() {
   const d = {
-    provider:"gemini", base_url:AI_PRESETS.gemini.base_url, model:AI_PRESETS.gemini.model,
-    api_key:"", temperature:0.2, max_tokens:8000, chunk_size:5000, chunk_overlap:300,
-    subject_target:"", chapter_sel:"__keep__",
+    version: 2, active: "gemini",
+    providers: {}, custom_presets: [],
+    provider: "gemini", base_url: AI_PRESETS.gemini.base_url, model: AI_PRESETS.gemini.model,
+    api_key: "", temperature: 0.2, max_tokens: 8000, chunk_size: 5000, chunk_overlap: 300,
+    subject_target: "", chapter_sel: "__keep__",
     custom_models: {},
   };
   try {
@@ -2720,25 +2759,205 @@ function loadAiConfig() {
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === "object" && !Array.isArray(o)) {
-        for (const k in d) if (Object.prototype.hasOwnProperty.call(o, k)) d[k] = o[k];
-        if (!d.custom_models || typeof d.custom_models !== "object" || Array.isArray(d.custom_models))
-          d.custom_models = {};
+        ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+          if (o[k] !== undefined) d[k] = o[k];
+        });
+        if (o.custom_models && typeof o.custom_models === "object" && !Array.isArray(o.custom_models))
+          d.custom_models = o.custom_models;
+        if (o.version >= 2 || o.providers || o.custom_presets) {
+          d.active = typeof o.active === "string" ? o.active : "gemini";
+          const ps = (o.providers && typeof o.providers === "object" && !Array.isArray(o.providers)) ? o.providers : {};
+          Object.keys(ps).forEach(k => {
+            if (!AI_PRESETS[k] || k === "custom") return;
+            const p = ps[k] || {};
+            d.providers[k] = {
+              base_url: String(p.base_url != null ? p.base_url : ""),
+              model: String(p.model != null ? p.model : ""),
+              api_key: String(p.api_key != null ? p.api_key : ""),
+            };
+          });
+          d.custom_presets = (Array.isArray(o.custom_presets) ? o.custom_presets : []).map(aiNormalizeCustomPreset).filter(Boolean);
+        } else {
+          const provider = (o.provider && AI_PRESETS[o.provider] && o.provider !== "custom")
+            ? o.provider : (o.provider === "custom" ? "custom" : "gemini");
+          const base_url = typeof o.base_url === "string" ? o.base_url : "";
+          const model = typeof o.model === "string" ? o.model : "";
+          const api_key = typeof o.api_key === "string" ? o.api_key : "";
+          if (provider === "custom") {
+            const p = {
+              id: genId(), name: "自定义方案 1", base_url, model, api_key,
+              models: Array.isArray(d.custom_models["custom"]) ? d.custom_models["custom"].slice() : [],
+            };
+            d.custom_presets.push(p);
+            d.active = "custom:" + p.id;
+          } else {
+            d.active = provider;
+            d.providers[provider] = {
+              base_url: base_url || AI_PRESETS[provider].base_url,
+              model: model || AI_PRESETS[provider].model,
+              api_key,
+            };
+          }
+        }
+        if (d.active === "custom" && d.custom_presets.length) d.active = "custom:" + d.custom_presets[0].id;
+        if (!aiSchemeInfo(d, d.active)) d.active = "gemini";
       }
     }
   } catch (e) {}
+  const s = aiSchemeInfo(d, d.active) || aiSchemeInfo(d, "gemini");
+  if (s) {
+    d.provider = s.isCustom ? "custom" : s.key;
+    d.base_url = s.base_url;
+    d.model = s.model;
+    d.api_key = s.api_key;
+  }
   return d;
 }
 function saveAiConfig(cfg) {
   try {
+    let active = cfg.active || (cfg.provider === "custom" ? "" : cfg.provider) || "gemini";
+    if (active === "__new_custom__" || (!aiSchemeInfo(cfg, active) && active !== "gemini")) active = "gemini";
+    const providers = {};
+    const srcProviders = (cfg.providers && typeof cfg.providers === "object" && !Array.isArray(cfg.providers)) ? cfg.providers : {};
+    Object.keys(srcProviders).forEach(k => {
+      if (!AI_PRESETS[k] || k === "custom") return;
+      const p = srcProviders[k] || {};
+      providers[k] = {
+        base_url: String(p.base_url != null ? p.base_url : ""),
+        model: String(p.model != null ? p.model : ""),
+        api_key: String(p.api_key != null ? p.api_key : ""),
+      };
+    });
+    const custom_presets = (Array.isArray(cfg.custom_presets) ? cfg.custom_presets : []).map(aiNormalizeCustomPreset).filter(Boolean);
+    if (active.indexOf("custom:") === 0) {
+      const p = custom_presets.find(x => x.id === active.slice(7));
+      if (p) {
+        p.base_url = String(cfg.base_url != null ? cfg.base_url : "");
+        p.model = String(cfg.model != null ? cfg.model : "");
+        p.api_key = String(cfg.api_key != null ? cfg.api_key : "");
+      } else {
+        active = "gemini";
+      }
+    } else if (AI_PRESETS[active]) {
+      providers[active] = {
+        base_url: String(cfg.base_url != null ? cfg.base_url : ""),
+        model: String(cfg.model != null ? cfg.model : ""),
+        api_key: String(cfg.api_key != null ? cfg.api_key : ""),
+      };
+    }
     localStorage.setItem(AI_KEY, JSON.stringify({
-      provider: cfg.provider, base_url: cfg.base_url, model: cfg.model,
-      api_key: cfg.api_key, temperature: cfg.temperature, max_tokens: cfg.max_tokens,
-      chunk_size: cfg.chunk_size, chunk_overlap: cfg.chunk_overlap,
+      version: 2,
+      active,
+      providers,
+      custom_presets,
+      custom_models: (cfg.custom_models && typeof cfg.custom_models === "object" && !Array.isArray(cfg.custom_models)) ? cfg.custom_models : {},
+      temperature: cfg.temperature,
+      max_tokens: cfg.max_tokens,
+      chunk_size: cfg.chunk_size,
+      chunk_overlap: cfg.chunk_overlap,
       subject_target: cfg.subject_target || "",
       chapter_sel: cfg.chapter_sel || "__keep__",
-      custom_models: cfg.custom_models || {},
+      provider: active.indexOf("custom:") === 0 ? "custom" : active,
+      base_url: cfg.base_url || "",
+      model: cfg.model || "",
+      api_key: cfg.api_key || "",
     }));
   } catch (e) {}
+}
+function aiMergeCloudV2(cur, obj) {
+  const merged = JSON.parse(JSON.stringify(cur));
+  const rp = (obj.providers && typeof obj.providers === "object" && !Array.isArray(obj.providers)) ? obj.providers : {};
+  Object.keys(rp).forEach(k => {
+    if (!AI_PRESETS[k] || k === "custom") return;
+    const r = rp[k] || {};
+    const l = merged.providers[k] || {};
+    merged.providers[k] = {
+      base_url: r.base_url != null ? String(r.base_url) : (l.base_url != null ? l.base_url : ""),
+      model: r.model != null ? String(r.model) : (l.model != null ? l.model : ""),
+      api_key: r.api_key ? String(r.api_key) : (l.api_key || ""),
+    };
+  });
+  const remotePresets = Array.isArray(obj.custom_presets) ? obj.custom_presets : [];
+  remotePresets.forEach(r => {
+    if (!r || !r.id) return;
+    const id = String(r.id);
+    let p = merged.custom_presets.find(x => x.id === id);
+    if (!p) {
+      p = { id, name: "自定义方案", base_url: "", model: "", api_key: "", models: [] };
+      merged.custom_presets.push(p);
+    }
+    if (r.name != null) p.name = String(r.name);
+    if (r.base_url != null) p.base_url = String(r.base_url);
+    if (r.model != null) p.model = String(r.model);
+    if (Array.isArray(r.models)) p.models = r.models.filter(x => typeof x === "string");
+    if (r.api_key) p.api_key = String(r.api_key);
+  });
+  if (typeof obj.active === "string" && aiSchemeInfo(merged, obj.active)) merged.active = obj.active;
+  if (obj.custom_models && typeof obj.custom_models === "object" && !Array.isArray(obj.custom_models))
+    merged.custom_models = Object.assign({}, merged.custom_models || {}, obj.custom_models);
+  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+    if (obj[k] !== undefined) merged[k] = obj[k];
+  });
+  const act = aiSchemeInfo(merged, merged.active);
+  if (act) {
+    merged.provider = act.isCustom ? "custom" : merged.active;
+    merged.base_url = act.base_url;
+    merged.model = act.model;
+    merged.api_key = act.api_key;
+  }
+  return merged;
+}
+function aiMergeCloudLegacy(cur, obj) {
+  const merged = JSON.parse(JSON.stringify(cur));
+  const provider = (obj.provider && AI_PRESETS[obj.provider] && obj.provider !== "custom")
+    ? obj.provider : (obj.provider === "custom" ? "custom" : "gemini");
+  const base_url = typeof obj.base_url === "string" ? obj.base_url : "";
+  const model = typeof obj.model === "string" ? obj.model : "";
+  const api_key = typeof obj.api_key === "string" ? obj.api_key : "";
+  if (provider === "custom") {
+    let p = merged.custom_presets[0];
+    if (!p) {
+      p = { id: genId(), name: "自定义方案 1", base_url: "", model: "", api_key: "", models: [] };
+      merged.custom_presets.push(p);
+    }
+    if (base_url) p.base_url = base_url;
+    if (model) p.model = model;
+    if (api_key) p.api_key = api_key;
+    merged.active = "custom:" + p.id;
+  } else {
+    const s = merged.providers[provider] || {};
+    merged.providers[provider] = {
+      base_url: base_url || s.base_url || AI_PRESETS[provider].base_url,
+      model: model || s.model || AI_PRESETS[provider].model,
+      api_key: api_key || s.api_key || "",
+    };
+    merged.active = provider;
+  }
+  if (obj.custom_models && typeof obj.custom_models === "object" && !Array.isArray(obj.custom_models)) {
+    merged.custom_models = Object.assign({}, merged.custom_models || {}, obj.custom_models);
+    if (provider === "custom" && Array.isArray(obj.custom_models["custom"]) && merged.custom_presets[0])
+      merged.custom_presets[0].models = obj.custom_models["custom"].filter(x => typeof x === "string");
+  }
+  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+    if (obj[k] !== undefined) merged[k] = obj[k];
+  });
+  const act = aiSchemeInfo(merged, merged.active) || aiSchemeInfo(merged, "gemini");
+  if (act) {
+    merged.provider = act.isCustom ? "custom" : merged.active;
+    merged.base_url = act.base_url;
+    merged.model = act.model;
+    merged.api_key = act.api_key;
+  }
+  return merged;
+}
+function aiConfigHasKeys(cfg) {
+  if (!cfg || typeof cfg !== "object") return false;
+  if (cfg.api_key) return true;
+  const ps = cfg.providers || {};
+  for (const k in ps) if (ps[k] && ps[k].api_key) return true;
+  const cs = cfg.custom_presets || [];
+  for (let i = 0; i < cs.length; i++) if (cs[i] && cs[i].api_key) return true;
+  return false;
 }
 
 function loadImportCfg() {
@@ -2908,7 +3127,111 @@ function buildQuestionPrompt(subject) {
   ].join("\n");
 }
 
+function ocBodyMessage(b) {
+  if (!b) return "";
+  if (typeof b === "string") return b.slice(0, 300);
+  if (b.data && b.data.message) return String(b.data.message).slice(0, 300);
+  if (typeof b.message === "string") return b.message.slice(0, 300);
+  if (b.error) return ocBodyMessage(b.error);
+  return "";
+}
+async function callAiOpencodeServer(cfg, messages, timeoutMs) {
+  const base = String(cfg.base_url || "").replace(/\/+$/, "");
+  if (!base) throw new Error("请填写 opencode 服务器地址（如 http://127.0.0.1:4096）");
+  const headers = { "Content-Type": "application/json" };
+  const pass = String(cfg.api_key || "");
+  if (pass) {
+    let b64 = "";
+    try { b64 = btoa("opencode:" + pass); }
+    catch (e) { try { b64 = btoa(unescape(encodeURIComponent("opencode:" + pass))); } catch (e2) { b64 = ""; } }
+    if (b64) headers["Authorization"] = "Basic " + b64;
+  }
+  let model = null;
+  const rawModel = String(cfg.model || "").trim();
+  if (rawModel) {
+    const i = rawModel.indexOf("/");
+    if (i <= 0 || i >= rawModel.length - 1) {
+      const err = new Error("模型名格式应为 provider/model（如 deepseek/deepseek-flash），留空则用服务器默认模型");
+      err.oc = true; throw err;
+    }
+    model = { providerID: rawModel.slice(0, i), modelID: rawModel.slice(i + 1) };
+  }
+  const sys = messages.filter(m => m.role === "system").map(m => String(m.content || "")).filter(Boolean).join("\n\n");
+  const chat = messages.filter(m => m.role !== "system");
+  let prompt = "";
+  if (chat.length === 1) prompt = String(chat[0].content || "");
+  else prompt = chat.map(m => "【" + (m.role === "assistant" ? "助手" : "用户") + "】\n" + String(m.content || "")).join("\n\n");
+  if (!prompt.trim()) throw new Error("opencode：没有可发送的内容");
+  const timeout = Math.max(timeoutMs || 180000, 300000);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  const title = "kaoyan306 · " + (cfg.subject_target ? cfg.subject_target + " · " : "") + new Date().toLocaleString();
+  function fail(msg) { const err = new Error(msg); err.oc = true; return err; }
+  try {
+    const sr = await fetch(base + "/session", {
+      method: "POST", headers,
+      body: JSON.stringify({ title: title }),
+      signal: controller.signal,
+    });
+    let sb = null;
+    try { sb = await sr.json(); } catch (e) {}
+    const sid = sb && typeof sb.id === "string" ? sb.id : "";
+    if (!sr.ok || !sid) {
+      let msg = ocBodyMessage(sb) || ("HTTP " + sr.status);
+      if (sr.status === 401) msg += "（OPENCODE_SERVER_PASSWORD 不匹配）";
+      else if (sr.status === 404) msg += "（地址错误？base_url 只需填到端口）";
+      throw fail("opencode 创建会话失败：" + msg);
+    }
+    let tools = null;
+    try {
+      const tr = await fetch(base + "/experimental/tool/ids", { headers, signal: controller.signal });
+      const tids = await tr.json();
+      if (tr.ok && Array.isArray(tids) && tids.length) {
+        tools = {};
+        tids.forEach(t => { if (typeof t === "string") tools[t] = false; });
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") throw e;
+    }
+    if (!tools) tools = { bash: false, edit: false, write: false, task: false, apply_patch: false };
+    const payload = { system: sys || undefined, tools: tools, parts: [{ type: "text", text: prompt }] };
+    if (model) payload.model = model;
+    const mr = await fetch(base + "/session/" + sid + "/message", {
+      method: "POST", headers,
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    let mb = null;
+    try { mb = await mr.json(); } catch (e) {}
+    if (!mr.ok) {
+      let msg = ocBodyMessage(mb) || ("HTTP " + mr.status);
+      if (mr.status === 401) msg += "（OPENCODE_SERVER_PASSWORD 不匹配）";
+      throw fail("opencode 发送消息失败：" + msg);
+    }
+    const info = mb && mb.info;
+    if (info && info.error) {
+      const em = (info.error.data && info.error.data.message) || info.error.name || "未知错误";
+      throw fail("opencode 执行出错：" + em);
+    }
+    const parts = (mb && Array.isArray(mb.parts)) ? mb.parts : [];
+    const text = parts.filter(p => p && p.type === "text" && p.text).map(p => p.text).join("\n").trim();
+    if (!text) {
+      if (info && info.structured) return JSON.stringify(info.structured);
+      throw fail("opencode 返回内容为空（finish：" + ((info && info.finish) || "未知") + "）");
+    }
+    return text;
+  } catch (e) {
+    if (e && e.name === "AbortError") throw new Error("请求超时（opencode 生成时间较长，可减小分块大小或稍后重试）");
+    if (e && e.oc) throw e;
+    throw new Error("连接 opencode 服务器失败：" + ((e && e.message) || e) +
+      "\n请确认：① 已运行 opencode serve --hostname 0.0.0.0 --port 4096 --cors <本页地址>；② 地址与端口正确、设备同网；③ Android 应用需允许明文 HTTP。");
+  } finally {
+    clearTimeout(timer);
+  }
+}
 async function callAi(cfg, messages, timeoutMs) {
+  const ocPreset = AI_PRESETS[cfg.provider];
+  if (ocPreset && ocPreset.oc_server) return callAiOpencodeServer(cfg, messages, timeoutMs);
   const url = String(cfg.base_url).replace(/\/+$/, "") + "/chat/completions";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs || 180000);
@@ -4601,23 +4924,72 @@ function openAiImport(target) {
   const form = el("div", "edit-form");
 
   form.appendChild(el("div", "gh-section-title", "① 选择 AI 方案"));
+  let customPresets = (Array.isArray(cfg.custom_presets) ? cfg.custom_presets : []).map(p => Object.assign({}, p, {
+    models: Array.isArray(p.models) ? p.models.slice() : [],
+  }));
+  let providers = {};
+  Object.keys(cfg.providers || {}).forEach(k => {
+    providers[k] = Object.assign({}, cfg.providers[k] || {});
+  });
   const provRow = el("div", "import-row");
   provRow.appendChild(el("div", "row-label", "方案"));
   const provSel = document.createElement("select");
   provSel.className = "edit-select";
-  Object.keys(AI_PRESETS).forEach(k => {
-    const o = document.createElement("option"); o.value = k; o.textContent = AI_PRESETS[k].label; provSel.appendChild(o);
-  });
-  provSel.value = cfg.provider && AI_PRESETS[cfg.provider] ? cfg.provider : "gemini";
+  function customSchemeKey(id) { return "custom:" + id; }
+  function renderProviderOptions(selected) {
+    provSel.innerHTML = "";
+    Object.keys(AI_PRESETS).forEach(k => {
+      if (k === "custom") return;
+      const o = document.createElement("option");
+      o.value = k; o.textContent = AI_PRESETS[k].label;
+      provSel.appendChild(o);
+    });
+    customPresets.forEach(p => {
+      const o = document.createElement("option");
+      o.value = customSchemeKey(p.id);
+      o.textContent = "自定义：" + (p.name || "未命名方案");
+      provSel.appendChild(o);
+    });
+    const addOpt = document.createElement("option");
+    addOpt.value = "__new_custom__"; addOpt.textContent = "＋ 新建自定义方案…";
+    provSel.appendChild(addOpt);
+    provSel.value = selected || "gemini";
+    if (!provSel.value) provSel.value = "gemini";
+  }
   provRow.appendChild(provSel);
   form.appendChild(provRow);
+  const nameRow = el("div", "import-row");
+  nameRow.appendChild(el("div", "row-label", "方案名称"));
+  const nameIn = document.createElement("input");
+  nameIn.className = "edit-input"; nameIn.type = "text";
+  nameIn.spellcheck = false; nameIn.autocomplete = "off";
+  nameIn.placeholder = "自定义方案名称";
+  nameRow.appendChild(nameIn);
+  nameRow.style.display = "none";
+  form.appendChild(nameRow);
+  const presetMgmtRow = el("div", "file-row");
+  const newPresetBtn = el("button", "btn", "＋ 新建自定义方案");
+  const delPresetBtn = el("button", "btn", "删除当前自定义方案");
+  newPresetBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  delPresetBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  delPresetBtn.style.display = "none";
+  presetMgmtRow.appendChild(newPresetBtn);
+  presetMgmtRow.appendChild(delPresetBtn);
+  form.appendChild(presetMgmtRow);
+  renderProviderOptions(cfg.active || "gemini");
   const infoCard = el("div", "ai-info-card");
   form.appendChild(infoCard);
   function refreshInfoCard() {
-    const p = AI_PRESETS[provSel.value];
+    const key = provSel.value;
     infoCard.innerHTML = "";
     infoCard.className = "ai-info-card";
-    const peak = getPeakStatus(provSel.value);
+    if (key.indexOf("custom:") === 0 || key === "__new_custom__") {
+      infoCard.appendChild(el("div", "ai-info-note", "自定义方案：Base URL、模型与 API Key 独立保存，可同时创建多个方案。"));
+      return;
+    }
+    const p = AI_PRESETS[key];
+    if (!p) return;
+    const peak = getPeakStatus(key);
     if (peak.label) {
       const peakEl = el("div", "ai-peak-badge" + (peak.isPeak ? " peak" : " offpeak"),
         (peak.isPeak ? "🔴 " : "🟢 ") + peak.label + (peak.note ? "： " + peak.note : ""));
@@ -4626,6 +4998,7 @@ function openAiImport(target) {
     infoCard.appendChild(el("div", "ai-info-free", p.free || "—"));
     if (p.note) infoCard.appendChild(el("div", "ai-info-note", p.note));
     if (p.cors === false) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 此接口不支持浏览器直接调用（CORS 限制），需要自建代理。"));
+    if (p.oc_server) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 连接失败时检查：服务器已启动且 --cors 包含本页地址；密码与 OPENCODE_SERVER_PASSWORD 一致。"));
     if (p.key_url) {
       const link = el("a", "ai-info-link", "🔑 获取 API Key →");
       link.href = p.key_url; link.target = "_blank"; link.rel = "noopener noreferrer";
@@ -4662,16 +5035,27 @@ function openAiImport(target) {
   form.appendChild(modelRow);
   let customModels = Object.assign({}, cfg.custom_models || {});
   function getCustomList(providerKey) {
+    if (providerKey.indexOf("custom:") === 0) {
+      const p = customPresets.find(x => x.id === providerKey.slice(7));
+      return p && Array.isArray(p.models) ? p.models.slice() : [];
+    }
     const l = customModels[providerKey];
     return Array.isArray(l) ? l.slice() : [];
   }
+  function setCustomList(providerKey, list) {
+    if (providerKey.indexOf("custom:") === 0) {
+      const p = customPresets.find(x => x.id === providerKey.slice(7));
+      if (p) p.models = list.slice();
+    } else {
+      customModels[providerKey] = list.slice();
+    }
+  }
   function persistCustomModels() {
-    const c = loadAiConfig();
-    c.custom_models = customModels;
-    saveAiConfig(c);
+    saveAiConfig(readCfg());
   }
   function refreshModelList(providerKey, currentModel) {
-    const p = AI_PRESETS[providerKey];
+    const isCustom = providerKey.indexOf("custom:") === 0;
+    const p = isCustom ? { manual: false, models: [] } : AI_PRESETS[providerKey];
     modelSel.innerHTML = "";
     if (!p || p.manual) {
       const o = document.createElement("option");
@@ -4730,12 +5114,14 @@ function openAiImport(target) {
     }
   });
   addModelBtn.addEventListener("click", () => {
+    const key = provSel.value;
+    if (key === "__new_custom__") return;
     const name = modelIn.value.trim();
     if (modelIn.style.display !== "none" && name) {
-      const key = provSel.value;
-      if (!customModels[key]) customModels[key] = [];
-      if (customModels[key].indexOf(name) !== -1) { confirmPopup("该模型已在列表中"); return; }
-      customModels[key].push(name);
+      const list = getCustomList(key);
+      if (list.indexOf(name) !== -1) { confirmPopup("该模型已在列表中"); return; }
+      list.push(name);
+      setCustomList(key, list);
       persistCustomModels();
       refreshModelList(key, name);
       return;
@@ -4747,6 +5133,7 @@ function openAiImport(target) {
   });
   delModelBtn.addEventListener("click", () => {
     const key = provSel.value;
+    if (key === "__new_custom__") return;
     const val = modelSel.value;
     if (val === "__custom__") {
       modelIn.value = "";
@@ -4754,11 +5141,11 @@ function openAiImport(target) {
       refreshModelList(key, "");
       return;
     }
-    const list = customModels[key] || [];
+    const list = getCustomList(key);
     const i = list.indexOf(val);
     if (i === -1) { confirmPopup("只能删除自定义模型（前面带 ★ 的）"); return; }
     list.splice(i, 1);
-    customModels[key] = list;
+    setCustomList(key, list);
     persistCustomModels();
     refreshModelList(key, "");
   });
@@ -4779,12 +5166,91 @@ function openAiImport(target) {
   overlapIn.className = "edit-input"; overlapIn.type = "text"; overlapIn.value = String(cfg.chunk_overlap);
   chunkRow.appendChild(chunkIn); chunkRow.appendChild(overlapIn);
   form.appendChild(chunkRow);
-  function applyPreset(key, keepUserValue) {
+  let currentSchemeKey = "";
+  function currentModelValue() {
+    return (modelSel.value === "__custom__") ? modelIn.value.trim() : (modelSel.value || "");
+  }
+  function getSchemeState(key) {
+    if (key.indexOf("custom:") === 0) {
+      const p = customPresets.find(x => x.id === key.slice(7));
+      if (!p) return null;
+      return {
+        custom: p, preset: null, manual: false,
+        base_url: p.base_url || "", model: p.model || "", api_key: p.api_key || "",
+      };
+    }
     const p = AI_PRESETS[key];
+    if (!p || key === "custom") return null;
+    const s = providers[key] || {};
+    return {
+      custom: null, preset: p, manual: !!p.manual,
+      base_url: s.base_url != null ? s.base_url : p.base_url,
+      model: s.model != null ? s.model : p.model,
+      api_key: s.api_key || "",
+    };
+  }
+  function commitScheme(key) {
+    if (!key || key === "__new_custom__") return;
+    const vals = { base_url: baseIn.value.trim(), model: currentModelValue(), api_key: keyIn.value.trim() };
+    if (key.indexOf("custom:") === 0) {
+      const p = customPresets.find(x => x.id === key.slice(7));
+      if (p) Object.assign(p, vals);
+    } else if (AI_PRESETS[key] && key !== "custom") {
+      providers[key] = vals;
+    }
+  }
+  function collectCfg(key) {
+    const tempRaw = parseFloat(tempIn.value);
+    const maxRaw = parseInt(maxIn.value, 10);
+    const chunkRaw = parseInt(chunkIn.value, 10);
+    const overlapRaw = parseInt(overlapIn.value, 10);
+    return {
+      version: 2,
+      active: key,
+      provider: key.indexOf("custom:") === 0 ? "custom" : key,
+      base_url: baseIn.value.trim(),
+      model: currentModelValue(),
+      api_key: keyIn.value.trim(),
+      providers: providers,
+      custom_presets: customPresets,
+      custom_models: customModels,
+      temperature: isFinite(tempRaw) ? tempRaw : 0.2,
+      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
+      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
+      chunk_overlap: isFinite(overlapRaw) && overlapRaw >= 0 ? overlapRaw : 300,
+      subject_target: (typeof subjSel !== "undefined" && subjSel) ? subjSel.value : (cfg.subject_target || ""),
+      chapter_sel: (typeof chapSel !== "undefined" && chapSel) ? chapSel.value : (cfg.chapter_sel || "__keep__"),
+    };
+  }
+  function defaultCustomName() {
+    const used = {};
+    customPresets.forEach(p => { used[p.name] = true; });
+    let n = 1;
+    while (used["自定义方案 " + n]) n++;
+    return "自定义方案 " + n;
+  }
+  function loadScheme(key) {
+    if (key === "__new_custom__") {
+      const p = { id: genId(), name: defaultCustomName(), base_url: "", model: "", api_key: "", models: [] };
+      customPresets.push(p);
+      renderProviderOptions(customSchemeKey(p.id));
+      key = provSel.value;
+    }
+    const s = getSchemeState(key);
+    if (!s) {
+      renderProviderOptions("gemini");
+      key = "gemini";
+      return loadScheme(key);
+    }
+    const isCustom = key.indexOf("custom:") === 0;
+    nameRow.style.display = isCustom ? "" : "none";
+    delPresetBtn.style.display = isCustom ? "" : "none";
+    if (isCustom) nameIn.value = s.custom.name;
     refreshInfoCard();
-    if (p.manual) {
+    if (s.manual) {
       baseIn.value = "";
       baseIn.disabled = true;
+      keyIn.value = "";
       keyIn.disabled = true;
       keyIn.placeholder = "（手动模式无需 Key）";
       refreshModelList(key, "");
@@ -4792,12 +5258,56 @@ function openAiImport(target) {
     }
     baseIn.disabled = false;
     keyIn.disabled = false;
-    if (!keepUserValue) { baseIn.value = p.base_url; keyIn.placeholder = p.key_hint || "sk-..."; }
-    refreshModelList(key, keepUserValue ? cfg.model : p.model);
+    baseIn.value = s.base_url || "";
+    keyIn.value = s.api_key || "";
+    keyIn.placeholder = (s.preset && s.preset.key_hint) ? s.preset.key_hint : "sk-...";
+    refreshModelList(key, s.model || "");
   }
-  provSel.addEventListener("change", () => { const oldKey = keyIn.value; applyPreset(provSel.value, false); keyIn.value = oldKey; });
-  applyPreset(provSel.value, true);
-  keyIn.value = cfg.api_key || "";
+  newPresetBtn.addEventListener("click", () => {
+    commitScheme(currentSchemeKey);
+    saveAiConfig(collectCfg(currentSchemeKey));
+    loadScheme("__new_custom__");
+    currentSchemeKey = provSel.value;
+    saveAiConfig(collectCfg(currentSchemeKey));
+    try { nameIn.focus(); nameIn.select(); } catch (e) {}
+  });
+  delPresetBtn.addEventListener("click", () => {
+    const key = provSel.value;
+    if (key.indexOf("custom:") !== 0) return;
+    const p = customPresets.find(x => x.id === key.slice(7));
+    if (!p) return;
+    confirmPopup("确定删除自定义方案「" + p.name + "」？", () => {
+      customPresets = customPresets.filter(x => x.id !== p.id);
+      renderProviderOptions("gemini");
+      loadScheme(provSel.value);
+      currentSchemeKey = provSel.value;
+      saveAiConfig(collectCfg(currentSchemeKey));
+    });
+  });
+  nameIn.addEventListener("input", () => {
+    const key = provSel.value;
+    if (key.indexOf("custom:") !== 0) return;
+    const p = customPresets.find(x => x.id === key.slice(7));
+    if (!p) return;
+    p.name = nameIn.value.trim() || "未命名方案";
+    if (provSel.selectedIndex >= 0) {
+      const opt = provSel.options[provSel.selectedIndex];
+      if (opt && opt.value === key) opt.textContent = "自定义：" + p.name;
+    }
+  });
+  nameIn.addEventListener("change", () => {
+    saveAiConfig(collectCfg(provSel.value));
+  });
+  provSel.addEventListener("change", () => {
+    const oldKey = currentSchemeKey;
+    commitScheme(oldKey);
+    saveAiConfig(collectCfg(oldKey));
+    loadScheme(provSel.value);
+    currentSchemeKey = provSel.value;
+    saveAiConfig(collectCfg(currentSchemeKey));
+  });
+  loadScheme(cfg.active || "gemini");
+  currentSchemeKey = provSel.value;
   form.appendChild(el("div", "gh-note", "Key 只保存在本机浏览器，不会上传第三方。公共设备用完请到服务商后台吊销。"));
 
   form.appendChild(el("div", "gh-section-title", "☁️ 云端同步（跨设备）"));
@@ -4831,13 +5341,32 @@ function openAiImport(target) {
       return;
     }
     const c = readCfg();
+    const providersPayload = {};
+    Object.keys(c.providers || {}).forEach(k => {
+      const p = c.providers[k] || {};
+      providersPayload[k] = { base_url: p.base_url || "", model: p.model || "" };
+      if (includeKeyInCloud) providersPayload[k].api_key = p.api_key || "";
+    });
+    const customPresetsPayload = (c.custom_presets || []).map(p => {
+      const o = {
+        id: p.id, name: p.name,
+        base_url: p.base_url || "", model: p.model || "",
+        models: Array.isArray(p.models) ? p.models : [],
+      };
+      if (includeKeyInCloud) o.api_key = p.api_key || "";
+      return o;
+    });
     const payload = {
-      _meta: { savedAt: new Date().toISOString(), version: 1 },
-      provider: c.provider, base_url: c.base_url, model: c.model,
+      _meta: { savedAt: new Date().toISOString(), version: 2 },
+      version: 2,
+      active: c.active,
+      providers: providersPayload,
+      custom_presets: customPresetsPayload,
       temperature: c.temperature, max_tokens: c.max_tokens,
       chunk_size: c.chunk_size, chunk_overlap: c.chunk_overlap,
       subject_target: c.subject_target, chapter_sel: c.chapter_sel,
       custom_models: customModels,
+      provider: c.provider, base_url: c.base_url, model: c.model,
     };
     if (includeKeyInCloud) payload.api_key = c.api_key;
     cloudSaveBtn.disabled = true;
@@ -4871,33 +5400,29 @@ function openAiImport(target) {
       }
       const obj = JSON.parse(text);
       const cur = loadAiConfig();
-      const merged = Object.assign({}, cur, obj);
-      if (!obj.api_key) merged.api_key = cur.api_key;
-      if (!obj.custom_models || typeof obj.custom_models !== "object" || Array.isArray(obj.custom_models))
-        merged.custom_models = cur.custom_models || {};
+      const merged = (obj && (obj.version >= 2 || obj.providers || obj.custom_presets))
+        ? aiMergeCloudV2(cur, obj)
+        : aiMergeCloudLegacy(cur, obj);
       saveAiConfig(merged);
-      customModels = Object.assign({}, merged.custom_models || {});
-      if (SUBJECTS.indexOf(merged.subject_target) !== -1) subjSel.value = merged.subject_target;
-      rebuildAiChapter(merged.chapter_sel || "__keep__");
-      provSel.value = (merged.provider && AI_PRESETS[merged.provider]) ? merged.provider : "gemini";
-      const pk = provSel.value;
-      const preset = AI_PRESETS[pk];
-      refreshInfoCard();
-      if (preset.manual) {
-        baseIn.value = ""; baseIn.disabled = true;
-        keyIn.disabled = true; keyIn.placeholder = "（手动模式无需 Key）";
-      } else {
-        baseIn.disabled = false; keyIn.disabled = false;
-        baseIn.value = merged.base_url || preset.base_url;
-        keyIn.placeholder = preset.key_hint || "sk-...";
-      }
-      keyIn.value = merged.api_key || "";
-      tempIn.value = String(merged.temperature != null ? merged.temperature : 0.2);
-      maxIn.value = String(merged.max_tokens != null ? merged.max_tokens : 8000);
-      chunkIn.value = String(merged.chunk_size != null ? merged.chunk_size : 5000);
-      overlapIn.value = String(merged.chunk_overlap != null ? merged.chunk_overlap : 300);
-      refreshModelList(pk, merged.model || preset.model || "");
-      cloudInfo.textContent = "✅ 已从云端加载" + (obj.api_key ? "（含 Key）" : "（云端无 Key，沿用本地）");
+      const fresh = loadAiConfig();
+      customPresets = (fresh.custom_presets || []).map(p => Object.assign({}, p, {
+        models: Array.isArray(p.models) ? p.models.slice() : [],
+      }));
+      providers = {};
+      Object.keys(fresh.providers || {}).forEach(k => {
+        providers[k] = Object.assign({}, fresh.providers[k] || {});
+      });
+      customModels = Object.assign({}, fresh.custom_models || {});
+      if (SUBJECTS.indexOf(fresh.subject_target) !== -1) subjSel.value = fresh.subject_target;
+      rebuildAiChapter(fresh.chapter_sel || "__keep__");
+      renderProviderOptions(fresh.active);
+      loadScheme(provSel.value);
+      currentSchemeKey = provSel.value;
+      tempIn.value = String(fresh.temperature != null ? fresh.temperature : 0.2);
+      maxIn.value = String(fresh.max_tokens != null ? fresh.max_tokens : 8000);
+      chunkIn.value = String(fresh.chunk_size != null ? fresh.chunk_size : 5000);
+      overlapIn.value = String(fresh.chunk_overlap != null ? fresh.chunk_overlap : 300);
+      cloudInfo.textContent = "✅ 已从云端加载" + (aiConfigHasKeys(obj) ? "（含 Key）" : "（云端无 Key，沿用本地）");
       cloudInfo.className = "gh-status ok";
     } catch (e) {
       cloudInfo.textContent = "❌ " + e.message;
@@ -5318,16 +5843,22 @@ function openAiImport(target) {
   function readCfg() {
     const chValue = chapSel.value;
     const chOverride = chValue === "__keep__" ? null : (chValue === "__empty__" ? "" : chValue);
-    const modelValue = (modelSel.value === "__custom__") ? modelIn.value.trim() : modelSel.value;
+    const modelValue = currentModelValue();
     const tempRaw = parseFloat(tempIn.value);
     const maxRaw = parseInt(maxIn.value, 10);
     const chunkRaw = parseInt(chunkIn.value, 10);
     const overlapRaw = parseInt(overlapIn.value, 10);
+    commitScheme(provSel.value);
     return {
-      provider: provSel.value,
+      version: 2,
+      active: provSel.value,
+      provider: provSel.value.indexOf("custom:") === 0 ? "custom" : provSel.value,
       base_url: baseIn.value.trim(),
       model: modelValue,
       api_key: keyIn.value.trim(),
+      providers: providers,
+      custom_presets: customPresets,
+      custom_models: customModels,
       temperature: isFinite(tempRaw) ? tempRaw : 0.2,
       max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
       chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
@@ -5335,7 +5866,6 @@ function openAiImport(target) {
       chapter_override: chOverride,
       subject_target: subjSel.value,
       chapter_sel: chValue,
-      custom_models: customModels,
     };
   }
   closeBtn.addEventListener("click", () => ov.remove());
@@ -5392,8 +5922,9 @@ function openAiImport(target) {
 
     const c = readCfg();
     if (!c.base_url) { confirmPopup("请填写 Base URL"); return; }
-    if (!c.model) { confirmPopup("请选择或填写模型名"); return; }
-    if (!c.api_key && !preset.no_key) { confirmPopup("请填写 API Key，或切换到「手动模式」"); return; }
+    if (!c.model && !preset.oc_server) { confirmPopup("请选择或填写模型名"); return; }
+    if (preset.oc_server && c.model && c.model.indexOf("/") <= 0) { confirmPopup("opencode 模型名格式应为 provider/model（如 deepseek/deepseek-flash），留空则用服务器默认模型"); return; }
+    if (!c.api_key && !preset.no_key && !preset.oc_server) { confirmPopup("请填写 API Key，或切换到「手动模式」"); return; }
     if (preset.cors === false) {
       confirmPopup("⚠ 该服务不支持浏览器直连（CORS）。\n\n建议：\n  1. 切换到 OpenRouter（含 DeepSeek 免费版）\n  2. 或自建代理后改填代理地址\n  3. 或改用「手动模式」");
       return;
