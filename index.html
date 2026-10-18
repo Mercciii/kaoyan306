@@ -1040,16 +1040,21 @@ function preprocessCanvas(canvas) {
 }
 
 let __tesseractPromise = null;
+function localVendorPath(name) {
+  try { return new URL("./vendor/tesseract/" + name, document.baseURI).href; }
+  catch (e) { return "vendor/tesseract/" + name; }
+}
 function ensureTesseract(forceReload) {
   if (forceReload) __tesseractPromise = null;
   if (__tesseractPromise) return __tesseractPromise;
   __tesseractPromise = (async () => {
     let lastErr = null;
     const bust = "?t=" + Date.now();
-    for (let i = 0; i < TESSERACT_CDNS.length; i++) {
+    const sources = [localVendorPath("tesseract.min.js")].concat(TESSERACT_CDNS.map(u => u + bust));
+    for (let i = 0; i < sources.length; i++) {
       try {
         try { window.Tesseract = undefined; } catch (e) {}
-        await loadScript(TESSERACT_CDNS[i] + bust, 30000);
+        await loadScript(sources[i], 30000);
         if (!window.Tesseract) throw new Error("Tesseract.js 未挂载到 window");
         return window.Tesseract;
       } catch (e) { lastErr = e; }
@@ -1061,6 +1066,24 @@ function ensureTesseract(forceReload) {
 }
 let __ocrPool = null;
 let __ocrCancelToken = null;
+function localTessdataPath() {
+  try { return new URL("./tessdata", document.baseURI).href.replace(/\/+$/, ""); }
+  catch (e) { return "tessdata"; }
+}
+async function createOcrWorker(Tesseract, langs, onLog) {
+  try {
+    return await Tesseract.createWorker(langs, 1, {
+      logger: null,
+      langPath: localTessdataPath(),
+      gzip: false,
+      workerPath: localVendorPath("worker.min.js"),
+      corePath: localVendorPath(""),
+    });
+  } catch (e) {
+    onLog && onLog("本地 OCR 组件加载失败，回退在线组件…");
+    return await Tesseract.createWorker(langs, 1, { logger: null });
+  }
+}
 async function getOcrPool(count, lang, onLog) {
   count = Math.max(1, Math.min(OCR_WORKER_COUNT_MAX, count | 0));
   lang = lang || "chi_sim+eng";
@@ -1071,7 +1094,7 @@ async function getOcrPool(count, lang, onLog) {
   const langs = lang.split("+").filter(Boolean);
   for (let i = 0; i < count; i++) {
     onLog && onLog("初始化 OCR 引擎 " + (i + 1) + "/" + count + "…");
-    const w = await Tesseract.createWorker(langs, 1, { logger: null });
+    const w = await createOcrWorker(Tesseract, langs, onLog);
     try {
       await w.setParameters({
         tessedit_pageseg_mode: "6",
@@ -1178,7 +1201,7 @@ async function ocrPdfText(file, onProgress, opts) {
     if (!opts.paddleEndpoint) throw new Error("PaddleOCR 模式需要填写服务地址");
     if (onProgress) onProgress(0, pageCount, "使用 PaddleOCR 后端…");
   } else {
-    if (onProgress) onProgress(0, pageCount, "准备 OCR 引擎（首次需下载中文语言包，约 10~20 MB）…");
+    if (onProgress) onProgress(0, pageCount, "准备 OCR 引擎（引擎与语言包均已内置）…");
     workers = await getOcrPool(workerCount, lang, msg => onProgress && onProgress(0, pageCount, msg));
   }
 

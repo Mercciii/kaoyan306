@@ -9,7 +9,7 @@
    ========================================================= */
 "use strict";
 
-const SW_VERSION   = "1.1.0";
+const SW_VERSION   = "1.3.1";
 const CACHE_PREFIX = "kaoyan306";
 
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;
@@ -26,6 +26,12 @@ const APP_SHELL = [
   "./manifest.json",
   "./icons/icon.svg",
   "./icons/icon-maskable.svg",
+  "./tessdata/chi_sim.traineddata",
+  "./tessdata/eng.traineddata",
+  "./vendor/tesseract/tesseract.min.js",
+  "./vendor/tesseract/worker.min.js",
+  "./vendor/tesseract/tesseract-core-simd-lstm.wasm.js",
+  "./vendor/tesseract/tesseract-core-lstm.wasm.js",
 ];
 
 /* 直通不缓存的域名：API / 鉴权 / 实时性要求高 */
