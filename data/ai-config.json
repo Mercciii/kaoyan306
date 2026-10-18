@@ -1,16 +1,29 @@
 {
   "_meta": {
-    "savedAt": "2026-10-17T23:55:26.170Z",
-    "version": 1
+    "savedAt": "2026-10-18T03:04:59.829Z",
+    "version": 2
   },
-  "provider": "zhipu",
-  "base_url": "https://open.bigmodel.cn/api/paas/v4",
-  "model": "glm-5.3-flash",
+  "version": 2,
+  "active": "deepseek",
+  "providers": {
+    "gemini": {
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "model": "gemini-2.5-flash"
+    },
+    "deepseek": {
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash"
+    }
+  },
+  "custom_presets": [],
   "temperature": 0.2,
   "max_tokens": 8000,
-  "chunk_size": 50000,
+  "chunk_size": 5000,
   "chunk_overlap": 300,
-  "subject_target": "生理学",
-  "chapter_sel": "能量代谢与体温",
-  "custom_models": {}
+  "subject_target": "内科学",
+  "chapter_sel": "__keep__",
+  "custom_models": {},
+  "provider": "deepseek",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-flash"
 }
