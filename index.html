@@ -3182,19 +3182,7 @@ async function callAiOpencodeServer(cfg, messages, timeoutMs) {
       else if (sr.status === 404) msg += "（地址错误？base_url 只需填到端口）";
       throw fail("opencode 创建会话失败：" + msg);
     }
-    let tools = null;
-    try {
-      const tr = await fetch(base + "/experimental/tool/ids", { headers, signal: controller.signal });
-      const tids = await tr.json();
-      if (tr.ok && Array.isArray(tids) && tids.length) {
-        tools = {};
-        tids.forEach(t => { if (typeof t === "string") tools[t] = false; });
-      }
-    } catch (e) {
-      if (e && e.name === "AbortError") throw e;
-    }
-    if (!tools) tools = { bash: false, edit: false, write: false, task: false, apply_patch: false };
-    const payload = { system: sys || undefined, tools: tools, parts: [{ type: "text", text: prompt }] };
+    const payload = { system: sys || undefined, tools: {}, parts: [{ type: "text", text: prompt }] };
     if (model) payload.model = model;
     const mr = await fetch(base + "/session/" + sid + "/message", {
       method: "POST", headers,
