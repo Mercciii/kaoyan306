@@ -478,24 +478,46 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
 
   <!-- ===== 政治记忆模式 ===== -->
   <div class="politics-only filter-row" style="display:none">
+    <select id="pViewSel">
+      <option value="cards">🧠 记忆卡</option>
+      <option value="quiz">✏️ 政治题库</option>
+    </select>
     <select id="pCategorySel">
       <option value="全部">全部类别</option>
     </select>
     <select id="pFilterSel">
       <option value="全部">全部卡片</option>
-      <option value="due">待复习</option>
-      <option value="new">新卡</option>
-      <option value="mastered">已掌握</option>
-      <option value="starred">★ 收藏</option>
+    </select>
+  </div>
+  <div class="politics-only filter-row" style="display:none">
+    <select id="pTagSel">
+      <option value="全部">全部标签</option>
+    </select>
+    <select id="pSortSel">
+      <option value="默认">默认排序</option>
     </select>
   </div>
   <input id="pSearchInput" class="politics-only" type="text" style="display:none" placeholder="搜索题目 / 答案 / 标签（支持拼音首字母）">
   <div class="politics-only btn-row" style="display:none">
-    <button class="btn" id="pStudyBtn">▶ 开始</button>
+    <button class="btn" id="pStudyBtn">▶ 开始记忆</button>
     <button class="btn" id="pAddBtn">＋ 新增</button>
+    <button class="btn" id="pRandomBtn">随机</button>
+    <button class="btn" id="pStarBtn">☆ 收藏</button>
+    <button class="btn" id="pAskBtn">🤖 问答</button>
+  </div>
+  <div class="politics-only btn-row" style="display:none">
+    <button class="btn" id="pQuizBtn">✏️ 刷题</button>
+    <button class="btn" id="pContinueQuizBtn">⏯ 继续</button>
+    <button class="btn" id="pSrsBtn">⏰ 复习</button>
+    <button class="btn" id="pWrongBookBtn">📕 错题本</button>
+    <button class="btn" id="pStatsBtn">📊 统计</button>
+  </div>
+  <div class="politics-only btn-row" style="display:none">
+    <button class="btn" id="pRecordBtn">📋 清单</button>
+    <button class="btn" id="pPdfBtn">PDF</button>
     <button class="btn" id="pImportBtn">导入</button>
     <button class="btn" id="pExportBtn">导出</button>
-    <button class="btn" id="pClearBtn">清空</button>
+    <button class="btn" id="pUploadBtn">☁ 上传</button>
   </div>
 
   <div id="statLabel"></div>
@@ -520,7 +542,7 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
   </div>
   <div class="politics-only btn-row" style="display:none">
     <button class="btn" id="pRestoreBtn">恢复内置</button>
-    <button class="btn" id="pUploadBtn">☁ 上传</button>
+    <button class="btn" id="pClearBtn">清空</button>
     <button class="btn" id="pSettingsBtn">设置</button>
   </div>
 </div>
@@ -622,19 +644,24 @@ const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="
       RELEASE_ASSET_NAME_P="politics.json";
 const SRS_KEY="kaoyan_srs", CHECKIN_KEY="kaoyan_checkin", EXAM_HIST_KEY="kaoyan_exam_hist",
       NOTIFY_FLAG_KEY="kaoyan_notify_flag", AI_USAGE_KEY="kaoyan_ai_usage",
-      POLITICS_KEY="kaoyan_politics_cards", POLITICS_SRS_KEY="kaoyan_politics_srs";
+      POLITICS_KEY="kaoyan_politics_cards", POLITICS_SRS_KEY="kaoyan_politics_srs",
+      POLITICS_QUESTIONS_KEY="kaoyan_politics_questions",
+      POLITICS_QUIZ_LOG_KEY="kaoyan_politics_answer_log",
+      POLITICS_QUIZ_SRS_KEY="kaoyan_politics_quiz_srs",
+      POLITICS_QUIZ_PROGRESS_KEY="kaoyan_politics_quiz_progress";
 
 const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/cases.json";
 const REMOTE_QUESTIONS_URL = "https://mercciii.github.io/kaoyan306/data/questions.json";
 
-const EMPTY_HINT = "暂无数据\n\n点击底部「导入」粘贴 JSON 数组，\n或点「＋新增」逐条录入。\n\n也可点「导入 → 🤖 AI 生成」，上传 PDF 自动生成 JSON。";
+const EMPTY_HINT = "暂无数据\n\n点击底部「导入」粘贴 JSON 数组，\n或点「＋新增」逐条录入。\n\n也可点「导入 → 🤖 AI 生成」，上传 PDF / 图片自动生成 JSON。";
 const EMPTY_QUIZ_HINT = "题库为空\n\n点击「粘贴导入」粘贴题目 JSON，\n或点「🤖 AI出题」让 AI 根据资料出题，\n或用「上传题库」从 GitHub 拉取。";
 
 const SETTINGS_DEFAULTS = {
   dark:false, font_scale:1.0, subject:"全部", chapter:"全部",
   status:"全部", tag:"全部", sort:"默认", starred_only:false, scroll_y:1.0,
   mode:"cases", q_subject:"全部", q_type:"全部",
-  p_category:"全部", p_filter:"全部",
+  p_category:"全部", p_filter:"全部", p_view:"cards", p_tag:"全部", p_sort:"默认",
+  p_starred_only:false, p_quiz_mode:"practice", p_quiz_count:20, p_quiz_scope:"all",
   quiz_mode:"practice", quiz_count:20, quiz_scope:"all",
   auto_pull:false,
   option_shuffle:false, srs_enabled:true, daily_quiz_goal:30, daily_case_goal:10,
@@ -663,9 +690,10 @@ const POLITICS_CATEGORY_COLORS = {
   "马原":"#d94747", "毛中特":"#d97719", "史纲":"#8c47bf",
   "思修法基":"#33b366", "时政":"#338ce6", "其他":"#737380",
 };
-const EMPTY_POLITICS_HINT = "政治记忆库为空\n\n点「＋新增」逐条录入，点「导入」粘贴 JSON / 文本。\n也可以点「恢复内置」载入示例卡。";
+const EMPTY_POLITICS_HINT = "政治记忆库为空\n\n点「＋新增」逐条录入，点「导入」粘贴 JSON / 文本。\n也可以点「导入 → 🤖 AI 生成」从 PDF / 图片 / 文本自动整理，\n或点「恢复内置」载入示例卡。";
 const SAMPLE_POLITICS_IMPORT = "Q：实践对认识的决定作用表现在哪些方面？\nA：①实践是认识的来源；②实践是认识发展的动力；③实践是检验认识真理性的唯一标准；④实践是认识的目的。\n分类：马原\n标签：核心概念\n\n也可以每行一条：\n问题 | 答案 | 分类 | 标签";
 const SAMPLE_POLITICS_JSON = '[{"category":"马原","question":"实践对认识的决定作用表现在哪些方面？","answer":"①实践是认识的来源；②实践是认识发展的动力；③实践是检验认识真理性的唯一标准；④实践是认识的目的。","tags":["核心概念"]}]';
+const SAMPLE_POLITICS_QUESTION_JSON = '[{"category":"马原","type":"single","stem":"矛盾的两个基本属性是？","options":[{"key":"A","text":"普遍性和特殊性"},{"key":"B","text":"同一性和斗争性"},{"key":"C","text":"主要方面和次要方面"},{"key":"D","text":"内因和外因"}],"answer":["B"],"explanation":"矛盾的基本属性是同一性和斗争性。","tags":["高频"],"difficulty":2}]';
 
 const POLITICS_BUILTIN = [
   ["马原", "物质与意识的辩证关系是什么？", "物质决定意识，意识是物质世界长期发展的产物，是人脑的机能和属性，是客观世界的主观映象。\n意识对物质具有能动的反作用：意识活动具有目的性、计划性、创造性，能指导实践改造客观世界，并调控人体生理活动。\n方法论：坚持一切从实际出发、实事求是，同时重视意识的能动作用。", ["核心概念"]],
@@ -754,6 +782,59 @@ const POLITICS_BUILTIN = [
   tags: r[3] || [],
   starred: false,
 }));
+
+const POLITICS_QUIZ_BUILTIN = [
+  { category:"马原", type:"single", stem:"实践对认识的决定作用不包括下列哪一项？", options:[["A","实践是认识的来源"],["B","实践是认识发展的动力"],["C","实践是检验认识真理性的唯一标准"],["D","实践是认识的目的"],["E","实践可以代替认识活动"]], answer:["E"], explanation:"实践对认识的决定作用表现在：实践是认识的来源、发展动力、检验标准、目的。实践不能代替认识活动。", tags:["高频"], difficulty:2 },
+  { category:"马原", type:"single", stem:"矛盾的两个基本属性是？", options:[["A","普遍性和特殊性"],["B","同一性和斗争性"],["C","主要方面和次要方面"],["D","内因和外因"]], answer:["B"], explanation:"矛盾的基本属性是同一性和斗争性；普遍性与特殊性是矛盾问题的精髓。", tags:["核心概念"], difficulty:1 },
+  { category:"马原", type:"judge", stem:"矛盾的同一性是无条件的、绝对的，斗争性是有条件的、相对的。", answer:["B"], explanation:"说反了。同一性是有条件的、相对的，斗争性是无条件的、绝对的。", tags:["易错"], difficulty:2 },
+  { category:"马原", type:"multiple", stem:"量变和质变辩证关系的方法论要求包括？", options:[["A","重视量的积累"],["B","抓住时机促成质变"],["C","坚持适度原则"],["D","防止不利的质变"]], answer:["A","B","C","D"], explanation:"量变是质变的必要准备，质变是量变的必然结果，二者相互渗透。", tags:["高频"], difficulty:2 },
+  { category:"马原", type:"single", stem:"剩余价值率的计算公式是？", options:[["A","m′=m/v"],["B","m′=v/m"],["C","m′=c/v"],["D","m′=m/(c+v)"]], answer:["A"], explanation:"剩余价值率 m′=m/v，其中 m 为剩余价值，v 为可变资本；它反映资本家对工人的剥削程度。", tags:["政治经济学"], difficulty:2 },
+  { category:"马原", type:"single", stem:"产业资本循环依次经历的三个阶段是？", options:[["A","购买阶段、生产阶段、售卖阶段"],["B","生产阶段、购买阶段、售卖阶段"],["C","售卖阶段、生产阶段、购买阶段"],["D","购买阶段、售卖阶段、生产阶段"]], answer:["A"], explanation:"产业资本循环依次经过购买、生产、售卖三个阶段，相应采取货币资本、生产资本、商品资本三种职能形式。", tags:["政治经济学"], difficulty:2 },
+  { category:"马原", type:"multiple", stem:"社会意识相对独立性的表现有？", options:[["A","与社会存在发展不完全同步"],["B","具有历史继承性"],["C","各种形式相互影响"],["D","对社会存在具有能动反作用"]], answer:["A","B","C","D"], explanation:"社会意识相对独立性的四个表现均正确。", tags:["核心概念"], difficulty:3 },
+  { category:"马原", type:"judge", stem:"生产力决定生产关系，所以生产关系对生产力没有反作用。", answer:["B"], explanation:"生产力决定生产关系，但生产关系对生产力具有反作用：适合时促进发展，不适合时阻碍发展。", tags:["易错"], difficulty:1 },
+  { category:"马原", type:"single", stem:"关于真理的绝对性和相对性，下列说法正确的是？", options:[["A","它们是两个不同的真理"],["B","它们是同一客观真理的两重属性"],["C","绝对真理中不包含相对真理"],["D","相对真理不是真理"]], answer:["B"], explanation:"绝对真理和相对真理是同一客观真理的两重属性，二者相互依存、相互包含。", tags:["核心概念"], difficulty:3 },
+  { category:"马原", type:"single", stem:"商品的两个因素是？", options:[["A","具体劳动和抽象劳动"],["B","使用价值和价值"],["C","价值和交换价值"],["D","私人劳动和社会劳动"]], answer:["B"], explanation:"商品具有使用价值和价值两个因素；具体劳动和抽象劳动是生产商品的劳动二重性。", tags:["政治经济学"], difficulty:1 },
+  { category:"毛中特", type:"single", stem:"新民主主义革命的三大法宝是？", options:[["A","统一战线、武装斗争、党的建设"],["B","土地革命、武装斗争、根据地建设"],["C","实事求是、群众路线、独立自主"],["D","统一战线、土地革命、党的建设"]], answer:["A"], explanation:"毛泽东在《〈共产党人〉发刊词》中总结出统一战线、武装斗争、党的建设是中国革命的三大法宝。", tags:["高频"], difficulty:1 },
+  { category:"毛中特", type:"single", stem:"社会主义的本质是？", options:[["A","解放生产力，发展生产力，消灭剥削，消除两极分化，最终达到共同富裕"],["B","实现生产资料公有制"],["C","实行按劳分配"],["D","建立社会主义市场经济体制"]], answer:["A"], explanation:"社会主义本质论把生产力与生产关系、根本任务与根本目标统一起来。", tags:["高频"], difficulty:2 },
+  { category:"毛中特", type:"multiple", stem:"新发展理念包括？", options:[["A","创新"],["B","协调"],["C","绿色"],["D","开放"],["E","共享"]], answer:["A","B","C","D","E"], explanation:"创新、协调、绿色、开放、共享五大发展理念相互贯通、相互促进。", tags:["高频"], difficulty:1 },
+  { category:"毛中特", type:"single", stem:"下列哪一项不属于中国式现代化的本质要求？", options:[["A","坚持中国共产党领导"],["B","实现高质量发展"],["C","走西方现代化道路"],["D","推动构建人类命运共同体"]], answer:["C"], explanation:"中国式现代化是走和平发展道路的现代化，不是走西方现代化道路。", tags:["时政"], difficulty:2 },
+  { category:"毛中特", type:"judge", stem:"新时代我国社会主要矛盾是人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾。", answer:["A"], explanation:"表述正确。同时要把握我国仍处于并将长期处于社会主义初级阶段的基本国情没有变。", tags:["高频"], difficulty:1 },
+  { category:"毛中特", type:"single", stem:"“五位一体”总体布局不包括？", options:[["A","经济建设"],["B","政治建设"],["C","国防建设"],["D","生态文明建设"]], answer:["C"], explanation:"“五位一体”是经济建设、政治建设、文化建设、社会建设、生态文明建设。", tags:["高频"], difficulty:1 },
+  { category:"毛中特", type:"multiple", stem:"全过程人民民主的特点包括？", options:[["A","最广泛"],["B","最真实"],["C","最管用"],["D","只体现在选举中"]], answer:["A","B","C"], explanation:"全过程人民民主是最广泛、最真实、最管用的民主，把选举民主与协商民主结合起来。", tags:["核心概念"], difficulty:2 },
+  { category:"毛中特", type:"single", stem:"全面深化改革的总目标是？", options:[["A","完善和发展中国特色社会主义制度，推进国家治理体系和治理能力现代化"],["B","建设中国特色社会主义法治体系"],["C","实现全体人民共同富裕"],["D","全面建成小康社会"]], answer:["A"], explanation:"全面深化改革总目标由两句话组成：前一句规定根本方向，后一句规定实现路径。", tags:["核心概念"], difficulty:2 },
+  { category:"史纲", type:"single", stem:"中国共产党第一次全国代表大会召开于？", options:[["A","1919 年"],["B","1921 年"],["C","1922 年"],["D","1927 年"]], answer:["B"], explanation:"1921 年 7 月中共一大在上海召开，后转移至浙江嘉兴南湖，宣告中国共产党正式成立。", tags:["时间线"], difficulty:1 },
+  { category:"史纲", type:"single", stem:"被称为党的历史上生死攸关转折点的会议是？", options:[["A","八七会议"],["B","遵义会议"],["C","古田会议"],["D","瓦窑堡会议"]], answer:["B"], explanation:"1935 年遵义会议事实上确立了毛泽东在党中央和红军的领导地位，是党的历史上一个生死攸关的转折点。", tags:["高频"], difficulty:1 },
+  { category:"史纲", type:"single", stem:"开启改革开放历史新时期的会议是？", options:[["A","十一届三中全会"],["B","中共十二大"],["C","中共十三大"],["D","中共十四大"]], answer:["A"], explanation:"1978 年 12 月十一届三中全会把党和国家工作中心转移到经济建设上来，实行改革开放。", tags:["高频"], difficulty:1 },
+  { category:"史纲", type:"judge", stem:"中共七大确立毛泽东思想为党的指导思想并写入党章。", answer:["A"], explanation:"1945 年中共七大在延安召开，确立毛泽东思想为党的指导思想并写入党章。", tags:["时间线"], difficulty:1 },
+  { category:"史纲", type:"multiple", stem:"三大改造的对象包括？", options:[["A","农业"],["B","手工业"],["C","资本主义工商业"],["D","官僚资本主义"]], answer:["A","B","C"], explanation:"三大改造指对农业、手工业和资本主义工商业的社会主义改造。", tags:["时间线"], difficulty:1 },
+  { category:"史纲", type:"single", stem:"五四运动的历史意义是？", options:[["A","旧民主主义革命的开端"],["B","新民主主义革命的开端"],["C","社会主义革命的开端"],["D","改革开放的开端"]], answer:["B"], explanation:"1919 年五四运动是中国旧民主主义革命走向新民主主义革命的转折点，是新民主主义革命的开端。", tags:["高频"], difficulty:1 },
+  { category:"思修法基", type:"single", stem:"社会主义核心价值观社会层面的价值取向是？", options:[["A","富强、民主、文明、和谐"],["B","自由、平等、公正、法治"],["C","爱国、敬业、诚信、友善"],["D","和平、发展、合作、共赢"]], answer:["B"], explanation:"国家层面：富强、民主、文明、和谐；社会层面：自由、平等、公正、法治；公民层面：爱国、敬业、诚信、友善。", tags:["高频"], difficulty:1 },
+  { category:"思修法基", type:"multiple", stem:"法治思维的基本内容有？", options:[["A","法律至上"],["B","权力制约"],["C","公平正义"],["D","权利保障"],["E","正当程序"]], answer:["A","B","C","D","E"], explanation:"法治思维的基本内容包括法律至上、权力制约、公平正义、权利保障、正当程序。", tags:["核心概念"], difficulty:2 },
+  { category:"思修法基", type:"judge", stem:"宪法是国家的根本法，具有最高的法律地位、法律权威和法律效力。", answer:["A"], explanation:"表述正确。坚持依法治国首先要坚持依宪治国。", tags:["核心概念"], difficulty:1 },
+  { category:"思修法基", type:"single", stem:"人生价值的主要方面是？", options:[["A","自我价值"],["B","社会价值"],["C","物质价值"],["D","精神价值"]], answer:["B"], explanation:"人生价值包括自我价值和社会价值，社会价值是人生价值的主要方面。", tags:["核心概念"], difficulty:1 },
+  { category:"时政", type:"single", stem:"“四个自信”是指？", options:[["A","道路自信、理论自信、制度自信、文化自信"],["B","道路自信、理论自信、制度自信、军事自信"],["C","理论自信、制度自信、文化自信、科技自信"],["D","政治自信、经济自信、文化自信、社会自信"]], answer:["A"], explanation:"“四个自信”是道路自信、理论自信、制度自信、文化自信。", tags:["高频"], difficulty:1 },
+  { category:"时政", type:"multiple", stem:"总体国家安全观中，作为保障的安全包括？", options:[["A","军事安全"],["B","科技安全"],["C","文化安全"],["D","社会安全"],["E","经济安全"]], answer:["A","B","C","D"], explanation:"总体国家安全观以人民安全为宗旨，以政治安全为根本，以经济安全为基础，以军事、科技、文化、社会安全为保障。", tags:["核心概念"], difficulty:2 },
+  { category:"时政", type:"single", stem:"构建新发展格局是指？", options:[["A","以国内大循环为主体、国内国际双循环相互促进"],["B","以国际循环为主体"],["C","封闭的国内循环"],["D","完全依赖出口"]], answer:["A"], explanation:"新发展格局是以国内大循环为主体、国内国际双循环相互促进的新发展格局。", tags:["高频"], difficulty:1 },
+  { category:"时政", type:"judge", stem:"中国共产党领导是中国特色社会主义最本质的特征和最大优势。", answer:["A"], explanation:"表述正确。党政军民学，东西南北中，党是领导一切的。", tags:["高频"], difficulty:1 },
+  { category:"马原", type:"essay", stem:"简述实践与认识的辩证关系。", answer:["①实践是认识的基础：实践是认识的来源、认识发展的动力、检验认识真理性的唯一标准、认识的目的。\n②认识对实践具有反作用：正确的认识、科学理论对实践具有指导作用，错误的认识会阻碍实践发展。\n③认识运动是实践、认识、再实践、再认识的无限循环和螺旋式上升过程。"], explanation:"答题时要先答实践决定认识，再答认识反作用于实践，最后点明认识运动的反复性、无限性。", tags:["高频"], difficulty:3 },
+  { category:"毛中特", type:"essay", stem:"简述中国式现代化的中国特色。", answer:["①人口规模巨大的现代化；\n②全体人民共同富裕的现代化；\n③物质文明和精神文明相协调的现代化；\n④人与自然和谐共生的现代化；\n⑤走和平发展道路的现代化。"], explanation:"按五个方面作答，注意区分“中国特色”和“本质要求”。", tags:["高频"], difficulty:2 },
+].map((r, i) => {
+  const q = normalizeQuestion({
+    id: "pq_builtin_" + (i + 1),
+    subject: r.category,
+    chapter: r.category,
+    type: r.type,
+    stem: r.stem,
+    options: (r.options || []).map(function (o) { return { key: o[0], text: o[1] }; }),
+    answer: r.answer || [],
+    explanation: r.explanation || "",
+    tags: r.tags || [],
+    difficulty: r.difficulty || 2,
+  });
+  q.category = r.category;
+  q.starred = false;
+  return q;
+});
 
 /* =========================================================
    基础工具
@@ -1614,6 +1695,8 @@ async function extractPdfText(file, onProgress, opts) {
 
 async function extractTextFromFile(file, onProgress, opts) {
   const name = (file.name || "").toLowerCase();
+  const isImage = /^image\//.test(file.type || "") || /\.(png|jpe?g|webp|bmp|gif)$/i.test(name);
+  if (isImage) return await extractImageText(file, onProgress, opts);
   if (name.endsWith(".pdf") || file.type === "application/pdf") {
     return await extractPdfText(file, onProgress, opts);
   }
@@ -1623,6 +1706,83 @@ async function extractTextFromFile(file, onProgress, opts) {
     r.onerror = () => reject(new Error("文件读取失败"));
     r.readAsText(file, "utf-8");
   });
+}
+
+async function extractImageText(file, onProgress, opts) {
+  opts = opts || {};
+  const engine = opts.engine || "tesseract";
+  const lang = opts.lang || "chi_sim+eng";
+  const preprocess = opts.preprocess !== false;
+  const doPost = opts.postProcess !== false;
+  const useCache = opts.useCache !== false;
+  const userFix = opts.userFix || loadUserFix();
+  if (onProgress) onProgress(0, 1, "读取图片…");
+  const img = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = () => reject(new Error("图片加载失败，可能是格式不受支持"));
+      im.src = String(reader.result || "");
+    };
+    reader.onerror = () => reject(new Error("图片读取失败"));
+    reader.readAsDataURL(file);
+  });
+  const nw = img.naturalWidth || img.width;
+  const nh = img.naturalHeight || img.height;
+  if (!nw || !nh) throw new Error("图片尺寸无效");
+  const scale = Math.min(1, 2600 / nw, 8000 / nh);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(nw * scale));
+  canvas.height = Math.max(1, Math.round(nh * scale));
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  if (preprocess) preprocessCanvas(canvas);
+  let cacheKey = "";
+  if (useCache) {
+    try {
+      const buf = await file.arrayBuffer();
+      const h = await hashBuffer(buf);
+      cacheKey = h + "|img|" + OCR_ENGINE_VERSION + "|" + engine + "|" + lang + "|" + scale.toFixed(2) + "|" + (preprocess ? "p1" : "p0");
+      const cached = await getOcrCache(cacheKey);
+      if (cached != null) {
+        try { canvas.width = 0; canvas.height = 0; } catch (e) {}
+        if (onProgress) onProgress(1, 1, "命中 OCR 缓存");
+        return cached;
+      }
+    } catch (e) {}
+  }
+  let raw = "";
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2 && !raw; attempt++) {
+    try {
+      if (engine === "paddle") {
+        if (!opts.paddleEndpoint) throw new Error("PaddleOCR 模式需要填写服务地址");
+        raw = await ocrCanvasWithPaddle(canvas, opts.paddleEndpoint, opts.paddleApiKey);
+      } else {
+        if (onProgress) onProgress(0, 1, "准备 OCR 引擎…");
+        const workers = await getOcrPool(opts.workers || OCR_WORKER_COUNT_DEFAULT, lang,
+          msg => onProgress && onProgress(0, 1, msg));
+        if (!workers || !workers.length) throw new Error("OCR 引擎未就绪");
+        const { data } = await workers[0].recognize(canvas);
+        raw = (data && data.text) || "";
+      }
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 0 && onProgress) onProgress(0, 1, "OCR 失败，重试…");
+    }
+  }
+  try { canvas.width = 0; canvas.height = 0; } catch (e) {}
+  if (!raw) throw new Error((lastErr && lastErr.message) || "图片 OCR 失败");
+  const text = doPost ? postProcessOcrText(raw, { userFix }) : raw;
+  if (text.replace(/\s/g, "").length < 10) {
+    throw new Error("图片 OCR 后仍未得到有效文字，请换更清晰的原图，或调整预处理 / OCR 引擎");
+  }
+  if (cacheKey) await putOcrCache(cacheKey, text);
+  if (onProgress) onProgress(1, 1, "OCR 完成，共 " + text.length + " 字");
+  return text;
 }
 
 /* =========================================================
@@ -1834,7 +1994,9 @@ const state = {
   dark: false, fontScale: 1.0, subject: "全部", chapter: "全部",
   status: "全部", tag: "全部", sort: "默认", starredOnly: false, scrollY: 1.0, search: "",
   mode: "cases", qSubject: "全部", qType: "全部", qSearch: "",
-  pCategory: "全部", pFilter: "全部", pSearch: "",
+  pCategory: "全部", pFilter: "全部", pSearch: "", pView: "cards", pTag: "全部",
+  pSort: "默认", pStarredOnly: false,
+  pQuizMode: "practice", pQuizCount: 20, pQuizScope: "all",
   quizMode: "practice", quizCount: 20, quizScope: "all",
   autoPull: false,
   optionShuffle: false, srsEnabled: true, dailyQuizGoal: 30, dailyCaseGoal: 10,
@@ -1866,7 +2028,15 @@ function loadSettings() {
   state.qSubject = data.q_subject || "全部";
   state.qType = data.q_type || "全部";
   state.pCategory = data.p_category || "全部";
-  state.pFilter = ["全部", "due", "new", "mastered", "starred"].indexOf(data.p_filter) !== -1 ? data.p_filter : "全部";
+  state.pFilter = ["全部", "due", "new", "mastered", "starred", "unanswered", "wrong"].indexOf(data.p_filter) !== -1 ? data.p_filter : "全部";
+  state.pView = data.p_view === "quiz" ? "quiz" : "cards";
+  state.pTag = data.p_tag || "全部";
+  const pSortAllowed = ["默认", "待复习优先", "新卡优先", "标题", "ID升序", "ID降序", "错误次数", "频率"];
+  state.pSort = pSortAllowed.indexOf(data.p_sort) !== -1 ? data.p_sort : "默认";
+  state.pStarredOnly = !!data.p_starred_only;
+  state.pQuizMode = ["practice", "exam", "review"].indexOf(data.p_quiz_mode) !== -1 ? data.p_quiz_mode : "practice";
+  state.pQuizCount = clamp(Number(data.p_quiz_count) || 20, 1, 500);
+  state.pQuizScope = ["all", "unanswered", "wrong", "starred", "due"].indexOf(data.p_quiz_scope) !== -1 ? data.p_quiz_scope : "all";
   state.quizMode = data.quiz_mode || "practice";
   state.quizCount = Number(data.quiz_count) || 20;
   state.quizScope = data.quiz_scope || "all";
@@ -1891,7 +2061,9 @@ function saveSettings() {
       chapter: state.chapter, status: state.status,
       tag: state.tag, sort: state.sort, starred_only: state.starredOnly, scroll_y: state.scrollY,
       mode: state.mode, q_subject: state.qSubject, q_type: state.qType,
-      p_category: state.pCategory, p_filter: state.pFilter,
+      p_category: state.pCategory, p_filter: state.pFilter, p_view: state.pView,
+      p_tag: state.pTag, p_sort: state.pSort, p_starred_only: state.pStarredOnly,
+      p_quiz_mode: state.pQuizMode, p_quiz_count: state.pQuizCount, p_quiz_scope: state.pQuizScope,
       quiz_mode: state.quizMode, quiz_count: state.quizCount, quiz_scope: state.quizScope,
       auto_pull: state.autoPull,
       option_shuffle: state.optionShuffle, srs_enabled: state.srsEnabled,
@@ -3429,6 +3601,72 @@ function buildQuestionPrompt(subject) {
     "3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
   ].join("\n");
 }
+function buildPoliticsCardPrompt(category) {
+  const cats = POLITICS_CATEGORIES.join(" / ");
+  const fixed = category && POLITICS_CATEGORIES.indexOf(category) !== -1 ? category : "";
+  return [
+    "你是考研政治（101 思想政治理论）的记忆卡整理助手。",
+    "请把用户提供的政治资料整理成 JSON 数组，每个元素是一张可自测的记忆卡。",
+    "",
+    "严格输出以下结构（不要增删字段名）：",
+    "[",
+    "  {",
+    '    "category": "马原",',
+    '    "question": "自测问题，必须能独立作答",',
+    '    "answer": "答案，分点、准确、简洁，可用 ==高亮== @@术语@@ !!易错!! 标记",',
+    '    "tags": ["核心概念", "高频"]',
+    "  }",
+    "]",
+    "",
+    fixed
+      ? "【分类约束】category 必须统一使用「" + fixed + "」。"
+      : "【分类约束】category 必须从下列列表中逐字选择一个：" + cats + "；无法归类时用「其他」。",
+    "",
+    "【整理要求】",
+    "1. 一张卡只考一个核心知识点，问题要具体，避免“简述某章内容”这类过大的问题。",
+    "2. 答案必须分点（①②③…），保留原文的关键词、时间、会议、著作、数字和限定词。",
+    "3. 重要概念、易混点，以及“首提 / 唯一 / 根本 / 本质 / 核心”等高频考点不能遗漏。",
+    "4. 资料包含多个知识点时拆成多张卡；同一知识点不要重复。",
+    "5. 资料没有的内容不要编造；无法确定时使用教材通用结论，并保持表述严谨。",
+    "6. 一次生成 5~15 张，覆盖资料中的主要考点。",
+    "7. 只输出 JSON 数组，不要解释、不要 markdown 代码块、不要省略号。",
+    "8. 保证 JSON 合法，最后一个元素后不要多余逗号；不要输出 id 字段。",
+  ].join("\n");
+}
+function buildPoliticsQuestionPrompt(category) {
+  const cats = POLITICS_CATEGORIES.join(" / ");
+  const fixed = category && POLITICS_CATEGORIES.indexOf(category) !== -1 ? category : "";
+  return [
+    "你是考研政治（101 思想政治理论）的出题专家。请基于用户提供的政治资料出题，输出 JSON 数组。",
+    "",
+    "每道题的结构如下：",
+    "{",
+    '  "category": "马原",',
+    '  "type": "single",',
+    '  "stem": "题干，可用 ==高亮== @@术语@@ !!易错!! 标记",',
+    '  "options": [{"key":"A","text":"..."},{"key":"B","text":"..."},{"key":"C","text":"..."},{"key":"D","text":"..."}],',
+    '  "answer": ["B"],',
+    '  "explanation": "解析：①正确依据 ②排除理由 ③易错提醒",',
+    '  "difficulty": 3,',
+    '  "tags": ["高频"]',
+    "}",
+    "",
+    fixed
+      ? "【分类约束】category 必须统一使用「" + fixed + "」。"
+      : "【分类约束】category 必须从下列列表中逐字选择一个：" + cats + "；无法归类时用「其他」。",
+    "",
+    "【题型要求】",
+    "1. type 只能是 single（单选）、multiple（多选）、judge（判断）、essay（主观题）。",
+    "2. single 必须恰好 4 个选项，答案唯一；multiple 至少 2 个正确选项；judge 的 options 固定为 A.正确 / B.错误；essay 的 options 为空数组，answer 为按点作答的字符串数组。",
+    "3. 单选题的 4 个选项应针对同一考点设置干扰项，禁止“以上都是 / 以上都不是”。",
+    "4. 解析必须分点：①正确依据 ②错误选项排除 ③易错提醒。",
+    "5. 一次生成 5~10 题，以单选和多选为主，可少量判断、主观题。",
+    "6. 题目必须严格依据资料，不得编造资料中没有的史实、数字或表述。",
+    "7. 只输出 JSON 数组，不要解释、不要 markdown 代码块、不要省略号。",
+    "8. answer 必须是数组；除 tags / answer / options 外，其余字段值为字符串。",
+    "9. 保证 JSON 合法，最后一个元素后不要多余逗号；不要输出 id 字段。",
+  ].join("\n");
+}
 
 function ocBodyMessage(b) {
   if (!b) return "";
@@ -3742,13 +3980,20 @@ function aiQuestionKey(it) {
   if (it.type === "A3") return String(it.stem || it.caseStem || (it.questions && it.questions[0] && it.questions[0].stem) || "").trim();
   return String(it.stem || "").trim();
 }
-function mergeAiItems(all, isQ) {
+function aiItemKey(it, target) {
+  if (!it || typeof it !== "object") return "";
+  if (target === "politics") return String(it.category || "").trim() + "\u0001" + String(it.question || "").trim();
+  if (target === "politicsQuestions") return String(it.category || "").trim() + "\u0001" + aiQuestionKey(it);
+  if (target === "questions") return aiQuestionKey(it);
+  return String(it.title || "").trim();
+}
+function mergeAiItems(all, target) {
   const map = new Map();
   for (const it of all) {
-    const key = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
-    if (!key) continue;
+    const key = aiItemKey(it, target);
+    if (!key || key === "\u0001") continue;
     if (!map.has(key)) { map.set(key, it); continue; }
-    if (!isQ) {
+    if (target === "cases") {
       const old = map.get(key);
       let os = 0, ns = 0;
       for (const k of ALL_FIELDS) {
@@ -3756,23 +4001,39 @@ function mergeAiItems(all, isQ) {
         if (String(it[k] || "").trim()) ns++;
       }
       if (ns > os) map.set(key, it);
+    } else if (target === "politics") {
+      const old = map.get(key);
+      if (String(it.answer || "").length > String(old.answer || "").length) map.set(key, it);
     }
   }
   return Array.from(map.values());
 }
-async function aiGenerate(opts, onLog, isQ) {
+async function aiGenerate(opts, onLog, target) {
+  if (target === true) target = "questions";
+  if (target === false || target == null) target = "cases";
+  const isQ = target === "questions";
+  const isP = target === "politics";
+  const isPQ = target === "politicsQuestions";
+  const isMedicine = !isP && !isPQ;
   const cfg = opts.cfg;
   const subject = opts.subject;
+  const category = String(opts.category || "").trim();
   const chunks = chunkText(opts.text, cfg.chunk_size, cfg.chunk_overlap);
   onLog("共切分为 " + chunks.length + " 个文本块");
   const allItems = [];
   let totalTokens = 0;
-  const systemPrompt = isQ ? buildQuestionPrompt(subject) : buildCasePrompt(subject);
+  const systemPrompt = isP ? buildPoliticsCardPrompt(category)
+    : isPQ ? buildPoliticsQuestionPrompt(category)
+    : isQ ? buildQuestionPrompt(subject)
+    : buildCasePrompt(subject);
+  const userIntro = isPQ ? "以下是政治资料，请据此出题并输出 JSON 数组："
+    : isP ? "以下是政治资料，请整理成记忆卡 JSON 数组："
+    : "以下是医学资料，请整理成 JSON 数组：";
   for (let i = 0; i < chunks.length; i++) {
     onLog("[" + (i + 1) + "/" + chunks.length + "] 调用 AI 中…（约 " + chunks[i].length + " 字）");
     const messages = [
       { role: "system", content: systemPrompt },
-      { role: "user", content: "以下是医学资料，请整理成 JSON 数组：\n\n" + chunks[i] },
+      { role: "user", content: userIntro + "\n\n" + chunks[i] },
     ];
     let text = "";
     let ok = false;
@@ -3787,21 +4048,34 @@ async function aiGenerate(opts, onLog, isQ) {
       allItems.push(...items);
     } catch (e) { onLog("[" + (i + 1) + "] JSON 解析失败：" + e.message); }
   }
-  const merged = mergeAiItems(allItems, isQ);
+  const merged = mergeAiItems(allItems, target);
   stripAiIds(merged);
-  let fixed = 0;
-  for (let i = 0; i < merged.length; i++) {
-    const it = merged[i];
-    const sj = String(it.subject || subject || "").trim();
-    if (!sj || !CHAPTER_WHITELIST[sj]) continue;
-    const before = String(it.chapter == null ? "" : it.chapter).trim();
-    const after = normalizeChapter(sj, before);
-    if (after !== before) fixed++;
-    it.chapter = after;
+  if (isMedicine) {
+    let fixed = 0;
+    for (let i = 0; i < merged.length; i++) {
+      const it = merged[i];
+      const sj = String(it.subject || subject || "").trim();
+      if (!sj || !CHAPTER_WHITELIST[sj]) continue;
+      const before = String(it.chapter == null ? "" : it.chapter).trim();
+      const after = normalizeChapter(sj, before);
+      if (after !== before) fixed++;
+      it.chapter = after;
+    }
+    if (fixed) onLog("章节归一化修正 " + fixed + " 条");
   }
-  if (fixed) onLog("章节归一化修正 " + fixed + " 条");
   onLog("合并去重后共 " + merged.length + " 条");
   if (totalTokens) onLog("📊 本次共消耗 " + totalTokens + " tokens");
+  if (isP) {
+    const cards = merged.map(it => normalizePoliticsCard(it, category || "其他")).filter(Boolean);
+    if (cards.length !== merged.length) onLog("丢弃无效政治卡片 " + (merged.length - cards.length) + " 张");
+    return cards;
+  }
+  if (isPQ) {
+    for (const it of merged) {
+      if (category && !it.category && !it.subject) it.category = category;
+    }
+    return merged.map(normalizePoliticsQuestion);
+  }
   return isQ ? merged.map(normalizeQuestion) : merged.map(normalizeItem);
 }
 
@@ -5220,12 +5494,15 @@ function openPdfExport() {
 /* =========================================================
    AI 生成面板
    ========================================================= */
-function openAiImport(target) {
+function openAiImport(target, initialFiles) {
   const isQ = target === "questions";
+  const isP = target === "politics";
+  const isPQ = target === "politicsQuestions";
+  const isPolitics = isP || isPQ;
   const cfg = loadAiConfig();
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
-  pop.appendChild(el("div", "popup-title", isQ ? "AI 出题" : "AI 生成 JSON（PDF / 文本）"));
+  pop.appendChild(el("div", "popup-title", isP ? "AI 生成政治记忆卡（PDF / 图片 / 文本）" : isPQ ? "AI 生成政治题库（PDF / 图片 / 文本）" : isQ ? "AI 出题" : "AI 生成 JSON（PDF / 图片 / 文本）"));
   const body = el("div", "popup-body");
   const form = el("div", "edit-form");
 
@@ -5826,22 +6103,24 @@ function openAiImport(target) {
   /* 输入资料 */
   form.appendChild(el("div", "gh-section-title", (isQ ? "④" : "③") + " 输入资料（支持多文件）"));
   const srcRow = el("div", "file-row");
-  const fileBtn = el("button", "btn", "选择多个 PDF / TXT");
+  const fileBtn = el("button", "btn", "选择 PDF / 图片 / TXT");
+  const pasteBtn = el("button", "btn", "粘贴截图");
   const clearFilesBtn = el("button", "btn", "清空文件");
   const fileIn = document.createElement("input");
   fileIn.type = "file";
   fileIn.multiple = true;
-  fileIn.accept = ".pdf,.txt,.md,.json,application/pdf,text/plain";
+  fileIn.accept = ".pdf,.txt,.md,.json,.png,.jpg,.jpeg,.webp,.bmp,.gif,application/pdf,text/plain,image/*";
   const fileInfo = el("div", "file-name", "未选择");
-  srcRow.appendChild(fileBtn); srcRow.appendChild(clearFilesBtn); srcRow.appendChild(fileIn); srcRow.appendChild(fileInfo);
+  srcRow.appendChild(fileBtn); srcRow.appendChild(pasteBtn); srcRow.appendChild(clearFilesBtn); srcRow.appendChild(fileIn); srcRow.appendChild(fileInfo);
   form.appendChild(srcRow);
+  form.appendChild(el("div", "gh-note", "支持 PDF、JPG / PNG / WebP 图片、TXT / MD / JSON；图片与扫描版 PDF 会自动 OCR。"));
 
   /* ============ OCR 选项 ============ */
   const ocrSection = el("div", "");
   ocrSection.style.cssText = "display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
   const ocrTitleRow = el("div", "");
   ocrTitleRow.style.cssText = "display:flex;align-items:center;gap:8px";
-  ocrTitleRow.appendChild(el("div", "edit-label", "🔎 OCR 选项（扫描版自动启用·可强制开关）"));
+  ocrTitleRow.appendChild(el("div", "edit-label", "🔎 OCR 选项（图片 / 扫描版 PDF 自动启用·可强制开关）"));
   const ocrToggle = el("button", "btn", "展开");
   ocrToggle.style.cssText = "flex:none;width:auto;padding:0 10px;height:26px;font-size:.75em;margin-left:auto";
   ocrTitleRow.appendChild(ocrToggle);
@@ -5987,7 +6266,7 @@ function openAiImport(target) {
   function renderQueue() {
     queueBox.innerHTML = "";
     if (!fileQueue.length) {
-      queueBox.appendChild(el("div", "empty-note", "尚未添加文件。点击「选择多个 PDF / TXT」开始。"));
+      queueBox.appendChild(el("div", "empty-note", "尚未添加文件。点击「选择 PDF / 图片 / TXT」开始，或直接粘贴截图。"));
       return;
     }
     fileQueue.forEach(item => {
@@ -6031,20 +6310,15 @@ function openAiImport(target) {
       const importBtnOne = mkBtn("导入", () => {
         if (!item.jsonText) { confirmPopup("该文件尚未生成 JSON"); return; }
         const cleanText = stripIdsFromJsonText(item.jsonText);
-        const p = isQ ? parseQuestionList(cleanText) : parseJsonList(cleanText);
+        const p = parseForTarget(cleanText);
         if (p.err) { confirmPopup("结果不是合法 JSON：" + p.err); return; }
         const c = readCfg();
-        if (isQ) {
-          const r = questionStore.importFromText(cleanText, "append", c.subject_target, c.chapter_override);
-          if (!r.ok) { confirmPopup(r.msg); return; }
-          renderQuizListOnly(); rebuildQSubjectValues();
-          confirmPopup("已导入：" + item.name + " → " + r.msg);
-        } else {
-          const r = store.importFromText(cleanText, "append", c.subject_target, c.chapter_override);
-          if (!r.ok) { confirmPopup(r.msg); return; }
-          render();
-          confirmPopup("已导入：" + item.name + " → " + r.msg);
-        }
+        const r = importForTarget(cleanText, "append", c.subject_target, c.chapter_override);
+        if (!r.ok) { confirmPopup(r.msg); return; }
+        if (isQ) { renderQuizListOnly(); rebuildQSubjectValues(); }
+        else if (isPolitics) renderPoliticsList();
+        else render();
+        confirmPopup("已导入：" + item.name + " → " + r.msg);
       });
       const removeBtn = mkBtn("移除", () => {
         const i = fileQueue.indexOf(item);
@@ -6062,6 +6336,24 @@ function openAiImport(target) {
       queueBox.appendChild(card);
     });
   }
+  function enqueueFiles(files, replace) {
+    if (replace) fileQueue.length = 0;
+    for (const f of files) {
+      fileQueue.push({
+        id: genId(),
+        file: f,
+        name: f.name || ("图片-" + Date.now()),
+        status: "pending",
+        text: "",
+        jsonItems: null,
+        jsonText: "",
+        error: "",
+      });
+    }
+    fileInfo.textContent = fileQueue.length ? ("共 " + fileQueue.length + " 个文件") : "未选择";
+    renderQueue();
+  }
+  if (Array.isArray(initialFiles) && initialFiles.length) enqueueFiles(initialFiles, false);
   renderQueue();
 
   form.appendChild(el("div", "edit-label", "或直接粘贴文本（可与文件叠加）"));
@@ -6070,20 +6362,82 @@ function openAiImport(target) {
   ta.placeholder = "把 PDF 里的文字、讲义、笔记粘贴到这里…";
   ta.spellcheck = false;
   form.appendChild(ta);
+  form.appendChild(el("div", "gh-note", "可直接粘贴截图（Ctrl+V / 长按粘贴），图片会加入文件队列并自动 OCR。"));
+  ta.addEventListener("paste", function (e) {
+    const dt = e.clipboardData;
+    if (!dt || !dt.items) return;
+    const files = [];
+    for (const item of dt.items) {
+      if (item.kind !== "file" || !/^image\//.test(item.type || "")) continue;
+      const f = item.getAsFile();
+      if (f) files.push(f);
+    }
+    if (!files.length) return;
+    e.preventDefault();
+    enqueueFiles(files, false);
+    log("已粘贴 " + files.length + " 张截图，生成时会自动 OCR");
+  });
+  pasteBtn.addEventListener("click", async function () {
+    if (!navigator.clipboard || typeof navigator.clipboard.read !== "function") {
+      confirmPopup("当前环境不支持读取剪贴板图片，请改用 Ctrl+V 或长按粘贴");
+      return;
+    }
+    pasteBtn.disabled = true;
+    try {
+      const items = await navigator.clipboard.read();
+      const files = [];
+      for (const item of items) {
+        for (const type of item.types) {
+          if (!/^image\//.test(type)) continue;
+          const blob = await item.getType(type);
+          const ext = type === "image/jpeg" ? "jpg" : (type.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "") || "png";
+          files.push(new File([blob], "剪贴板-" + Date.now() + "-" + files.length + "." + ext, { type }));
+          break;
+        }
+      }
+      if (!files.length) { confirmPopup("剪贴板里没有图片"); return; }
+      enqueueFiles(files, false);
+      log("已读取剪贴板图片 " + files.length + " 张，生成时会自动 OCR");
+    } catch (e) {
+      confirmPopup("读取剪贴板失败：" + (e.message || e));
+    } finally {
+      pasteBtn.disabled = false;
+    }
+  });
 
+  const subjectBlock = el("div", "");
   const subjRow = el("div", "import-row");
   subjRow.appendChild(el("div", "row-label", "目标科目"));
   const subjSel = document.createElement("select");
   subjSel.className = "edit-select";
   SUBJECTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; subjSel.appendChild(o); });
   subjRow.appendChild(subjSel);
-  form.appendChild(subjRow);
+  subjectBlock.appendChild(subjRow);
   const chapRow = el("div", "import-row");
   chapRow.appendChild(el("div", "row-label", "统一指定章节"));
   const chapSel = document.createElement("select");
   chapSel.className = "edit-select";
   chapRow.appendChild(chapSel);
-  form.appendChild(chapRow);
+  subjectBlock.appendChild(chapRow);
+  if (isPolitics) subjectBlock.style.display = "none";
+  form.appendChild(subjectBlock);
+  let pcatSel = null;
+  if (isPolitics) {
+    const pcatRow = el("div", "import-row");
+    pcatRow.appendChild(el("div", "row-label", isP ? "目标分类" : "题目分类"));
+    pcatSel = document.createElement("select");
+    pcatSel.className = "edit-select";
+    const autoOpt = document.createElement("option");
+    autoOpt.value = ""; autoOpt.textContent = "自动判断";
+    pcatSel.appendChild(autoOpt);
+    POLITICS_CATEGORIES.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      pcatSel.appendChild(o);
+    });
+    pcatRow.appendChild(pcatSel);
+    form.appendChild(pcatRow);
+  }
   function rebuildAiChapter(keepValue) {
     const sj = subjSel.value;
     const list = CHAPTER_WHITELIST[sj] || [];
@@ -6125,12 +6479,42 @@ function openAiImport(target) {
     logEl.textContent += (logEl.textContent ? "\n" : "") + msg;
     logEl.scrollTop = logEl.scrollHeight;
   }
+  function targetCategory() {
+    return isPolitics && pcatSel ? pcatSel.value.trim() : "";
+  }
+  function targetUnit() {
+    return isP ? "张" : isPQ ? "道" : "条";
+  }
+  function parseForTarget(text) {
+    if (isP) {
+      const r = parsePoliticsCardsText(text, targetCategory() || "其他");
+      return { items: r.items, err: r.error || "" };
+    }
+    if (isPQ) return parsePoliticsQuestionImportJson(text);
+    return isQ ? parseQuestionList(text) : parseJsonList(text);
+  }
+  function importForTarget(text, mode, subjectTarget, chapterOverride) {
+    const cat = targetCategory();
+    if (isP) {
+      const parsed = parsePoliticsCardsText(text, cat || "其他");
+      if (parsed.error) return { ok: false, msg: parsed.error };
+      const r = politicsStore.importItems(parsed.items, mode);
+      return {
+        ok: true,
+        msg: "已" + (mode === "replace" ? "替换为" : "追加") + " " + r.added + " 张政治记忆卡" +
+          (r.skipped ? "，跳过重复 " + r.skipped + " 张" : ""),
+      };
+    }
+    if (isPQ) return politicsQuestionStore.importFromText(text, mode, cat);
+    if (isQ) return questionStore.importFromText(text, mode, subjectTarget, chapterOverride);
+    return store.importFromText(text, mode, subjectTarget, chapterOverride);
+  }
   function setCount() {
     const t = outTa.value.trim();
     if (!t) { countEl.textContent = ""; return; }
-    const p = isQ ? parseQuestionList(t) : parseJsonList(t);
+    const p = parseForTarget(t);
     if (p.err) { countEl.textContent = "⚠ " + p.err; countEl.className = "gh-status err"; }
-    else { countEl.textContent = "✅ " + p.items.length + " 条，约 " + Math.round(t.length / 1024) + " KB"; countEl.className = "gh-status ok"; }
+    else { countEl.textContent = "✅ " + p.items.length + " " + targetUnit() + "，约 " + Math.round(t.length / 1024) + " KB"; countEl.className = "gh-status ok"; }
   }
   outTa.addEventListener("input", setCount);
 
@@ -6172,21 +6556,7 @@ function openAiImport(target) {
     if (!files.length) return;
     const stale = fileQueue.filter(f => f.status !== "success");
     const doAdd = () => {
-      fileQueue.length = 0;
-      for (const f of files) {
-        fileQueue.push({
-          id: genId(),
-          file: f,
-          name: f.name,
-          status: "pending",
-          text: "",
-          jsonItems: null,
-          jsonText: "",
-          error: "",
-        });
-      }
-      fileInfo.textContent = "共 " + fileQueue.length + " 个文件";
-      renderQueue();
+      enqueueFiles(files, true);
       fileIn.value = "";
     };
     if (stale.length) {
@@ -6236,13 +6606,21 @@ function openAiImport(target) {
       max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
       chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
       chunk_overlap: isFinite(overlapRaw) && overlapRaw >= 0 ? overlapRaw : 300,
-      chapter_override: chOverride,
-      subject_target: subjSel.value,
-      chapter_sel: chValue,
+      chapter_override: isPolitics ? null : chOverride,
+      subject_target: isPolitics ? (cfg.subject_target || "") : subjSel.value,
+      chapter_sel: isPolitics ? (cfg.chapter_sel || "__keep__") : chValue,
     };
   }
   closeBtn.addEventListener("click", () => ov.remove());
   saveCfgBtn.addEventListener("click", () => { saveAiConfig(readCfg()); log("✅ 配置已保存"); });
+
+  function buildPromptForTarget() {
+    const cat = targetCategory();
+    if (isP) return buildPoliticsCardPrompt(cat);
+    if (isPQ) return buildPoliticsQuestionPrompt(cat);
+    return isQ ? buildQuestionPrompt(subjSel.value) : buildCasePrompt(subjSel.value);
+  }
+  function sourceName() { return isPolitics ? "政治资料" : "医学资料"; }
 
   copyPrompt.addEventListener("click", async () => {
     copyPrompt.disabled = true;
@@ -6250,8 +6628,8 @@ function openAiImport(target) {
       await ensureQueueText();
       const queueText = fileQueue.filter(f => f.text).map(f => f.text).join("\n\n");
       const text = [queueText, casePoolText, ta.value.trim()].filter(Boolean).join("\n\n");
-      if (!text) { confirmPopup("请先添加文件、选择病例库或粘贴文本"); return; }
-      const full = (isQ ? buildQuestionPrompt(subjSel.value) : buildCasePrompt(subjSel.value)) + "\n\n=====\n以下是医学资料：\n\n" + text;
+      if (!text) { confirmPopup("请先添加文件" + (isQ ? "、选择病例库" : "") + "或粘贴文本"); return; }
+      const full = buildPromptForTarget() + "\n\n=====\n以下是" + sourceName() + "：\n\n" + text;
       await copyText(full);
       logEl.textContent = "";
       log("📋 已复制 Prompt（含 " + text.length + " 字资料）");
@@ -6282,8 +6660,8 @@ function openAiImport(target) {
         await ensureQueueText();
         const queueText = fileQueue.filter(f => f.text).map(f => f.text).join("\n\n");
         const text = [queueText, casePoolText, ta.value.trim()].filter(Boolean).join("\n\n");
-        if (!text) { confirmPopup("请先添加文件、选择病例库或粘贴文本"); return; }
-        const full = (isQ ? buildQuestionPrompt(subjSel.value) : buildCasePrompt(subjSel.value)) + "\n\n=====\n以下是医学资料：\n\n" + text;
+        if (!text) { confirmPopup("请先添加文件" + (isQ ? "、选择病例库" : "") + "或粘贴文本"); return; }
+        const full = buildPromptForTarget() + "\n\n=====\n以下是" + sourceName() + "：\n\n" + text;
         await copyText(full);
         logEl.textContent = "";
         log("📋 已复制 Prompt（含 " + text.length + " 字资料）");
@@ -6341,9 +6719,9 @@ function openAiImport(target) {
         log("[" + (i + 1) + "/" + fileQueue.length + "] " + item.name + " 调用 AI 中…");
         try {
           const items = await aiGenerate(
-            { cfg: c, subject: subjSel.value, text: item.text },
+            { cfg: c, subject: subjSel.value, category: targetCategory(), text: item.text },
             msg => { if (/完成|失败|解析出|合并去重|共切分|章节归一化/.test(msg)) log("[" + item.name + "] " + msg); },
-            isQ
+            target
           );
           item.jsonItems = items;
           item.jsonText = JSON.stringify(items, null, 2);
@@ -6369,9 +6747,9 @@ function openAiImport(target) {
         log("处理 " + m.label + "（约 " + Math.round(m.text.length / 1024) + " KB）…");
         try {
           const items = await aiGenerate(
-            { cfg: c, subject: subjSel.value, text: m.text },
+            { cfg: c, subject: subjSel.value, category: targetCategory(), text: m.text },
             msg => { if (/完成|失败|解析出|合并去重|共切分|章节归一化/.test(msg)) log("[" + m.label + "] " + msg); },
-            isQ
+            target
           );
           manualResults.push(...items);
           log("✅ " + m.label + " 完成，共 " + items.length + " 条");
@@ -6384,17 +6762,17 @@ function openAiImport(target) {
         const seen = {};
         const merged = [];
         for (const it of manualResults) {
-          const k = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
-          if (!k || seen[k]) continue;
+          const k = aiItemKey(it, target);
+          if (!k || k === "\u0001" || seen[k]) continue;
           seen[k] = true;
           merged.push(it);
         }
         outTa.value = JSON.stringify(merged, null, 2);
         setCount();
-        log("🎉 手动来源共 " + merged.length + " 条（去重后）");
+        log("🎉 手动来源共 " + merged.length + " " + targetUnit() + "（去重后）");
       }
       if (!fileQueue.some(f => f.status === "pending") && !manualSources.length) {
-        log("⚠ 没有可处理的内容（请在 ③ 选病例库，或上传文件 / 粘贴文本）");
+        log("⚠ 没有可处理的内容（" + (isQ ? "请在 ③ 选病例库，或" : "") + "上传文件 / 粘贴文本）");
       }
     } catch (e) {
       log("❌ " + e.message);
@@ -6431,8 +6809,8 @@ function openAiImport(target) {
     const allItems = [];
     for (const item of successful) {
       for (const it of item.jsonItems) {
-        const key = isQ ? aiQuestionKey(it) : String(it.title || "").trim();
-        if (!key || seen[key]) continue;
+        const key = aiItemKey(it, target);
+        if (!key || key === "\u0001" || seen[key]) continue;
         seen[key] = true;
         allItems.push(it);
       }
@@ -6440,21 +6818,16 @@ function openAiImport(target) {
     if (!allItems.length) { confirmPopup("去重后没有有效条目"); return; }
     stripAiIds(allItems);
     const jsonText = JSON.stringify(allItems, null, 2);
-    const p = isQ ? parseQuestionList(jsonText) : parseJsonList(jsonText);
+    const p = parseForTarget(jsonText);
     if (p.err) { confirmPopup("合并后的 JSON 不合法：" + p.err); return; }
-    if (isQ) {
-      const r = questionStore.importFromText(jsonText, "append", c.subject_target, c.chapter_override);
-      if (!r.ok) { confirmPopup(r.msg); return; }
-      renderQuizListOnly(); rebuildQSubjectValues();
-      confirmPopup("已导入 " + allItems.length + " 条（去重后）\n" + r.msg);
-    } else {
-      const r = store.importFromText(jsonText, "append", c.subject_target, c.chapter_override);
-      if (!r.ok) { confirmPopup(r.msg); return; }
-      render();
-      let msg = "已导入 " + allItems.length + " 条（去重后）\n" + r.msg;
-      if (r.warnings.length) msg += "\n\n注意：\n" + r.warnings.slice(0, 5).join("\n");
-      confirmPopup(msg);
-    }
+    const r = importForTarget(jsonText, "append", c.subject_target, c.chapter_override);
+    if (!r.ok) { confirmPopup(r.msg); return; }
+    if (isQ) { renderQuizListOnly(); rebuildQSubjectValues(); }
+    else if (isPolitics) renderPoliticsList();
+    else render();
+    let msg = r.msg;
+    if (!isPolitics && r.warnings && r.warnings.length) msg += "\n\n注意：\n" + r.warnings.slice(0, 5).join("\n");
+    confirmPopup(msg);
   });
 
   importBtn.addEventListener("click", () => {
@@ -6462,25 +6835,20 @@ function openAiImport(target) {
     const t = outTa.value.trim();
     if (!t) { confirmPopup("还没有生成结果"); return; }
     const cleanText = stripIdsFromJsonText(t);
-    const p = isQ ? parseQuestionList(cleanText) : parseJsonList(cleanText);
+    const p = parseForTarget(cleanText);
     if (p.err) { confirmPopup("结果不是合法 JSON：" + p.err); return; }
     ov.remove();
-    if (isQ) {
-      const result = questionStore.importFromText(cleanText, "append", c.subject_target, c.chapter_override);
-      if (!result.ok) { confirmPopup(result.msg); return; }
-      renderQuizListOnly(); rebuildQSubjectValues();
-      confirmPopup(result.msg);
-    } else {
-      const result = store.importFromText(cleanText, "append", c.subject_target, c.chapter_override);
-      if (!result.ok) { confirmPopup(result.msg); return; }
-      render();
-      let msg = result.msg;
-      if (result.warnings.length) {
-        msg += "\n\n注意：\n" + result.warnings.slice(0, 8).join("\n");
-        if (result.warnings.length > 8) msg += "\n…… 共 " + result.warnings.length + " 条";
-      }
-      confirmPopup(msg);
+    const result = importForTarget(cleanText, "append", c.subject_target, c.chapter_override);
+    if (!result.ok) { confirmPopup(result.msg); return; }
+    if (isQ) { renderQuizListOnly(); rebuildQSubjectValues(); }
+    else if (isPolitics) renderPoliticsList();
+    else render();
+    let msg = result.msg;
+    if (!isPolitics && result.warnings && result.warnings.length) {
+      msg += "\n\n注意：\n" + result.warnings.slice(0, 8).join("\n");
+      if (result.warnings.length > 8) msg += "\n…… 共 " + result.warnings.length + " 条";
     }
+    confirmPopup(msg);
   });
 
   footer.appendChild(closeBtn); footer.appendChild(copyPrompt);
@@ -6556,9 +6924,11 @@ function openQuestionImport() {
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
+  const aiBtn = el("button", "btn", "🤖 AI 生成");
   const appendBtn = el("button", "btn", "追加");
   const replaceBtn = el("button", "btn", "替换全部");
-  cancelBtn.addEventListener("click", () => ov.remove());
+  cancelBtn.addEventListener("click", function () { ov.remove(); });
+  aiBtn.addEventListener("click", function () { ov.remove(); openAiImport("politics"); });
   function doImport(mode) {
     const t = ta.value.trim();
     if (!t) { confirmPopup("请先粘贴 JSON"); return; }
@@ -6644,11 +7014,16 @@ function confirmClearQ() {
    ========================================================= */
 function openQuiz(pool, opts) {
   opts = opts || {};
+  const bank = opts.bank || questionStore;
+  const quizLog = opts.log || answerLog;
+  const srsMgr = opts.srsMgr || srs;
+  const progressMgr = opts.progressMgr || quizProgress;
+  const priorityFn = opts.priority || quizPriority;
   const mode = opts.mode || state.quizMode || "practice";
   const examTimer = opts.timer || 0;
-  let base = pool ? pool.slice() : questionStore.data.slice();
+  let base = pool ? pool.slice() : bank.data.slice();
   const scope = opts.scope || state.quizScope || "all";
-  if (!opts.preserveOrder) base.sort((a, b) => quizPriority(b) - quizPriority(a));
+  if (!opts.preserveOrder) base.sort((a, b) => priorityFn(b) - priorityFn(a));
   const cnt = opts.count !== undefined ? opts.count : 0;
   if (cnt > 0 && base.length > cnt) base = base.slice(0, cnt);
   if (!base.length) { confirmPopup("该范围下没有题目"); return; }
@@ -6669,12 +7044,16 @@ function openQuiz(pool, opts) {
     if (correct) st.correct++;
     else if (sessionWrong.indexOf(q) === -1) sessionWrong.push(q);
   }
+  function autoSchedule(q, sub, correct) {
+    if (!opts.autoSrs || srsMode) return;
+    try { srsMgr.schedule(srsMgr.keyFor(q, sub), correct ? 2 : 0); } catch (e) {}
+  }
   let idx = clamp(opts.startIdx || 0, 0, Math.max(0, shuffled.length - 1));
   let userAnswers = opts.userAnswers || {};
   let subIdx = clamp(opts.startSubIdx || 0, 0, Math.max(0, subCount(shuffled[idx]) - 1));
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
-  const titleEl = el("div", "popup-title", "刷题");
+  const titleEl = el("div", "popup-title", opts.title || "刷题");
   pop.appendChild(titleEl);
   const body = el("div", "popup-body");
   const topBar = el("div", "");
@@ -6708,7 +7087,7 @@ function openQuiz(pool, opts) {
   let sessionDone = 0;
   let sessionCorrect = 0;
   function saveProgress() {
-    quizProgress.save({
+    progressMgr.save({
       sessionId: sessionId,
       poolIds: base.map(q => q.id),
       idx: idx,
@@ -6967,12 +7346,13 @@ function openQuiz(pool, opts) {
           if (done) return;
           done = true;
           const correct = g >= 1;
-          answerLog.record(answerKey(q), [], correct, Math.round((Date.now() - startTs) / 1000));
+          quizLog.record(answerKey(q), [], correct, Math.round((Date.now() - startTs) / 1000));
           sessionDone++;
           if (correct) sessionCorrect++;
           recordSession(q, correct);
           checkin.add("q");
-          if (srsMode) { srs.schedule(srs.keyFor(q, subIdx), g === 0 ? 0 : g === 1 ? 2 : 3); checkin.add("r"); }
+          if (srsMode) { srsMgr.schedule(srsMgr.keyFor(q, subIdx), g === 0 ? 0 : g === 1 ? 2 : 3); checkin.add("r"); }
+          else autoSchedule(q, subIdx, g >= 1);
           gradeRow.innerHTML = "";
           gradeRow.appendChild(el("div", "srs-hint", "✅ 已记录" + (srsMode ? "，已排入复习计划" : "")));
           answered = true;
@@ -7049,7 +7429,8 @@ function openQuiz(pool, opts) {
     if (srsMode) {
       showSrsGrade(q, ansArr, elapsed, correct);
     } else {
-      answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+      quizLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+      autoSchedule(q, subIdx, correct);
       sessionDone++;
       if (correct) sessionCorrect++;
       recordSession(q, correct);
@@ -7070,9 +7451,9 @@ function openQuiz(pool, opts) {
       b.addEventListener("click", () => {
         if (done) return;
         done = true;
-        const r = srs.schedule(srs.keyFor(q, subIdx), g);
+        const r = srsMgr.schedule(srsMgr.keyFor(q, subIdx), g);
         const correct = g >= 2;
-        answerLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
+        quizLog.record(answerKey(q), ansArr.slice(), correct, elapsed);
         sessionDone++;
         if (correct) sessionCorrect++;
         recordSession(q, correct);
@@ -7101,16 +7482,20 @@ function openQuiz(pool, opts) {
       if (totalSubs > shuffled.length) msg += "（含小问共 " + totalSubs + " 道）";
       msg += "\n本次作答：" + sessionDone + " 道";
       if (sessionDone > 0) msg += "\n本次答对：" + sessionCorrect + " / " + sessionDone + "（正确率 " + Math.round(sessionCorrect / sessionDone * 100) + "%）";
-      confirmPopup(msg, () => { quizProgress.clear(); ov.remove(); }, "关闭", "刷题完成");
+      confirmPopup(msg, () => { progressMgr.clear(); ov.remove(); }, "关闭", "刷题完成");
     }
   }
   function finishExam() {
     const used = opts.timer > 0 ? Math.max(0, opts.timer * 60 - remainRef.v) : Math.round((Date.now() - examStartTs) / 1000);
-    quizProgress.clear();
+    progressMgr.clear();
     ov.remove();
     openExamResult({
       total: sessionDone, correct: sessionCorrect, timeUsed: used,
       subjects: sessionSubjects, wrongQs: sessionWrong,
+      quizOpts: {
+        bank: bank, log: quizLog, srsMgr: srsMgr, progressMgr: progressMgr,
+        priority: priorityFn, title: opts.title, politics: !!opts.politics,
+      },
     });
   }
   function goNext() {
@@ -7119,7 +7504,7 @@ function openQuiz(pool, opts) {
       if (q.type === "essay") {
         const ta = scroll.querySelector("textarea");
         if (ta) essayTexts[answerKey(q)] = ta.value;
-        answerLog.record(answerKey(q), [], false, 0);
+        quizLog.record(answerKey(q), [], false, 0);
         sessionDone++;
         recordSession(q, false);
         checkin.add("q");
@@ -7129,7 +7514,8 @@ function openQuiz(pool, opts) {
       }
       const ansArr = userAnswers[answerKey(q)] || [];
       const correct = judgeMulti(q, subIdx, ansArr);
-      answerLog.record(answerKey(q), ansArr.slice(), correct, 0);
+      quizLog.record(answerKey(q), ansArr.slice(), correct, 0);
+      autoSchedule(q, subIdx, correct);
       sessionDone++;
       if (correct) sessionCorrect++;
       recordSession(q, correct);
@@ -7145,13 +7531,13 @@ function openQuiz(pool, opts) {
   function toggleStar() {
     const q = currentQ();
     q.starred = !q.starred;
-    questionStore.save();
+    bank.save();
     starBtn.textContent = q.starred ? "★" : "☆";
   }
   function toggleDoubt() {
     const q = currentQ();
     q.doubt = !q.doubt;
-    questionStore.save();
+    bank.save();
     doubtBtn.textContent = q.doubt ? "❓✓" : "❓";
   }
   function readCurrent() {
@@ -7231,10 +7617,15 @@ function openQuiz(pool, opts) {
   document.body.appendChild(ov);
   render();
   const autoSave = setInterval(saveProgress, 5000);
+  let closeNotified = false;
   const origCleanup = function () {
     document.removeEventListener("keydown", onKey);
     if (timerHandle) clearInterval(timerHandle);
     clearInterval(autoSave);
+    if (!closeNotified && typeof opts.onClose === "function") {
+      closeNotified = true;
+      try { opts.onClose(); } catch (e) {}
+    }
   };
   const origRemove = ov.remove.bind(ov);
   ov.remove = function () { origCleanup(); origRemove(); };
@@ -7684,6 +8075,7 @@ function normalizePoliticsCard(raw, defaultCategory) {
     answer: answer,
     tags: tags,
     starred: !!raw.starred,
+    ai_mnemonic: String(raw.ai_mnemonic || raw.mnemonic || "").trim(),
     created: Number(raw.created) || Date.now(),
     updated: Number(raw.updated) || Date.now(),
   };
@@ -7731,6 +8123,30 @@ const politicsStore = {
     politicsSrs.remove(id);
   },
   clear() { this.data = []; this.save(); },
+  importItems(items, mode) {
+    const used = {};
+    if (mode === "replace") {
+      this.data = [];
+      politicsSrs.reset();
+    } else {
+      for (const c of this.data) used[c.id] = 1;
+    }
+    const existing = {};
+    for (const c of this.data) existing[c.category + "\u0001" + c.question] = 1;
+    let added = 0, skipped = 0;
+    for (const card of items) {
+      const key = card.category + "\u0001" + card.question;
+      if (mode === "append" && existing[key]) { skipped++; continue; }
+      existing[key] = 1;
+      if (!card.id || used[card.id]) card.id = "p_" + genId();
+      while (used[card.id]) card.id = "p_" + genId();
+      used[card.id] = 1;
+      this.data.push(card);
+      added++;
+    }
+    this.save();
+    return { added, skipped };
+  },
   restoreBuiltins() {
     const have = {};
     for (const c of this.data) have[c.id] = 1;
@@ -7846,6 +8262,285 @@ const politicsSrs = {
   },
 };
 
+/* =========================================================
+   考研政治 · 题库 / 答题记录 / 复习计划
+   ========================================================= */
+function normalizePoliticsQuestion(raw) {
+  const category = String(raw.category || raw.subject || "其他").trim() || "其他";
+  const q = normalizeQuestion(Object.assign({}, raw, { subject: category, chapter: raw.chapter || category }));
+  q.category = String(raw.category || raw.subject || category).trim() || category;
+  q.subject = q.category;
+  q.chapter = String(raw.chapter || q.category).trim();
+  q.starred = parseBool(raw.starred);
+  return q;
+}
+
+const politicsQuestionStore = {
+  data: [],
+  load() {
+    let raw = null;
+    try { raw = localStorage.getItem(POLITICS_QUESTIONS_KEY); } catch (e) {}
+    if (raw == null) {
+      this.data = POLITICS_QUIZ_BUILTIN.map(q => normalizePoliticsQuestion(JSON.parse(JSON.stringify(q))));
+      this.save();
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.questions) ? parsed.questions : []);
+      this.data = arr.map(normalizePoliticsQuestion).filter(Boolean);
+    } catch (e) { this.data = []; }
+    this._ensureIds();
+  },
+  _ensureIds() {
+    const seen = {};
+    for (const q of this.data) {
+      if (!q.id || seen[q.id]) q.id = "PQ_" + genId();
+      seen[q.id] = 1;
+    }
+  },
+  save() { try { localStorage.setItem(POLITICS_QUESTIONS_KEY, JSON.stringify(this.data)); } catch (e) {} },
+  add(q) { this.data.push(q); this.save(); },
+  update(id, changes) {
+    for (let i = 0; i < this.data.length; i++) {
+      if (this.data[i].id === id) {
+        this.data[i] = Object.assign({}, this.data[i], changes, { id: id });
+        this.save();
+        return true;
+      }
+    }
+    return false;
+  },
+  remove(id) {
+    const q = this.data.find(x => x.id === id);
+    this.data = this.data.filter(x => x.id !== id);
+    this.save();
+    if (q) {
+      const n = politicsQuestionSubCount(q);
+      for (let i = 0; i < n; i++) {
+        const k = n > 1 ? q.id + "#" + i : q.id;
+        delete politicsAnswerLog.data[k];
+        delete politicsQuizSrs.data[k];
+      }
+      politicsAnswerLog.save();
+      politicsQuizSrs.save();
+    }
+  },
+  clear() { this.data = []; this.save(); },
+  restoreBuiltins() {
+    const have = {};
+    for (const q of this.data) have[q.stem + "\u0001" + q.category] = 1;
+    let added = 0;
+    for (const b of POLITICS_QUIZ_BUILTIN) {
+      const key = b.stem + "\u0001" + b.category;
+      if (have[key]) continue;
+      const q = normalizePoliticsQuestion(JSON.parse(JSON.stringify(b)));
+      q.id = "PQ_" + genId();
+      this.data.push(q);
+      added++;
+    }
+    if (added) this.save();
+    return added;
+  },
+  importFromText(text, mode, categoryOverride) {
+    let parsed;
+    try { parsed = JSON.parse(text); } catch (e) { return { ok: false, msg: "JSON 解析失败：" + e.message }; }
+    const arr = coercePayloadArray(parsed, "questions");
+    if (!arr) return { ok: false, msg: "顶层必须是数组（也支持 {\"questions\": [...]} 包装格式）" };
+    const items = [];
+    for (let i = 0; i < arr.length; i++) {
+      const obj = arr[i];
+      if (!obj || typeof obj !== "object") return { ok: false, msg: "第 " + (i + 1) + " 项不是对象" };
+      if (obj.type === "B") {
+        if (!obj.sharedOptions || !obj.subQuestions) return { ok: false, msg: "第 " + (i + 1) + " 项 B 型题缺少 sharedOptions / subQuestions" };
+      } else if (obj.type === "A3") {
+        if (!obj.caseStem || !obj.questions) return { ok: false, msg: "第 " + (i + 1) + " 项 A3 型题缺少 caseStem / questions" };
+      } else {
+        if (!obj.stem) return { ok: false, msg: "第 " + (i + 1) + " 项缺少 stem" };
+        if (!obj.answer) return { ok: false, msg: "第 " + (i + 1) + " 项缺少 answer" };
+      }
+      const raw = Object.assign({}, obj);
+      if (categoryOverride && !raw.category && !raw.subject) raw.category = categoryOverride;
+      items.push(normalizePoliticsQuestion(raw));
+    }
+    const used = {};
+    if (mode !== "replace") for (const q of this.data) used[q.id] = 1;
+    for (const q of items) {
+      if (!q.id || used[q.id]) q.id = "PQ_" + genId();
+      while (used[q.id]) q.id = "PQ_" + genId();
+      used[q.id] = 1;
+    }
+    if (mode === "replace") this.data = items;
+    else this.data = this.data.concat(items);
+    this.save();
+    if (mode === "replace") {
+      const ids = {};
+      items.forEach(q => { ids[q.id] = 1; });
+      Object.keys(politicsAnswerLog.data).forEach(k => { if (!ids[String(k).split("#")[0]]) delete politicsAnswerLog.data[k]; });
+      Object.keys(politicsQuizSrs.data).forEach(k => { if (!ids[String(k).split("#")[0]]) delete politicsQuizSrs.data[k]; });
+      politicsAnswerLog.save();
+      politicsQuizSrs.save();
+      politicsQuizProgress.clear();
+    }
+    return { ok: true, msg: "已" + (mode === "replace" ? "替换为" : "追加") + " " + items.length + " 道政治题" };
+  },
+  exportText(category, type, starredOnly) {
+    let d = this.data.slice();
+    if (category && category !== "全部") d = d.filter(q => q.category === category);
+    if (type && type !== "全部") d = d.filter(q => q.type === type);
+    if (starredOnly) d = d.filter(q => q.starred);
+    return JSON.stringify(d, null, 2);
+  },
+};
+
+const politicsAnswerLog = {
+  data: {},
+  load() { try { const raw = localStorage.getItem(POLITICS_QUIZ_LOG_KEY); if (raw) this.data = JSON.parse(raw) || {}; } catch (e) { this.data = {}; } },
+  save() { try { localStorage.setItem(POLITICS_QUIZ_LOG_KEY, JSON.stringify(this.data)); } catch (e) {} },
+  record(qid, userAnswer, correct, elapsed) {
+    const r = this.data[qid] || { attempts: 0, wrongCount: 0 };
+    r.lastAnswer = userAnswer;
+    r.correct = correct;
+    r.attempts = (r.attempts || 0) + 1;
+    if (!correct) r.wrongCount = (r.wrongCount || 0) + 1;
+    r.lastAt = Date.now();
+    if (elapsed) { r.lastElapsed = elapsed; if (!r.bestElapsed || elapsed < r.bestElapsed) r.bestElapsed = elapsed; }
+    this.data[qid] = r;
+    this.save();
+  },
+  reset(qid) { if (qid) delete this.data[qid]; else this.data = {}; this.save(); },
+  stats(list) {
+    const qs = list || politicsQuestionStore.data;
+    let total = 0, correct = 0, wrong = 0, unanswered = 0;
+    for (const q of qs) {
+      const st = politicsAnswerStatusFor(q);
+      if (!st.answered) { unanswered++; continue; }
+      total++;
+      if (st.anyWrong) wrong++; else correct++;
+    }
+    return { total, correct, wrong, unanswered, all: qs.length };
+  },
+  wrongIds(list) {
+    const out = [];
+    for (const q of (list || politicsQuestionStore.data)) if (politicsAnswerStatusFor(q).anyWrong) out.push(q.id);
+    return out;
+  },
+};
+
+function politicsQuestionSubCount(q) {
+  if (q.type === "B") return (q.subQuestions || []).length || 1;
+  if (q.type === "A3") return (q.questions || []).length || 1;
+  return 1;
+}
+function politicsAnswerStatusFor(q) {
+  const n = politicsQuestionSubCount(q);
+  const recs = [];
+  for (let i = 0; i < n; i++) {
+    const k = n > 1 ? q.id + "#" + i : q.id;
+    if (politicsAnswerLog.data[k]) recs.push(politicsAnswerLog.data[k]);
+  }
+  let anyWrong = false, wrongCount = 0, attempts = 0, lastAt = 0;
+  for (const r of recs) {
+    if (!r.correct) anyWrong = true;
+    wrongCount += r.wrongCount || 0;
+    attempts += r.attempts || 0;
+    if ((r.lastAt || 0) > lastAt) lastAt = r.lastAt || 0;
+  }
+  return {
+    answered: recs.length >= n,
+    any: recs.length > 0,
+    anyWrong: anyWrong,
+    allCorrect: recs.length > 0 && !anyWrong,
+    wrongCount: wrongCount,
+    attempts: attempts,
+    lastAt: lastAt,
+  };
+}
+function politicsQuizPriority(q) {
+  const st = politicsAnswerStatusFor(q);
+  if (!st.any) return 1000;
+  if (st.anyWrong) return 800 - Math.min(st.wrongCount * 50, 200);
+  const days = (Date.now() - st.lastAt) / 86400000;
+  return 500 + Math.min(days, 100);
+}
+function createPoliticsSrsStore(key) {
+  return {
+    data: {},
+    load() {
+      this.data = {};
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const o = JSON.parse(raw);
+          if (o && typeof o === "object" && !Array.isArray(o)) this.data = o;
+        }
+      } catch (e) { this.data = {}; }
+    },
+    save() { try { localStorage.setItem(key, JSON.stringify(this.data)); } catch (e) {} },
+    keyFor(q, subIdx) {
+      const n = politicsQuestionSubCount(q);
+      return n > 1 ? q.id + "#" + (subIdx || 0) : q.id;
+    },
+    get(k) { return this.data[k] || null; },
+    schedule(k, grade) {
+      const now = Date.now();
+      const r = this.data[k] || { ease: 2.5, ivl: 0, reps: 0, lapses: 0, due: 0, last: 0 };
+      if (grade <= 0) {
+        r.lapses = (r.lapses || 0) + 1;
+        r.reps = 0;
+        r.ease = Math.max(1.3, Math.round((r.ease - 0.2) * 100) / 100);
+        r.ivl = 0;
+        r.due = now + 10 * 60 * 1000;
+      } else {
+        if (!r.reps) r.ivl = grade >= 3 ? 4 : 1;
+        else if (r.reps === 1) r.ivl = grade >= 3 ? 8 : 3;
+        else r.ivl = Math.max(1, Math.round(r.ivl * r.ease * (grade === 3 ? 1.3 : grade === 2 ? 1 : 0.6)));
+        r.ease = clamp(Math.round((r.ease + (grade >= 3 ? 0.15 : grade <= 1 ? -0.15 : 0)) * 100) / 100, 1.3, 2.8);
+        r.reps = (r.reps || 0) + 1;
+        r.due = now + r.ivl * 86400000;
+      }
+      r.last = now;
+      this.data[k] = r;
+      this.save();
+      return r;
+    },
+    makeDue(k) {
+      const r = this.data[k] || { ease: 2.5, ivl: 0, reps: 0, lapses: 0, due: 0, last: 0 };
+      r.due = Date.now();
+      this.data[k] = r;
+    },
+    dueCount() {
+      const now = Date.now();
+      let n = 0;
+      for (const k in this.data) if ((this.data[k].due || 0) <= now) n++;
+      return n;
+    },
+    dueQuestions(list) {
+      const now = Date.now();
+      const byId = {};
+      (list || politicsQuestionStore.data).forEach(q => { byId[q.id] = q; });
+      const qids = {};
+      for (const k in this.data) {
+        if ((this.data[k].due || 0) > now) continue;
+        const qid = String(k).split("#")[0];
+        if (byId[qid]) qids[qid] = true;
+      }
+      return Object.keys(qids).map(id => byId[id]);
+    },
+    totalCount() { return Object.keys(this.data).length; },
+    reset() { this.data = {}; this.save(); },
+  };
+}
+const politicsQuizSrs = createPoliticsSrsStore(POLITICS_QUIZ_SRS_KEY);
+function createPoliticsProgressStore(key) {
+  return {
+    load() { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } },
+    save(p) { try { localStorage.setItem(key, JSON.stringify(p)); } catch (e) {} },
+    clear() { try { localStorage.removeItem(key); } catch (e) {} },
+  };
+}
+const politicsQuizProgress = createPoliticsProgressStore(POLITICS_QUIZ_PROGRESS_KEY);
+
 function politicsKeywordMatches(card, kw) {
   const s = [card.question, card.answer, card.category, (card.tags || []).join(" ")].join(" ").toLowerCase();
   if (s.indexOf(kw) !== -1) return true;
@@ -7859,44 +8554,193 @@ function politicsKeywordMatches(card, kw) {
 function politicsStateRank(st) {
   return st === "due" ? 0 : st === "new" ? 1 : st === "sched" ? 2 : 3;
 }
-function rebuildPoliticsCategoryValues() {
-  const sel = document.getElementById("pCategorySel");
-  if (!sel) return;
+function parsePoliticsSearch(raw) {
+  const out = { category: "", tag: "", type: "", keywords: [] };
+  const parts = String(raw || "").trim().split(/\s+/).filter(Boolean);
+  for (const part of parts) {
+    let m = part.match(/^(?:分类|类别|科目)[:：](.+)$/);
+    if (m) { out.category = m[1].trim(); continue; }
+    m = part.match(/^(?:标签)[:：](.+)$/);
+    if (m) { out.tag = m[1].trim(); continue; }
+    m = part.match(/^(?:题型)[:：](.+)$/);
+    if (m) { out.type = m[1].trim(); continue; }
+    out.keywords.push(part.toLowerCase());
+  }
+  return out;
+}
+function normalizePoliticsType(v) {
+  const s = String(v || "").trim();
+  const map = { "单选":"single", "多选":"multiple", "判断":"judge", "主观题":"essay", "简答":"essay", "论述":"essay" };
+  return map[s] || s;
+}
+function politicsQuestionKeywordMatches(q, kw) {
+  const parts = [q.stem || "", q.caseStem || "", q.explanation || "", q.category || "", (q.tags || []).join(" ")];
+  for (const o of (q.options || [])) parts.push(o.text || "");
+  for (const o of (q.sharedOptions || [])) parts.push(o.text || "");
+  for (const sq of (q.subQuestions || [])) parts.push(sq.stem || "");
+  for (const sq of (q.questions || [])) parts.push(sq.stem || "");
+  const s = parts.join(" ").toLowerCase();
+  if (s.indexOf(kw) !== -1) return true;
+  if (kw.length >= 2 && /^[a-z0-9]+$/.test(kw)) {
+    const py = pyInitials([q.stem || "", q.category || "", (q.tags || []).join(" ")].join(" ")).toLowerCase();
+    if (py.indexOf(kw) !== -1) return true;
+    if (kw.length >= 3 && isSubsequence(kw, py)) return true;
+  }
+  return false;
+}
+function getPoliticsCategories() {
   const counts = {};
-  for (const c of politicsStore.data) counts[c.category] = (counts[c.category] || 0) + 1;
-  const values = [{ value: "全部", label: "全部类别" }];
+  const src = state.pView === "quiz" ? politicsQuestionStore.data : politicsStore.data;
+  for (const c of src) counts[c.category] = (counts[c.category] || 0) + 1;
+  const values = [];
   for (const cat of POLITICS_CATEGORIES) if (counts[cat]) values.push({ value: cat, label: withCount(cat, counts[cat]) });
   for (const cat of Object.keys(counts).sort()) if (POLITICS_CATEGORIES.indexOf(cat) === -1) values.push({ value: cat, label: withCount(cat, counts[cat]) });
-  updateSelectOptions(sel, values);
-  const names = values.map(v => v.value);
-  if (state.pCategory !== "全部" && names.indexOf(state.pCategory) === -1) { state.pCategory = "全部"; saveSettings(); }
-  sel.value = state.pCategory;
+  return values;
+}
+function updatePoliticsHeader() {
+  const isQuiz = state.pView === "quiz";
+  const studyBtn = document.getElementById("pStudyBtn");
+  const addBtn = document.getElementById("pAddBtn");
+  const starBtn = document.getElementById("pStarBtn");
+  const search = document.getElementById("pSearchInput");
+  const restore = document.getElementById("pRestoreBtn");
+  const clear = document.getElementById("pClearBtn");
+  const record = document.getElementById("pRecordBtn");
+  const srsBtn = document.getElementById("pSrsBtn");
+  const uploadBtn = document.getElementById("pUploadBtn");
+  if (studyBtn) studyBtn.textContent = isQuiz ? "▶ 开始刷题" : "▶ 开始记忆";
+  if (uploadBtn) uploadBtn.textContent = isQuiz ? "📋 粘贴导入" : "☁ 上传";
+  if (srsBtn) {
+    const due = isQuiz ? politicsQuizSrs.dueCount() : politicsSrs.dueCount();
+    srsBtn.textContent = due > 0 ? "⏰ 复习(" + due + ")" : "⏰ 复习";
+  }
+  if (addBtn) addBtn.textContent = isQuiz ? "＋ 新增题" : "＋ 新增卡";
+  if (starBtn) starBtn.textContent = state.pStarredOnly ? "★ 收藏" : "☆ 收藏";
+  if (search) search.placeholder = isQuiz
+    ? "搜索题干 / 选项 / 解析（支持 分类:马原 题型:single 标签:高频）"
+    : "搜索题目 / 答案 / 标签（支持 分类:马原 标签:高频）";
+  if (restore) restore.textContent = isQuiz ? "恢复内置题" : "恢复内置卡";
+  if (clear) clear.textContent = isQuiz ? "清空题库" : "清空";
+  if (record) record.textContent = isQuiz ? "📋 题目清单" : "📋 背诵清单";
+}
+function rebuildPoliticsFilterValues() {
+  updatePoliticsHeader();
+  const isQuiz = state.pView === "quiz";
+  const catSel = document.getElementById("pCategorySel");
+  if (catSel) {
+    const values = [{ value: "全部", label: "全部类别" }].concat(getPoliticsCategories());
+    updateSelectOptions(catSel, values);
+    const names = values.map(v => v.value);
+    if (state.pCategory !== "全部" && names.indexOf(state.pCategory) === -1) { state.pCategory = "全部"; saveSettings(); }
+    catSel.value = state.pCategory;
+  }
+  const filterSel = document.getElementById("pFilterSel");
+  if (filterSel) {
+    const values = isQuiz
+      ? [["全部", "全部题目"], ["unanswered", "未做"], ["wrong", "错题"], ["starred", "★ 收藏"], ["due", "待复习"]]
+      : [["全部", "全部卡片"], ["due", "待复习"], ["new", "新卡"], ["mastered", "已掌握"], ["starred", "★ 收藏"]];
+    updateSelectOptions(filterSel, values.map(v => ({ value: v[0], label: v[1] })));
+    const names = values.map(v => v[0]);
+    if (names.indexOf(state.pFilter) === -1) { state.pFilter = "全部"; saveSettings(); }
+    filterSel.value = state.pFilter;
+  }
+  const tagSel = document.getElementById("pTagSel");
+  if (tagSel) {
+    if (isQuiz) {
+      const counts = {};
+      for (const q of politicsQuestionStore.data) counts[q.type || "single"] = (counts[q.type || "single"] || 0) + 1;
+      const values = [{ value: "全部", label: "全部题型" }];
+      Object.keys(counts).forEach(t => values.push({ value: t, label: withCount(QUIZ_TYPES[t] || t, counts[t]) }));
+      updateSelectOptions(tagSel, values);
+      const names = values.map(v => v.value);
+      if (state.pTag !== "全部" && names.indexOf(state.pTag) === -1) { state.pTag = "全部"; saveSettings(); }
+    } else {
+      const counts = {};
+      for (const c of politicsStore.data) for (const t of (c.tags || [])) counts[t] = (counts[t] || 0) + 1;
+      const values = [{ value: "全部", label: "全部标签" }];
+      Object.keys(counts).sort().forEach(t => values.push({ value: t, label: withCount(t, counts[t]) }));
+      updateSelectOptions(tagSel, values);
+      const names = values.map(v => v.value);
+      if (state.pTag !== "全部" && names.indexOf(state.pTag) === -1) { state.pTag = "全部"; saveSettings(); }
+    }
+    tagSel.value = state.pTag;
+  }
+  const sortSel = document.getElementById("pSortSel");
+  if (sortSel) {
+    const values = isQuiz
+      ? [["默认", "默认排序"], ["频率", "频率高→低"], ["错误次数", "错误次数"], ["标题", "标题"], ["ID升序", "ID升序"], ["ID降序", "ID降序"]]
+      : [["默认", "默认排序"], ["待复习优先", "待复习优先"], ["新卡优先", "新卡优先"], ["标题", "标题"], ["ID升序", "ID升序"], ["ID降序", "ID降序"]];
+    updateSelectOptions(sortSel, values.map(v => ({ value: v[0], label: v[1] })));
+    const names = values.map(v => v[0]);
+    if (names.indexOf(state.pSort) === -1) { state.pSort = "默认"; saveSettings(); }
+    sortSel.value = state.pSort;
+  }
 }
 function getFilteredPolitics() {
+  const parsed = parsePoliticsSearch(state.pSearch);
   let data = politicsStore.data.slice();
   if (state.pCategory !== "全部") data = data.filter(c => c.category === state.pCategory);
+  if (parsed.category) data = data.filter(c => c.category.indexOf(parsed.category) !== -1);
+  if (state.pTag !== "全部") data = data.filter(c => (c.tags || []).indexOf(state.pTag) !== -1);
+  if (parsed.tag) data = data.filter(c => (c.tags || []).join(" ").indexOf(parsed.tag) !== -1);
   if (state.pFilter === "due") data = data.filter(c => politicsSrs.stateOf(c) === "due");
   else if (state.pFilter === "new") data = data.filter(c => politicsSrs.stateOf(c) === "new");
   else if (state.pFilter === "mastered") data = data.filter(c => politicsSrs.stateOf(c) === "mastered");
   else if (state.pFilter === "starred") data = data.filter(c => c.starred);
-  if (state.pSearch) {
-    const kws = String(state.pSearch).toLowerCase().split(/\s+/).filter(Boolean);
-    data = data.filter(c => {
-      for (let i = 0; i < kws.length; i++) if (!politicsKeywordMatches(c, kws[i])) return false;
-      return true;
+  if (state.pStarredOnly) data = data.filter(c => c.starred);
+  if (parsed.keywords.length) data = data.filter(c => parsed.keywords.every(kw => politicsKeywordMatches(c, kw)));
+  const sort = state.pSort;
+  if (sort === "标题") data.sort((a, b) => String(a.question).localeCompare(String(b.question), "zh"));
+  else if (sort === "ID升序") data.sort((a, b) => compareId(a.id, b.id));
+  else if (sort === "ID降序") data.sort((a, b) => compareId(b.id, a.id));
+  else {
+    data.sort((a, b) => {
+      if (sort === "新卡优先") {
+        const ra = !!politicsSrs.get(a.id), rb = !!politicsSrs.get(b.id);
+        if (ra !== rb) return ra ? 1 : -1;
+      }
+      const sa = politicsSrs.stateOf(a), sb = politicsSrs.stateOf(b);
+      const r = politicsStateRank(sa) - politicsStateRank(sb);
+      if (r) return r;
+      const ra = politicsSrs.get(a.id), rb = politicsSrs.get(b.id);
+      const da = ra ? (ra.due || 0) : (a.created || 0);
+      const db = rb ? (rb.due || 0) : (b.created || 0);
+      if (da !== db) return da - db;
+      if (!!a.starred !== !!b.starred) return a.starred ? -1 : 1;
+      return String(a.question).localeCompare(String(b.question), "zh");
     });
+    if (sort === "待复习优先") {
+      data.sort((a, b) => politicsStateRank(politicsSrs.stateOf(a)) - politicsStateRank(politicsSrs.stateOf(b)));
+    }
   }
-  data.sort((a, b) => {
-    const sa = politicsSrs.stateOf(a), sb = politicsSrs.stateOf(b);
-    const r = politicsStateRank(sa) - politicsStateRank(sb);
-    if (r) return r;
-    const ra = politicsSrs.get(a.id), rb = politicsSrs.get(b.id);
-    const da = ra ? (ra.due || 0) : (a.created || 0);
-    const db = rb ? (rb.due || 0) : (b.created || 0);
-    if (da !== db) return da - db;
-    if (!!a.starred !== !!b.starred) return a.starred ? -1 : 1;
-    return String(a.question).localeCompare(String(b.question), "zh");
-  });
+  return data;
+}
+function getFilteredPoliticsQuestions() {
+  const parsed = parsePoliticsSearch(state.pSearch);
+  let data = politicsQuestionStore.data.slice();
+  if (state.pCategory !== "全部") data = data.filter(q => q.category === state.pCategory);
+  if (parsed.category) data = data.filter(q => q.category.indexOf(parsed.category) !== -1);
+  if (state.pTag !== "全部") data = data.filter(q => q.type === state.pTag);
+  const searchType = parsed.type ? normalizePoliticsType(parsed.type) : "";
+  if (searchType) data = data.filter(q => q.type === searchType);
+  if (parsed.tag) data = data.filter(q => (q.tags || []).join(" ").indexOf(parsed.tag) !== -1);
+  if (state.pFilter === "unanswered") data = data.filter(q => !politicsAnswerStatusFor(q).answered);
+  else if (state.pFilter === "wrong") data = data.filter(q => politicsAnswerStatusFor(q).anyWrong);
+  else if (state.pFilter === "starred") data = data.filter(q => q.starred);
+  else if (state.pFilter === "due") {
+    const dueIds = {};
+    politicsQuizSrs.dueQuestions(politicsQuestionStore.data).forEach(q => { dueIds[q.id] = 1; });
+    data = data.filter(q => dueIds[q.id]);
+  }
+  if (state.pStarredOnly) data = data.filter(q => q.starred);
+  if (parsed.keywords.length) data = data.filter(q => parsed.keywords.every(kw => politicsQuestionKeywordMatches(q, kw)));
+  const sort = state.pSort;
+  if (sort === "频率") data.sort((a, b) => starCount(b) - starCount(a));
+  else if (sort === "错误次数") data.sort((a, b) => politicsAnswerStatusFor(b).wrongCount - politicsAnswerStatusFor(a).wrongCount);
+  else if (sort === "标题") data.sort((a, b) => String(a.stem).localeCompare(String(b.stem), "zh"));
+  else if (sort === "ID升序") data.sort((a, b) => compareId(a.id, b.id));
+  else if (sort === "ID降序") data.sort((a, b) => compareId(b.id, a.id));
+  else data.sort((a, b) => politicsQuizPriority(b) - politicsQuizPriority(a));
   return data;
 }
 function makePoliticsCard(card, kws) {
@@ -7911,6 +8755,7 @@ function makePoliticsCard(card, kws) {
   top.appendChild(cat);
   const st = politicsSrs.stateOf(card);
   top.appendChild(el("span", "p-state " + st, politicsSrs.stateLabel(st)));
+  if (card.ai_mnemonic) top.appendChild(el("span", "p-state", "🪄 助记"));
   body.appendChild(top);
   const q = el("div", "p-card-q");
   q.innerHTML = hlTextHtml(card.question, kws);
@@ -7937,34 +8782,97 @@ function makePoliticsCard(card, kws) {
   editBtn.addEventListener("click", e => { e.stopPropagation(); openPoliticsEditor(card); });
   actions.appendChild(editBtn);
   cardEl.appendChild(actions);
-  cardEl.addEventListener("click", () => openPoliticsStudy([card]));
+  cardEl.addEventListener("click", () => openPoliticsDetail(card));
   return cardEl;
+}
+function makePoliticsQuestionCard(q, kws) {
+  const card = el("div", "item-card");
+  card.style.background = POLITICS_CATEGORY_COLORS[q.category] || "#595959";
+  const st = politicsAnswerStatusFor(q);
+  const bar = el("div", "status-bar");
+  bar.style.background = !st.any ? "#999" : st.anyWrong ? "#ff9933" : "#4dcc66";
+  card.appendChild(bar);
+  const main = el("div", "item-main");
+  main.tabIndex = 0;
+  main.setAttribute("role", "button");
+  main.addEventListener("click", () => openPoliticsQuiz([q], { mode: "practice" }));
+  main.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); openPoliticsQuiz([q], { mode: "practice" }); } });
+  const stem = q.type === "B" ? (q.subQuestions[0] && q.subQuestions[0].stem) || "B型题" : q.type === "A3" ? q.caseStem || "病例串题" : q.stem;
+  const titleSpan = el("span", "item-title");
+  titleSpan.innerHTML = (q.starred ? "★ " : "") + hlTextHtml((stem || "").slice(0, 32) + ((stem && stem.length > 32) ? "…" : ""), kws) + "  |  " + escapeHtml(QUIZ_TYPES[q.type] || q.type);
+  main.appendChild(titleSpan);
+  if (st.any) {
+    const badge = el("span", "item-status", st.anyWrong ? "✗" : "✓");
+    badge.style.background = st.anyWrong ? "rgba(214,40,40,.6)" : "rgba(77,204,102,.6)";
+    main.appendChild(badge);
+  }
+  const starBtn = el("button", "item-star" + (q.starred ? " on" : ""), q.starred ? "★" : "☆");
+  starBtn.addEventListener("click", e => { e.stopPropagation(); q.starred = !q.starred; politicsQuestionStore.save(); renderPoliticsList(); });
+  main.appendChild(starBtn);
+  const editBtn = el("button", "item-star", "✎");
+  editBtn.title = "编辑";
+  editBtn.addEventListener("click", e => { e.stopPropagation(); openPoliticsQuestionEditor(q); });
+  main.appendChild(editBtn);
+  card.appendChild(main);
+  return card;
 }
 function renderPoliticsList() {
   const scroller = document.getElementById("listScroll");
   const list = document.getElementById("listLayout");
   if (!scroller || !list) return;
   const prevTop = scroller.scrollTop;
-  rebuildPoliticsCategoryValues();
+  rebuildPoliticsFilterValues();
   list.innerHTML = "";
-  const filtered = getFilteredPolitics();
-  if (!politicsStore.data.length) {
-    const wrap = el("div", "p-empty-wrap");
-    wrap.appendChild(el("div", "empty-hint", EMPTY_POLITICS_HINT));
-    const btn = el("button", "btn", "恢复内置示例卡");
-    btn.addEventListener("click", restorePoliticsBuiltins);
-    wrap.appendChild(btn);
-    list.appendChild(wrap);
-  } else if (!filtered.length) {
-    list.appendChild(el("div", "empty-hint", "没有匹配的卡片"));
+  const isQuiz = state.pView === "quiz";
+  const parsed = parsePoliticsSearch(state.pSearch);
+  if (isQuiz) {
+    const filtered = getFilteredPoliticsQuestions();
+    if (!politicsQuestionStore.data.length) {
+      const wrap = el("div", "p-empty-wrap");
+      wrap.appendChild(el("div", "empty-hint", "政治题库为空\n\n点「＋ 新增题」逐题录入，点「导入」粘贴题目 JSON。\n也可以点「导入 → 🤖 AI 生成」从 PDF / 图片 / 文本自动出题，\n或点「恢复内置题」载入示例题库。"));
+      const btn = el("button", "btn", "恢复内置题库");
+      btn.addEventListener("click", restorePoliticsQuizBuiltins);
+      wrap.appendChild(btn);
+      list.appendChild(wrap);
+    } else if (!filtered.length) {
+      list.appendChild(el("div", "empty-hint", "没有匹配的题目"));
+    } else {
+      for (const q of filtered) list.appendChild(makePoliticsQuestionCard(q, parsed.keywords));
+    }
+    const s = politicsAnswerLog.stats();
+    document.getElementById("statLabel").textContent = "题库 " + s.all + " · 已做 " + s.total + " · 正确率 " + (s.total > 0 ? Math.round(s.correct / s.total * 100) + "%" : "—") + " · 待复习 " + politicsQuizSrs.dueCount();
   } else {
-    const kws = String(state.pSearch || "").toLowerCase().split(/\s+/).filter(Boolean);
-    for (const c of filtered) list.appendChild(makePoliticsCard(c, kws));
+    const filtered = getFilteredPolitics();
+    if (!politicsStore.data.length) {
+      const wrap = el("div", "p-empty-wrap");
+      wrap.appendChild(el("div", "empty-hint", EMPTY_POLITICS_HINT));
+      const btn = el("button", "btn", "恢复内置示例卡");
+      btn.addEventListener("click", restorePoliticsBuiltins);
+      wrap.appendChild(btn);
+      list.appendChild(wrap);
+    } else if (!filtered.length) {
+      list.appendChild(el("div", "empty-hint", "没有匹配的卡片"));
+    } else {
+      for (const c of filtered) list.appendChild(makePoliticsCard(c, parsed.keywords));
+    }
+    document.getElementById("statLabel").textContent = "共 " + politicsStore.data.length + " 张 · 待复习 " + politicsSrs.dueCount() + " · 新卡 " + politicsSrs.newCount() + " · 今日 " + politicsSrs.todayReviewed();
   }
-  document.getElementById("statLabel").textContent = "共 " + politicsStore.data.length + " 张 · 待复习 " + politicsSrs.dueCount() + " · 新卡 " + politicsSrs.newCount() + " · 今日 " + politicsSrs.todayReviewed();
   scroller.scrollTop = prevTop;
 }
+function restorePoliticsQuizBuiltins() {
+  const have = {};
+  for (const q of politicsQuestionStore.data) have[q.stem + "\u0001" + q.category] = 1;
+  let missing = 0;
+  for (const b of POLITICS_QUIZ_BUILTIN) if (!have[b.stem + "\u0001" + b.category]) missing++;
+  if (!missing) { confirmPopup("内置政治题目已全部存在"); return; }
+  confirmPopup("将补充 " + missing + " 道内置政治题（不会删除现有题目），确定吗？", function () {
+    const added = politicsQuestionStore.restoreBuiltins();
+    renderPoliticsList();
+    confirmPopup("已补充 " + added + " 道内置政治题");
+  }, "恢复");
+}
 function restorePoliticsBuiltins() {
+  if (state.pView === "quiz") { restorePoliticsQuizBuiltins(); return; }
   const have = {};
   for (const c of politicsStore.data) have[c.id] = 1;
   let missing = 0;
@@ -7977,14 +8885,27 @@ function restorePoliticsBuiltins() {
   }, "恢复");
 }
 function confirmClearPolitics() {
+  if (state.pView === "quiz") {
+    if (!politicsQuestionStore.data.length) { confirmPopup("政治题库为空"); return; }
+    confirmPopup("将清空全部政治题目、答题记录和复习计划，确定吗？\n（建议先用「导出」备份）", function () {
+      politicsQuestionStore.clear();
+      politicsAnswerLog.reset();
+      politicsQuizSrs.reset();
+      politicsQuizProgress.clear();
+      renderPoliticsList();
+    }, "清空");
+    return;
+  }
   if (!politicsStore.data.length) { confirmPopup("政治记忆库为空"); return; }
   confirmPopup("将清空全部政治记忆卡和复习记录，确定吗？\n（建议先用「导出」备份）", function () {
     politicsStore.clear();
     politicsSrs.reset();
+    politicsQuizProgress.clear();
     renderPoliticsList();
   }, "清空");
 }
 function startPoliticsSession() {
+  if (state.pView === "quiz") { openPoliticsQuizPicker(); return; }
   if (!politicsStore.data.length) { confirmPopup(EMPTY_POLITICS_HINT); return; }
   const pool = getFilteredPolitics();
   if (!pool.length) { confirmPopup("当前筛选下没有可记忆的卡片"); return; }
@@ -8138,6 +9059,299 @@ function openPoliticsStudy(cards) {
   mo.observe(document.body, { childList: true });
   renderCard();
 }
+function politicsCardToText(card) {
+  const parts = ["【" + (card.category || "政治") + "】", card.question, "", "答案：", card.answer];
+  if (card.tags && card.tags.length) parts.push("", "标签：" + card.tags.join("、"));
+  if (card.ai_mnemonic) parts.push("", "助记：", card.ai_mnemonic);
+  return stripRichMarkup(parts.join("\n"));
+}
+function openPoliticsDetail(card) {
+  if (!card) return;
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "🧠 政治记忆 · " + (card.category || "")));
+  const body = el("div", "popup-body");
+  const st = politicsSrs.stateOf(card);
+  const meta = el("div", "detail-meta");
+  meta.appendChild(document.createTextNode((card.category || "") + "  |  " + politicsSrs.stateLabel(st) + "  |  复习 " + politicsSrs.reviewCount(card) + " 次  |  下次：" + politicsSrs.nextText(card)));
+  if (card.tags && card.tags.length) meta.appendChild(document.createTextNode("  |  #" + card.tags.join(" #")));
+  if (card.starred) meta.appendChild(document.createTextNode("  |  ★ 已收藏"));
+  body.appendChild(meta);
+  const toolRow = el("div", "detail-ctrl");
+  const readBtn = el("button", "btn", "🔊 朗读");
+  const askBtn = el("button", "btn", "🤖 追问");
+  const mnBtn = el("button", "btn", "🪄 助记");
+  const shareBtn = el("button", "btn", "📤 分享");
+  const editBtn = el("button", "btn", "✏️ 编辑");
+  readBtn.addEventListener("click", function () {
+    tts.lastText = politicsCardToText(card);
+    tts.lastLabel = card.category || "政治记忆";
+    tts.speak(tts.lastText, tts.lastLabel);
+  });
+  askBtn.addEventListener("click", function () { openAiChat({ politics: true, item: card }); });
+  mnBtn.addEventListener("click", function () { openPoliticsMnemonic(card); });
+  shareBtn.addEventListener("click", async function () {
+    shareBtn.disabled = true;
+    try { await sharePoliticsCard(card); }
+    catch (e) { confirmPopup("分享失败：" + e.message); }
+    shareBtn.disabled = false;
+  });
+  editBtn.addEventListener("click", function () { ov.remove(); openPoliticsEditor(card); });
+  toolRow.appendChild(readBtn); toolRow.appendChild(askBtn); toolRow.appendChild(mnBtn);
+  toolRow.appendChild(shareBtn); toolRow.appendChild(editBtn);
+  body.appendChild(toolRow);
+  const scroll = el("div", "detail-scroll");
+  function addDetailBlock(label, content) {
+    const row = el("div", "field-row");
+    const header = el("div", "field-header");
+    header.appendChild(el("div", "field-label", label));
+    row.appendChild(header);
+    const c = el("div", "field-content");
+    c.innerHTML = renderRich(content || "", "");
+    c.style.display = "block";
+    row.appendChild(c);
+    scroll.appendChild(row);
+  }
+  addDetailBlock("题目", card.question);
+  addDetailBlock("答案", card.answer);
+  if (card.ai_mnemonic) addDetailBlock("🪄 AI 助记", card.ai_mnemonic);
+  body.appendChild(scroll);
+  pop.appendChild(body);
+  const navList = getFilteredPolitics();
+  const curIdx = navList.findIndex(c => c.id === card.id);
+  const navRow = el("div", "popup-footer");
+  navRow.style.borderTop = "1px solid var(--divider)";
+  const prevBtn = el("button", "btn", "← 上一张");
+  const nextBtn = el("button", "btn", "下一张 →");
+  prevBtn.disabled = curIdx <= 0;
+  nextBtn.disabled = curIdx === -1 || curIdx >= navList.length - 1;
+  prevBtn.addEventListener("click", function () { if (curIdx > 0) { ov.remove(); openPoliticsDetail(navList[curIdx - 1]); } });
+  nextBtn.addEventListener("click", function () { if (curIdx >= 0 && curIdx < navList.length - 1) { ov.remove(); openPoliticsDetail(navList[curIdx + 1]); } });
+  navRow.appendChild(prevBtn);
+  const posLabel = el("div", "row-label", curIdx >= 0 ? (curIdx + 1) + " / " + navList.length : "— / —");
+  posLabel.style.cssText = "flex:0 0 auto;width:auto;padding:0 8px;text-align:center";
+  navRow.appendChild(posLabel);
+  navRow.appendChild(nextBtn);
+  pop.appendChild(navRow);
+  const footer = el("div", "popup-footer");
+  const studyBtn = el("button", "btn", "▶ 开始记忆");
+  const starBtn = el("button", "btn", card.starred ? "★ 取消收藏" : "☆ 收藏");
+  const copyBtn = el("button", "btn", "📋 复制");
+  const delBtn = el("button", "btn", "删除");
+  const closeBtn = el("button", "btn", "关闭");
+  studyBtn.addEventListener("click", function () { ov.remove(); openPoliticsStudy([card]); });
+  starBtn.addEventListener("click", function () {
+    card.starred = !card.starred;
+    politicsStore.save();
+    ov.remove();
+    renderPoliticsList();
+    openPoliticsDetail(card);
+  });
+  copyBtn.addEventListener("click", function () { copyText(politicsCardToText(card)).then(function () { confirmPopup("已复制"); }).catch(function (e) { confirmPopup("复制失败：" + e.message); }); });
+  delBtn.addEventListener("click", function () {
+    confirmPopup("确定删除这张卡片？", function () {
+      politicsStore.remove(card.id);
+      ov.remove();
+      renderPoliticsList();
+    }, "删除");
+  });
+  closeBtn.addEventListener("click", function () { ov.remove(); });
+  footer.appendChild(studyBtn); footer.appendChild(starBtn); footer.appendChild(copyBtn);
+  footer.appendChild(delBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function politicsRandom() {
+  if (state.pView === "quiz") {
+    const pool = getFilteredPoliticsQuestions();
+    if (!pool.length) { confirmPopup("当前筛选下没有题目"); return; }
+    openPoliticsQuiz([rndPick(pool)], { mode: "review" });
+    return;
+  }
+  const pool = getFilteredPolitics();
+  if (!pool.length) { confirmPopup("当前筛选下没有卡片"); return; }
+  openPoliticsDetail(rndPick(pool));
+}
+async function sharePoliticsCard(card) {
+  const text = politicsCardToText(card);
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "考研政治 · " + (card.category || "记忆卡"), text: text });
+      return;
+    } catch (e) {}
+  }
+  await copyText(text);
+  confirmPopup("已复制到剪贴板，可粘贴分享");
+}
+function openPoliticsMnemonic(card) {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "🪄 AI 助记 · " + (card.category || "")));
+  const body = el("div", "popup-body");
+  const status = el("div", "gh-status", "");
+  const box = el("div", "mnemonic-box");
+  box.appendChild(el("div", "empty-note", "点击「生成」，AI 会结合这张记忆卡生成：\n① 记忆口诀　② 易混辨析　③ 答题模板"));
+  body.appendChild(status);
+  body.appendChild(box);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const genBtn = el("button", "btn", "生成");
+  const copyBtn = el("button", "btn", "复制");
+  const saveBtn = el("button", "btn", "保存到卡片");
+  const closeBtn = el("button", "btn", "关闭");
+  footer.appendChild(genBtn); footer.appendChild(copyBtn); footer.appendChild(saveBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  let lastText = "";
+  genBtn.addEventListener("click", async function () {
+    genBtn.disabled = true;
+    status.className = "gh-status";
+    status.textContent = "⏳ 正在生成助记内容…";
+    const sys = [
+      "你是考研政治的辅导老师。请围绕给定的政治记忆卡生成记忆材料，输出要求：",
+      "① 【记忆口诀】朗朗上口的口诀或关键词串联；",
+      "② 【易混辨析】列出 2~3 个最容易混淆的概念并说明区别；",
+      "③ 【答题模板】给出主观题的分点作答模板。",
+      "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；不要输出代码块。",
+      "只依据提供的卡片内容和考研政治公认知识，不要编造。",
+    ].join("\n");
+    try {
+      const reply = await callAi(loadAiConfig(), [
+        { role: "system", content: sys },
+        { role: "user", content: "【政治记忆卡】\n" + politicsCardToText(card).slice(0, 5000) },
+      ], 120000);
+      lastText = reply;
+      box.innerHTML = renderRich(reply, "");
+      status.className = "gh-status ok";
+      status.textContent = "✅ 生成完成（仅供参考，请对照教材核对）" + lastUsageText();
+    } catch (e) {
+      status.className = "gh-status err";
+      status.textContent = "❌ " + e.message;
+    }
+    genBtn.disabled = false;
+  });
+  copyBtn.addEventListener("click", function () {
+    if (!lastText) { confirmPopup("还没有可复制的内容"); return; }
+    copyText(lastText).then(function () { confirmPopup("已复制"); }).catch(function (e) { confirmPopup("复制失败：" + e.message); });
+  });
+  saveBtn.addEventListener("click", function () {
+    if (!lastText) { confirmPopup("请先生成内容"); return; }
+    politicsStore.update(card.id, { ai_mnemonic: lastText });
+    card.ai_mnemonic = lastText;
+    confirmPopup("已保存到卡片的「AI 助记」");
+    renderPoliticsList();
+  });
+  closeBtn.addEventListener("click", function () { ov.remove(); });
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function buildPoliticsCardsPrintDocument(items) {
+  const now = new Date();
+  const dateStr = formatDate(now);
+  let body = "";
+  items.forEach((card, idx) => {
+    const meta = [card.category || "", politicsSrs.stateLabel(politicsSrs.stateOf(card))];
+    if (card.tags && card.tags.length) meta.push("标签：" + card.tags.join("、"));
+    body += '<section class="pf-item"><h2 class="pf-ititle">' + (idx + 1) + ". " + escapeHtml(card.question) + '</h2><div class="pf-imeta">' + escapeHtml(meta.join("　·　")) + '</div>' +
+      '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + renderRich(card.answer, "") + '</div></div>' +
+      (card.ai_mnemonic ? '<div class="pf-field"><div class="pf-flabel">AI 助记</div><div class="pf-fcontent">' + renderRich(card.ai_mnemonic, "") + '</div></div>' : "") +
+      '</section>';
+  });
+  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>考研政治记忆卡</title><style>' + buildPrintCss(11) + '</style></head><body>' +
+    '<header class="pf-header"><h1>考研政治 · 记忆卡</h1><div class="pf-sub">共 ' + items.length + ' 张　·　导出于 ' + dateStr + '</div></header>' + body + '</body></html>';
+}
+function buildPoliticsQuestionsPrintDocument(items) {
+  const now = new Date();
+  const dateStr = formatDate(now);
+  let body = "";
+  items.forEach((q, idx) => {
+    let html = '<section class="pf-item"><h2 class="pf-ititle">' + (idx + 1) + ". " + escapeHtml(q.category || "") + " · " + escapeHtml(QUIZ_TYPES[q.type] || q.type) + '</h2>';
+    if (q.type === "B") {
+      html += '<div class="pf-field"><div class="pf-flabel">共用选项</div><div class="pf-fcontent">' + (q.sharedOptions || []).map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + '</div></div>';
+      (q.subQuestions || []).forEach(sq => {
+        html += '<div class="pf-field"><div class="pf-flabel">题干</div><div class="pf-fcontent">' + renderRich(sq.stem, "") + '</div></div>' +
+          '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + escapeHtml((sq.answer || []).join("、")) + '</div></div>';
+        if (sq.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(sq.explanation, "") + '</div></div>';
+      });
+    } else if (q.type === "A3") {
+      if (q.caseStem) html += '<div class="pf-field"><div class="pf-flabel">材料</div><div class="pf-fcontent">' + renderRich(q.caseStem, "") + '</div></div>';
+      (q.questions || []).forEach(sq => {
+        html += '<div class="pf-field"><div class="pf-flabel">小问</div><div class="pf-fcontent">' + renderRich(sq.stem, "") + '</div></div>';
+        if (sq.options && sq.options.length) html += '<div class="pf-field"><div class="pf-flabel">选项</div><div class="pf-fcontent">' + sq.options.map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + '</div></div>';
+        html += '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + escapeHtml((sq.answer || []).join("、")) + '</div></div>';
+        if (sq.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(sq.explanation, "") + '</div></div>';
+      });
+    } else {
+      html += '<div class="pf-field"><div class="pf-flabel">题干</div><div class="pf-fcontent">' + renderRich(q.stem || "", "") + '</div></div>';
+      if (q.options && q.options.length) html += '<div class="pf-field"><div class="pf-flabel">选项</div><div class="pf-fcontent">' + q.options.map(o => escapeHtml(o.key + ". " + o.text)).join("<br>") + '</div></div>';
+      html += '<div class="pf-field"><div class="pf-flabel">答案</div><div class="pf-fcontent">' + renderRich((q.answer || []).join("\n"), "") + '</div></div>';
+      if (q.explanation) html += '<div class="pf-field"><div class="pf-flabel">解析</div><div class="pf-fcontent">' + renderRich(q.explanation, "") + '</div></div>';
+    }
+    html += '</section>';
+    body += html;
+  });
+  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>考研政治题库</title><style>' + buildPrintCss(11) + '</style></head><body>' +
+    '<header class="pf-header"><h1>考研政治 · 题库</h1><div class="pf-sub">共 ' + items.length + ' 题　·　导出于 ' + dateStr + '</div></header>' + body + '</body></html>';
+}
+function openPoliticsPdfExport() {
+  const isQuiz = state.pView === "quiz";
+  const items = isQuiz ? getFilteredPoliticsQuestions() : getFilteredPolitics();
+  if (!items.length) { confirmPopup(isQuiz ? "当前筛选下没有题目" : "当前筛选下没有卡片"); return; }
+  if (isQuiz) printDocument(buildPoliticsQuestionsPrintDocument(items));
+  else printDocument(buildPoliticsCardsPrintDocument(items));
+}
+function openPoliticsReviewSheet() {
+  const isQuiz = state.pView === "quiz";
+  const items = isQuiz ? getFilteredPoliticsQuestions() : getFilteredPolitics();
+  if (!items.length) { confirmPopup(isQuiz ? "当前筛选下没有题目" : "当前筛选下没有卡片"); return; }
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", isQuiz ? "📋 政治题目清单" : "📋 政治背诵清单"));
+  const body = el("div", "popup-body");
+  const scroll = el("div", "detail-scroll");
+  const wrap = el("div", "big-record");
+  wrap.appendChild(el("div", "br-title", isQuiz ? "政 治 题 目 清 单" : "政 治 背 诵 清 单"));
+  wrap.appendChild(el("div", "br-sub", "按当前筛选生成，共 " + items.length + (isQuiz ? " 题" : " 张")));
+  items.forEach((item, idx) => {
+    const sec = el("div", "br-section");
+    sec.appendChild(el("div", "br-sec-title", (idx + 1) + ". " + (isQuiz ? (item.category || "") + " · " + (QUIZ_TYPES[item.type] || item.type) : item.category || "")));
+    const b = el("div", "br-sec-body");
+    if (isQuiz) {
+      const stem = el("div", "br-line"); stem.innerHTML = renderRich(item.stem || item.caseStem || "", ""); b.appendChild(stem);
+      if (item.options && item.options.length) {
+        const opts = el("div", "br-line");
+        opts.innerHTML = item.options.map(o => escapeHtml(o.key + ". " + o.text)).join("<br>");
+        b.appendChild(opts);
+      }
+      b.appendChild(el("div", "br-line", "答案：" + (item.answer || []).join("、")));
+      if (item.explanation) { const ex = el("div", "br-line"); ex.innerHTML = renderRich(item.explanation, ""); b.appendChild(ex); }
+    } else {
+      const qq = el("div", "br-line"); qq.innerHTML = renderRich(item.question, ""); b.appendChild(qq);
+      const aa = el("div", "br-line"); aa.innerHTML = renderRich(item.answer, ""); b.appendChild(aa);
+    }
+    sec.appendChild(b);
+    wrap.appendChild(sec);
+  });
+  scroll.appendChild(wrap);
+  body.appendChild(scroll);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const pdfBtn = el("button", "btn", "🖨 PDF");
+  const copyBtn = el("button", "btn", "复制");
+  const closeBtn = el("button", "btn", "关闭");
+  pdfBtn.addEventListener("click", function () {
+    if (isQuiz) printDocument(buildPoliticsQuestionsPrintDocument(items));
+    else printDocument(buildPoliticsCardsPrintDocument(items));
+  });
+  copyBtn.addEventListener("click", function () {
+    copyText(wrap.textContent).then(function () { confirmPopup("已复制"); }).catch(function (e) { confirmPopup("复制失败：" + e.message); });
+  });
+  closeBtn.addEventListener("click", function () { ov.remove(); });
+  footer.appendChild(pdfBtn); footer.appendChild(copyBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
 function openPoliticsEditor(card, onSaved) {
   const isNew = !card;
   const cats = POLITICS_CATEGORIES.slice();
@@ -8278,12 +9492,21 @@ function parsePoliticsUpload(text) {
   const r = parsePoliticsCardsText(text, "其他");
   return { items: r.items, err: r.error || "" };
 }
+function parsePoliticsQuestionImportJson(text) {
+  let parsed;
+  try { parsed = JSON.parse(text); }
+  catch (e) { return { items: null, err: "JSON 解析失败：" + e.message }; }
+  const arr = coercePayloadArray(parsed, "questions");
+  if (!arr) return { items: null, err: "顶层必须是数组（也支持 {\"questions\": [...]} 包装格式）" };
+  return { items: arr, err: "" };
+}
 function openPoliticsImport() {
+  if (state.pView === "quiz") { openPoliticsQuestionImport(); return; }
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
   pop.appendChild(el("div", "popup-title", "导入政治记忆卡"));
   const body = el("div", "popup-body");
-  body.appendChild(el("div", "hint-text", "支持 JSON 数组，或每行「问题 | 答案 | 分类 | 标签」，也支持 Q：/A：分块；答案可用 ==高亮== 等标记。"));
+  body.appendChild(el("div", "hint-text", "支持 JSON 数组，或每行「问题 | 答案 | 分类 | 标签」，也支持 Q：/A：分块；答案可用 ==高亮== 等标记。也可点「AI 生成」从 PDF / 图片 / 文本自动整理。"));
   const ta = document.createElement("textarea");
   ta.className = "import-textarea";
   ta.spellcheck = false;
@@ -8310,40 +9533,23 @@ function openPoliticsImport() {
   pop.appendChild(body);
   const footer = el("div", "popup-footer");
   const cancelBtn = el("button", "btn", "取消");
+  const aiBtn = el("button", "btn", "🤖 AI 生成");
   const appendBtn = el("button", "btn", "追加");
   const replaceBtn = el("button", "btn", "替换全部");
   cancelBtn.addEventListener("click", function () { ov.remove(); });
+  aiBtn.addEventListener("click", function () { ov.remove(); openAiImport("politics"); });
   function doImport(mode) {
     const parsed = parsePoliticsCardsText(ta.value, catSel.value);
     if (parsed.error) { confirmPopup(parsed.error); return; }
-    const used = {};
-    if (mode === "replace") {
-      politicsStore.data = [];
-      politicsSrs.reset();
-    } else {
-      for (const c of politicsStore.data) used[c.id] = 1;
-    }
-    const existing = {};
-    for (const c of politicsStore.data) existing[c.category + "\u0001" + c.question] = 1;
-    let added = 0, skipped = 0;
-    for (const card of parsed.items) {
-      const key = card.category + "\u0001" + card.question;
-      if (mode === "append" && existing[key]) { skipped++; continue; }
-      existing[key] = 1;
-      if (!card.id || used[card.id]) card.id = "p_" + genId();
-      while (used[card.id]) card.id = "p_" + genId();
-      used[card.id] = 1;
-      politicsStore.data.push(card);
-      added++;
-    }
-    politicsStore.save();
+    const r = politicsStore.importItems(parsed.items, mode);
     ov.remove();
     renderPoliticsList();
-    confirmPopup("导入完成：新增 " + added + " 张" + (skipped ? "，跳过重复 " + skipped + " 张" : "") + "。");
+    confirmPopup("导入完成：新增 " + r.added + " 张" + (r.skipped ? "，跳过重复 " + r.skipped + " 张" : "") + "。");
   }
   appendBtn.addEventListener("click", function () { doImport("append"); });
   replaceBtn.addEventListener("click", function () { doImport("replace"); });
   footer.appendChild(cancelBtn);
+  footer.appendChild(aiBtn);
   footer.appendChild(appendBtn);
   footer.appendChild(replaceBtn);
   pop.appendChild(footer);
@@ -8352,9 +9558,10 @@ function openPoliticsImport() {
   setTimeout(function () { try { ta.focus(); } catch (e) {} }, 60);
 }
 function openPoliticsExport() {
+  if (state.pView === "quiz") { openPoliticsQuestionExport(); return; }
   if (!politicsStore.data.length) { confirmPopup("政治记忆库为空，没有可导出的卡片"); return; }
   const data = politicsStore.data.map(function (c) {
-    return { id: c.id, category: c.category, question: c.question, answer: c.answer, tags: c.tags || [], starred: !!c.starred };
+    return { id: c.id, category: c.category, question: c.question, answer: c.answer, tags: c.tags || [], starred: !!c.starred, ai_mnemonic: c.ai_mnemonic || "" };
   });
   const text = JSON.stringify(data, null, 2);
   const ov = el("div", "overlay");
@@ -8383,6 +9590,644 @@ function openPoliticsExport() {
   pop.appendChild(footer);
   ov.appendChild(pop);
   document.body.appendChild(ov);
+}
+
+/* =========================================================
+   考研政治 · 刷题
+   ========================================================= */
+function openPoliticsQuiz(pool, opts) {
+  opts = opts || {};
+  const userOnClose = opts.onClose;
+  return openQuiz(pool, Object.assign({
+    bank: politicsQuestionStore,
+    log: politicsAnswerLog,
+    srsMgr: politicsQuizSrs,
+    progressMgr: politicsQuizProgress,
+    priority: politicsQuizPriority,
+    title: "✏️ 政治刷题",
+    politics: true,
+    autoSrs: true,
+  }, opts, {
+    onClose: function () {
+      if (typeof userOnClose === "function") userOnClose();
+      if (state.mode === "politics") renderPoliticsList();
+    },
+  }));
+}
+function politicsQuizApplyScope(pool, scope) {
+  let data = pool.slice();
+  if (scope === "unanswered") data = data.filter(q => !politicsAnswerStatusFor(q).answered);
+  else if (scope === "wrong") data = data.filter(q => politicsAnswerStatusFor(q).anyWrong);
+  else if (scope === "starred") data = data.filter(q => q.starred);
+  else if (scope === "due") {
+    const dueIds = {};
+    politicsQuizSrs.dueQuestions(politicsQuestionStore.data).forEach(q => { dueIds[q.id] = 1; });
+    data = data.filter(q => dueIds[q.id]);
+  }
+  return data;
+}
+function openPoliticsQuizPicker() {
+  if (!politicsQuestionStore.data.length) {
+    confirmPopup("政治题库为空，请先「导入」或「恢复内置题」", restorePoliticsQuizBuiltins, "恢复内置题", "政治题库");
+    return;
+  }
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "开始政治刷题"));
+  const body = el("div", "popup-body");
+  body.style.overflowY = "auto";
+  function addRow(label, widget) {
+    const r = el("div", "import-row");
+    r.appendChild(el("div", "row-label", label));
+    r.appendChild(widget);
+    body.appendChild(r);
+  }
+  const catSel = document.createElement("select");
+  catSel.className = "edit-select";
+  const catCounts = {};
+  politicsQuestionStore.data.forEach(q => { catCounts[q.category] = (catCounts[q.category] || 0) + 1; });
+  [{ value: "全部", label: "全部类别" }].concat(getPoliticsCategoriesForQuiz(catCounts)).forEach(v => {
+    const o = document.createElement("option"); o.value = v.value; o.textContent = v.label; catSel.appendChild(o);
+  });
+  catSel.value = state.pCategory !== "全部" && catCounts[state.pCategory] ? state.pCategory : "全部";
+  addRow("类别", catSel);
+  const typeSel = document.createElement("select");
+  typeSel.className = "edit-select";
+  [["全部", "全部题型"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["essay", "主观题"], ["B", "B型题"], ["A3", "材料串题"]].forEach(([v, t]) => {
+    const count = v === "全部" ? politicsQuestionStore.data.length : politicsQuestionStore.data.filter(q => q.type === v).length;
+    if (v !== "全部" && !count) return;
+    const o = document.createElement("option"); o.value = v; o.textContent = t + (v === "全部" ? "（" + count + "）" : "（" + count + "）"); typeSel.appendChild(o);
+  });
+  typeSel.value = "全部";
+  if (state.pTag !== "全部" && Array.from(typeSel.options).some(o => o.value === state.pTag)) typeSel.value = state.pTag;
+  addRow("题型", typeSel);
+  const scopeSel = document.createElement("select");
+  scopeSel.className = "edit-select";
+  [["all", "全部"], ["unanswered", "未做优先"], ["wrong", "仅错题"], ["starred", "仅收藏"], ["due", "仅待复习（" + politicsQuizSrs.dueCount() + "）"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; scopeSel.appendChild(o);
+  });
+  scopeSel.value = state.pQuizScope;
+  addRow("范围", scopeSel);
+  const cntIn = document.createElement("input");
+  cntIn.className = "edit-input"; cntIn.type = "text"; cntIn.value = String(state.pQuizCount);
+  addRow("题数", cntIn);
+  const mdSel = document.createElement("select");
+  mdSel.className = "edit-select";
+  [["practice", "练习（即时对答案）"], ["exam", "考试（全部答完才看答案）"], ["review", "背题（直接看答案）"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; mdSel.appendChild(o);
+  });
+  mdSel.value = state.pQuizMode;
+  addRow("模式", mdSel);
+  const shufSel = document.createElement("select");
+  shufSel.className = "edit-select";
+  [["off", "关闭"], ["on", "开启（每题选项随机打乱）"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; shufSel.appendChild(o);
+  });
+  shufSel.value = state.optionShuffle ? "on" : "off";
+  addRow("选项乱序", shufSel);
+  const srsRow = el("div", "import-row");
+  srsRow.appendChild(el("div", "row-label", "间隔复习"));
+  const srsBtn = el("button", "btn", "⏰ 复习到期题目（" + politicsQuizSrs.dueCount() + "）");
+  srsBtn.style.cssText = "flex:none;padding:0 10px;height:38px";
+  srsBtn.addEventListener("click", function () { ov.remove(); startPoliticsSrsReview(); });
+  srsRow.appendChild(srsBtn);
+  body.appendChild(srsRow);
+  const mgRow = el("div", "export-row");
+  mgRow.appendChild(el("div", "row-label", "题库管理"));
+  const impBtn = el("button", "btn", "导入");
+  const expBtn = el("button", "btn", "导出");
+  const clrBtn = el("button", "btn", "清空");
+  [impBtn, expBtn, clrBtn].forEach(b => { b.style.cssText = "flex:1;padding:0 8px;height:36px"; mgRow.appendChild(b); });
+  impBtn.addEventListener("click", function () { ov.remove(); openPoliticsQuestionImport(); });
+  expBtn.addEventListener("click", function () { ov.remove(); openPoliticsQuestionExport(); });
+  clrBtn.addEventListener("click", function () {
+    confirmPopup("确定清空政治题库和答题记录？", function () {
+      politicsQuestionStore.clear();
+      politicsAnswerLog.reset();
+      politicsQuizSrs.reset();
+      politicsQuizProgress.clear();
+      ov.remove();
+      renderPoliticsList();
+    }, "清空");
+  });
+  body.appendChild(mgRow);
+  const hint = el("div", "hint-text", "提示：刷题时可用键盘 A~E 选择选项，空格提交/下一题；主观题支持 AI 批改。");
+  body.appendChild(hint);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const startBtn = el("button", "btn", "开始刷题");
+  cancelBtn.addEventListener("click", function () { ov.remove(); });
+  startBtn.addEventListener("click", function () {
+    state.pCategory = catSel.value;
+    state.pTag = typeSel.value;
+    state.pQuizScope = scopeSel.value;
+    state.pQuizMode = mdSel.value;
+    state.pQuizCount = clamp(parseInt(cntIn.value, 10) || 20, 1, 500);
+    state.optionShuffle = shufSel.value === "on";
+    saveSettings();
+    let pool = politicsQuestionStore.data.slice();
+    if (state.pCategory !== "全部") pool = pool.filter(q => q.category === state.pCategory);
+    if (state.pTag !== "全部") pool = pool.filter(q => q.type === state.pTag);
+    pool = politicsQuizApplyScope(pool, state.pQuizScope);
+    if (!pool.length) { confirmPopup("该筛选下没有题目"); return; }
+    ov.remove();
+    openPoliticsQuiz(pool, { mode: state.pQuizMode, scope: state.pQuizScope, count: state.pQuizCount, shuffle: state.optionShuffle });
+  });
+  footer.appendChild(cancelBtn); footer.appendChild(startBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function getPoliticsCategoriesForQuiz(counts) {
+  const values = [];
+  for (const cat of POLITICS_CATEGORIES) if (counts[cat]) values.push({ value: cat, label: withCount(cat, counts[cat]) });
+  for (const cat of Object.keys(counts).sort()) if (POLITICS_CATEGORIES.indexOf(cat) === -1) values.push({ value: cat, label: withCount(cat, counts[cat]) });
+  return values;
+}
+function continuePoliticsQuiz() {
+  const saved = politicsQuizProgress.load();
+  if (!saved || !Array.isArray(saved.poolIds) || !saved.poolIds.length) { confirmPopup("没有上次的政治刷题进度"); return; }
+  const idSet = {};
+  politicsQuestionStore.data.forEach(q => { idSet[q.id] = q; });
+  const pool = saved.poolIds.map(id => idSet[id]).filter(Boolean);
+  if (!pool.length) { confirmPopup("进度已失效（题目可能已被删除）"); return; }
+  const mode = ["practice", "exam", "review"].indexOf(saved.mode) !== -1 ? saved.mode : "practice";
+  openPoliticsQuiz(pool, {
+    mode: mode, scope: saved.scope, startIdx: saved.idx,
+    startSubIdx: saved.subIdx || 0, userAnswers: saved.userAnswers, preserveOrder: true,
+  });
+}
+function startPoliticsSrsReview() {
+  const due = politicsQuizSrs.dueQuestions();
+  if (!due.length) {
+    confirmPopup("🎉 今天没有到期的政治复习任务。\n\n刷题时系统会自动按遗忘曲线安排下次复习时间。");
+    return;
+  }
+  openPoliticsQuiz(due, { mode: "practice", srs: true, shuffle: state.optionShuffle, scope: "srs" });
+}
+function openPoliticsWrongBook() {
+  const wrongIds = politicsAnswerLog.wrongIds();
+  const wrongs = politicsQuestionStore.data.filter(q => wrongIds.indexOf(q.id) !== -1);
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-sm");
+  pop.appendChild(el("div", "popup-title", "政治错题本（" + wrongs.length + " 题）"));
+  const body = el("div", "popup-body");
+  const footer = el("div", "popup-footer");
+  if (!wrongs.length) {
+    body.appendChild(el("div", "empty-note", "暂无政治错题 🎉"));
+    const closeBtn = el("button", "btn", "关闭");
+    closeBtn.addEventListener("click", function () { ov.remove(); });
+    footer.appendChild(closeBtn);
+  } else {
+    const tabRow = el("div", "record-tabs");
+    const groups = [
+      { id: "category", label: "按类别" },
+      { id: "type", label: "按题型" },
+      { id: "count", label: "按错误次数" },
+      { id: "recent", label: "最近 7 天" },
+    ];
+    let curGroup = "category";
+    const tabs = {};
+    groups.forEach(g => {
+      const b = el("button", "record-tab" + (g.id === curGroup ? " active" : ""), g.label);
+      tabs[g.id] = b;
+      b.addEventListener("click", function () {
+        curGroup = g.id;
+        Object.keys(tabs).forEach(k => tabs[k].classList.toggle("active", k === curGroup));
+        renderGroup();
+      });
+      tabRow.appendChild(b);
+    });
+    body.appendChild(tabRow);
+    const listBox = el("div", "drug-result-list");
+    body.appendChild(listBox);
+    function addListItem(q) {
+      const item = el("div", "drug-result-item");
+      const stem = q.stem || q.caseStem || "";
+      item.appendChild(el("span", "dt", stem.slice(0, 40) + (stem.length > 40 ? "…" : "")));
+      item.appendChild(el("span", "ds", "错 " + Math.max(1, politicsAnswerStatusFor(q).wrongCount) + " 次"));
+      item.addEventListener("click", function () { ov.remove(); openPoliticsQuiz([q], { mode: "practice" }); });
+      listBox.appendChild(item);
+    }
+    function renderGroup() {
+      listBox.innerHTML = "";
+      if (curGroup === "category" || curGroup === "type") {
+        const groupsMap = {};
+        const keyFn = curGroup === "category" ? (q => q.category || "（未填类别）") : (q => QUIZ_TYPES[q.type] || q.type || "（未填题型）");
+        wrongs.forEach(q => { const k = keyFn(q); if (!groupsMap[k]) groupsMap[k] = []; groupsMap[k].push(q); });
+        Object.keys(groupsMap).sort().forEach(k => {
+          listBox.appendChild(el("div", "gh-section-title", k + "（" + groupsMap[k].length + "）"));
+          groupsMap[k].forEach(addListItem);
+        });
+      } else if (curGroup === "count") {
+        wrongs.slice().sort((a, b) => politicsAnswerStatusFor(b).wrongCount - politicsAnswerStatusFor(a).wrongCount).forEach(addListItem);
+      } else {
+        const cutoff = Date.now() - 7 * 86400000;
+        const recent = wrongs.filter(q => politicsAnswerStatusFor(q).lastAt > cutoff);
+        if (!recent.length) { listBox.appendChild(el("div", "empty-note", "最近 7 天没有政治错题")); return; }
+        recent.forEach(addListItem);
+      }
+    }
+    renderGroup();
+    const srsAddBtn = el("button", "btn", "⏰ 加入复习");
+    const pdfBtn = el("button", "btn", "🖨 PDF");
+    const csvBtn = el("button", "btn", "📄 Anki");
+    const clearBtn = el("button", "btn", "清空记录");
+    const quizBtn = el("button", "btn", "重做全部");
+    const closeBtn = el("button", "btn", "关闭");
+    srsAddBtn.addEventListener("click", function () {
+      wrongs.forEach(q => { for (let i = 0; i < politicsQuestionSubCount(q); i++) politicsQuizSrs.makeDue(politicsQuizSrs.keyFor(q, i)); });
+      politicsQuizSrs.save();
+      confirmPopup("已将 " + wrongs.length + " 道政治错题加入复习队列");
+    });
+    pdfBtn.addEventListener("click", function () { printDocument(buildPoliticsQuestionsPrintDocument(wrongs)); });
+    csvBtn.addEventListener("click", function () { exportPoliticsQuestionsCsv(wrongs); });
+    clearBtn.addEventListener("click", function () {
+      confirmPopup("确定清空全部政治答题记录？", function () {
+        politicsAnswerLog.reset();
+        ov.remove();
+        renderPoliticsList();
+      });
+    });
+    quizBtn.addEventListener("click", function () { ov.remove(); openPoliticsQuiz(wrongs, { mode: "practice" }); });
+    closeBtn.addEventListener("click", function () { ov.remove(); });
+    footer.appendChild(srsAddBtn); footer.appendChild(pdfBtn); footer.appendChild(csvBtn);
+    footer.appendChild(clearBtn); footer.appendChild(quizBtn); footer.appendChild(closeBtn);
+  }
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function openPoliticsStats() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "政治学习统计"));
+  const body = el("div", "popup-body");
+  const cards = [
+    ["记忆卡", politicsStore.data.length, ""],
+    ["待复习", politicsSrs.dueCount(), ""],
+    ["新卡", politicsSrs.newCount(), ""],
+    ["已掌握", politicsSrs.masteredCount(), "#4dcc66"],
+    ["题库", politicsQuestionStore.data.length, ""],
+    ["政治已做", politicsAnswerLog.stats().total, ""],
+    ["政治正确率", (function () { const s = politicsAnswerLog.stats(); return s.total > 0 ? Math.round(s.correct / s.total * 100) + "%" : "—"; })(), ""],
+    ["题目待复习", politicsQuizSrs.dueCount(), ""],
+  ];
+  const overview = el("div", "");
+  overview.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;font-size:.875em";
+  cards.forEach(([k, v, c]) => {
+    const card = el("div", "");
+    card.style.cssText = "flex:1;min-width:86px;padding:8px 10px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
+    card.innerHTML = '<div style="font-size:.72em;color:var(--sub)">' + k + '</div><div style="font-size:1.25em;font-weight:700;' + (c ? "color:" + c : "") + '">' + escapeHtml(String(v)) + '</div>';
+    overview.appendChild(card);
+  });
+  body.appendChild(overview);
+  const ts = checkin.todayStats();
+  const line = el("div", "detail-meta", "今日刷题 " + ts.q + " 道　·　今日复习 " + ts.r + " 次　·　连续打卡 " + checkin.streak() + " 天");
+  body.appendChild(line);
+  const scroll = el("div", "detail-scroll");
+  scroll.appendChild(el("div", "gh-section-title", "记忆卡掌握进度（按类别）"));
+  const catMap = {};
+  politicsStore.data.forEach(c => {
+    if (!catMap[c.category]) catMap[c.category] = { total: 0, learned: 0, mastered: 0 };
+    catMap[c.category].total++;
+    const st = politicsSrs.stateOf(c);
+    if (st !== "new") catMap[c.category].learned++;
+    if (st === "mastered") catMap[c.category].mastered++;
+  });
+  const catEntries = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+  if (!catEntries.length) scroll.appendChild(el("div", "empty-note", "暂无记忆卡"));
+  else catEntries.forEach(([k, v]) => {
+    const pct = Math.round(v.mastered / v.total * 100);
+    const row = el("div", "heat-row");
+    row.appendChild(el("div", "heat-label", k + "（" + v.mastered + "/" + v.total + "）"));
+    const bar = el("div", "heat-bar");
+    const fill = el("div", "heat-fill");
+    fill.style.width = pct + "%";
+    fill.style.background = pct >= 80 ? "#4dcc66" : pct >= 50 ? "#f2c433" : "#ff9933";
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    row.appendChild(el("div", "heat-pct", pct + "%"));
+    scroll.appendChild(row);
+  });
+  scroll.appendChild(el("div", "gh-section-title", "政治刷题正确率（按类别）"));
+  const quizMap = {};
+  politicsQuestionStore.data.forEach(q => {
+    if (!quizMap[q.category]) quizMap[q.category] = { total: 0, correct: 0 };
+    const st = politicsAnswerStatusFor(q);
+    if (st.answered) {
+      quizMap[q.category].total++;
+      if (!st.anyWrong) quizMap[q.category].correct++;
+    }
+  });
+  const quizEntries = Object.entries(quizMap).filter(([, v]) => v.total > 0);
+  if (!quizEntries.length) scroll.appendChild(el("div", "empty-note", "暂无政治答题数据"));
+  else quizEntries.forEach(([k, v]) => {
+    const pct = Math.round(v.correct / v.total * 100);
+    const row = el("div", "heat-row");
+    row.appendChild(el("div", "heat-label", k));
+    const bar = el("div", "heat-bar");
+    const fill = el("div", "heat-fill");
+    fill.style.width = pct + "%";
+    fill.style.background = pct >= 80 ? "#4dcc66" : pct >= 60 ? "#f2c433" : pct >= 40 ? "#ff9933" : "#d62828";
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    row.appendChild(el("div", "heat-pct", pct + "% (" + v.correct + "/" + v.total + ")"));
+    scroll.appendChild(row);
+  });
+  const qstat = politicsAnswerLog.stats();
+  if (qstat.all - qstat.total > 0) {
+    scroll.appendChild(el("div", "gh-section-title", "未做题目（" + (qstat.all - qstat.total) + " 道）"));
+    scroll.appendChild(el("div", "hint-text", "可在「政治刷题」中选择范围「未做优先」集中练习。"));
+  }
+  body.appendChild(scroll);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const studyBtn = el("button", "btn", "开始记忆");
+  const quizBtn = el("button", "btn", "开始刷题");
+  const resetBtn = el("button", "btn", "重置答题记录");
+  const closeBtn = el("button", "btn", "关闭");
+  studyBtn.addEventListener("click", function () { ov.remove(); startPoliticsSession(); });
+  quizBtn.addEventListener("click", function () { ov.remove(); openPoliticsQuizPicker(); });
+  resetBtn.addEventListener("click", function () {
+    confirmPopup("确定重置全部政治刷题记录？", function () { politicsAnswerLog.reset(); ov.remove(); renderPoliticsList(); }, "重置");
+  });
+  closeBtn.addEventListener("click", function () { ov.remove(); });
+  footer.appendChild(studyBtn); footer.appendChild(quizBtn); footer.appendChild(resetBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function openPoliticsQuestionEditor(q) {
+  if (q && (q.type === "B" || q.type === "A3")) {
+    confirmPopup("B 型题 / 材料串题暂不支持可视化编辑，请通过「导出 → 修改 JSON → 导入」调整。");
+    return;
+  }
+  const isNew = !q;
+  const cats = POLITICS_CATEGORIES.slice();
+  if (q && cats.indexOf(q.category) === -1) cats.push(q.category);
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", isNew ? "＋ 新增政治题" : "编辑政治题"));
+  const body = el("div", "popup-body");
+  const form = el("div", "edit-form");
+  function addLabel(t) { form.appendChild(el("div", "edit-label", t)); }
+  addLabel("类别");
+  const catSel = document.createElement("select");
+  catSel.className = "edit-select";
+  cats.forEach(c => { const o = document.createElement("option"); o.value = c; o.textContent = c; catSel.appendChild(o); });
+  catSel.value = q ? q.category : (state.pCategory !== "全部" && cats.indexOf(state.pCategory) !== -1 ? state.pCategory : "马原");
+  form.appendChild(catSel);
+  addLabel("题型");
+  const typeSel = document.createElement("select");
+  typeSel.className = "edit-select";
+  [["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["essay", "主观题"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; typeSel.appendChild(o);
+  });
+  typeSel.value = q && ["single", "multiple", "judge", "essay"].indexOf(q.type) !== -1 ? q.type : "single";
+  form.appendChild(typeSel);
+  addLabel("题干 *");
+  const stemTa = document.createElement("textarea");
+  stemTa.className = "edit-textarea"; stemTa.style.minHeight = "110px"; stemTa.spellcheck = false;
+  stemTa.value = q ? q.stem : "";
+  stemTa.placeholder = "例如：矛盾的两个基本属性是？";
+  form.appendChild(stemTa);
+  addLabel("选项（每行一个，可写 A. 内容；判断题不用填）");
+  const optTa = document.createElement("textarea");
+  optTa.className = "edit-textarea"; optTa.style.minHeight = "120px"; optTa.spellcheck = false;
+  optTa.placeholder = "A. 普遍性和特殊性\nB. 同一性和斗争性\nC. 主要方面和次要方面\nD. 内因和外因";
+  if (q && q.options && q.options.length) optTa.value = q.options.map(o => (o.key || "") + ". " + (o.text || "")).join("\n");
+  form.appendChild(optTa);
+  addLabel("答案（单选/多选填字母，如 B 或 ABC；判断题填 A=正确 / B=错误）");
+  const ansIn = document.createElement("input");
+  ansIn.type = "text"; ansIn.className = "edit-input"; ansIn.spellcheck = false;
+  ansIn.placeholder = "B";
+  if (q && q.type !== "essay") ansIn.value = (q.answer || []).join("");
+  form.appendChild(ansIn);
+  addLabel("主观题参考答案（仅主观题使用，可分多行）");
+  const essayTa = document.createElement("textarea");
+  essayTa.className = "edit-textarea"; essayTa.style.minHeight = "130px"; essayTa.spellcheck = false;
+  if (q && q.type === "essay") essayTa.value = (q.answer || []).join("\n");
+  form.appendChild(essayTa);
+  addLabel("解析");
+  const expTa = document.createElement("textarea");
+  expTa.className = "edit-textarea"; expTa.style.minHeight = "90px"; expTa.spellcheck = false;
+  expTa.value = q ? (q.explanation || "") : "";
+  form.appendChild(expTa);
+  addLabel("标签（逗号或空格分隔）");
+  const tagIn = document.createElement("input");
+  tagIn.type = "text"; tagIn.className = "edit-input"; tagIn.spellcheck = false;
+  tagIn.placeholder = "高频 易错";
+  if (q && q.tags && q.tags.length) tagIn.value = q.tags.join(" ");
+  form.appendChild(tagIn);
+  addLabel("难度");
+  const diffSel = document.createElement("select");
+  diffSel.className = "edit-select";
+  [1, 2, 3, 4, 5].forEach(n => { const o = document.createElement("option"); o.value = String(n); o.textContent = "★".repeat(n); diffSel.appendChild(o); });
+  diffSel.value = String(q ? (q.difficulty || 3) : 3);
+  form.appendChild(diffSel);
+  function syncType() {
+    const t = typeSel.value;
+    optTa.disabled = t === "essay" || t === "judge";
+    ansIn.disabled = t === "essay";
+    essayTa.style.display = t === "essay" ? "" : "none";
+    if (t === "judge") optTa.value = "A. 正确\nB. 错误";
+  }
+  typeSel.addEventListener("change", syncType);
+  syncType();
+  body.appendChild(form);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const saveBtn = el("button", "btn", "保存");
+  cancelBtn.addEventListener("click", function () { ov.remove(); });
+  saveBtn.addEventListener("click", function () {
+    const stem = stemTa.value.trim();
+    if (!stem) { confirmPopup("题干不能为空"); return; }
+    const type = typeSel.value;
+    let options = [];
+    let answer = [];
+    if (type === "judge") {
+      options = [{ key: "A", text: "正确" }, { key: "B", text: "错误" }];
+      const raw = ansIn.value.trim().toUpperCase();
+      answer = [/^(A|正确|对|√|T|TRUE)$/i.test(raw) ? "A" : "B"];
+    } else if (type === "essay") {
+      answer = essayTa.value.split("\n").map(s => s.trim()).filter(Boolean);
+      if (!answer.length) { confirmPopup("主观题答案不能为空"); return; }
+    } else {
+      const lines = optTa.value.split("\n").map(s => s.trim()).filter(Boolean);
+      options = lines.map((line, i) => {
+        const m = line.match(/^([A-Ea-e])[.、:：)）\s]\s*(.*)$/);
+        return { key: m ? m[1].toUpperCase() : String.fromCharCode(65 + i), text: m ? m[2] : line };
+      });
+      if (options.length < 2) { confirmPopup("选择题至少需要 2 个选项"); return; }
+      const letters = ansIn.value.toUpperCase().match(/[A-E]/g) || [];
+      answer = type === "multiple" ? Array.from(new Set(letters)).sort() : (letters.length ? [letters[0]] : []);
+      if (!answer.length) { confirmPopup("请填写正确答案"); return; }
+      if (answer.some(a => !options.some(o => o.key === a))) { confirmPopup("答案字母超出选项范围"); return; }
+    }
+    const tags = tagIn.value.split(/[,，、;；\s]+/).map(s => s.trim()).filter(Boolean).slice(0, 20);
+    const data = {
+      id: q ? q.id : "PQ_" + genId(),
+      category: catSel.value, subject: catSel.value, chapter: catSel.value,
+      type: type, stem: stem, caseStem: "", sharedOptions: [], subQuestions: [], questions: [],
+      options: options, answer: answer, explanation: expTa.value.trim(),
+      tags: tags, difficulty: Number(diffSel.value) || 3,
+      relatedCase: q ? q.relatedCase || "" : "",
+      frequency: q ? q.frequency || "" : "",
+      starred: q ? !!q.starred : false,
+      doubt: q ? !!q.doubt : false,
+      group: q ? q.group || "" : "",
+    };
+    if (isNew) politicsQuestionStore.add(data);
+    else politicsQuestionStore.update(q.id, data);
+    ov.remove();
+    renderPoliticsList();
+  });
+  footer.appendChild(cancelBtn);
+  if (!isNew) {
+    const delBtn = el("button", "btn", "删除");
+    delBtn.addEventListener("click", function () {
+      confirmPopup("确定删除这道政治题？", function () {
+        politicsQuestionStore.remove(q.id);
+        ov.remove();
+        renderPoliticsList();
+      }, "删除");
+    });
+    footer.appendChild(delBtn);
+  }
+  footer.appendChild(saveBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+  setTimeout(function () { try { stemTa.focus(); } catch (e) {} }, 60);
+}
+function openPoliticsQuestionImport() {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "导入政治题库"));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "hint-text", "粘贴题目 JSON 数组，支持 single / multiple / judge / essay；字段：category、type、stem、options、answer、explanation、tags。也可点「AI 生成」从 PDF / 图片 / 文本自动出题。"));
+  const ta = document.createElement("textarea");
+  ta.className = "import-textarea";
+  ta.spellcheck = false;
+  ta.placeholder = SAMPLE_POLITICS_QUESTION_JSON;
+  body.appendChild(ta);
+  const catRow = el("div", "import-row");
+  catRow.appendChild(el("div", "row-label", "未注明类别时归入"));
+  const catSel = document.createElement("select");
+  catSel.className = "edit-select";
+  ["其他"].concat(POLITICS_CATEGORIES.filter(c => c !== "其他")).forEach(c => {
+    const o = document.createElement("option"); o.value = c; o.textContent = c; catSel.appendChild(o);
+  });
+  catRow.appendChild(catSel);
+  body.appendChild(catRow);
+  const exRow = el("div", "file-row");
+  const sampleBtn = el("button", "btn", "填入示例");
+  sampleBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  sampleBtn.addEventListener("click", function () { ta.value = SAMPLE_POLITICS_QUESTION_JSON; });
+  exRow.appendChild(sampleBtn);
+  body.appendChild(exRow);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancelBtn = el("button", "btn", "取消");
+  const aiBtn = el("button", "btn", "🤖 AI 生成");
+  const appendBtn = el("button", "btn", "追加");
+  const replaceBtn = el("button", "btn", "替换全部");
+  cancelBtn.addEventListener("click", function () { ov.remove(); });
+  aiBtn.addEventListener("click", function () { ov.remove(); openAiImport("politicsQuestions"); });
+  function doImport(mode) {
+    const r = politicsQuestionStore.importFromText(ta.value, mode, catSel.value);
+    if (!r.ok) { confirmPopup(r.msg); return; }
+    ov.remove();
+    renderPoliticsList();
+    confirmPopup(r.msg);
+  }
+  appendBtn.addEventListener("click", function () { doImport("append"); });
+  replaceBtn.addEventListener("click", function () { doImport("replace"); });
+  footer.appendChild(cancelBtn); footer.appendChild(aiBtn); footer.appendChild(appendBtn); footer.appendChild(replaceBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+  setTimeout(function () { try { ta.focus(); } catch (e) {} }, 60);
+}
+function openPoliticsQuestionExport() {
+  if (!politicsQuestionStore.data.length) { confirmPopup("政治题库为空"); return; }
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", "导出政治题库"));
+  const body = el("div", "popup-body");
+  const catRow = el("div", "export-row");
+  catRow.appendChild(el("div", "row-label", "类别"));
+  const catSel = document.createElement("select");
+  catSel.className = "edit-select";
+  const catCounts = {};
+  politicsQuestionStore.data.forEach(q => { catCounts[q.category] = (catCounts[q.category] || 0) + 1; });
+  [{ value: "全部", label: "全部" }].concat(getPoliticsCategoriesForQuiz(catCounts)).forEach(v => {
+    const o = document.createElement("option"); o.value = v.value; o.textContent = v.label; catSel.appendChild(o);
+  });
+  catRow.appendChild(catSel);
+  body.appendChild(catRow);
+  const tpRow = el("div", "export-row");
+  tpRow.appendChild(el("div", "row-label", "题型"));
+  const tpSel = document.createElement("select");
+  tpSel.className = "edit-select";
+  [["全部", "全部"], ["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["essay", "主观题"], ["B", "B型题"], ["A3", "材料串题"]].forEach(([v, t]) => {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; tpSel.appendChild(o);
+  });
+  tpRow.appendChild(tpSel);
+  body.appendChild(tpRow);
+  const info = el("div", "export-info");
+  body.appendChild(info);
+  const ta = document.createElement("textarea");
+  ta.className = "export-textarea"; ta.readOnly = true; ta.spellcheck = false;
+  body.appendChild(ta);
+  function refresh() {
+    const text = politicsQuestionStore.exportText(catSel.value, tpSel.value, state.pStarredOnly);
+    ta.value = text;
+    let c = 0; try { c = JSON.parse(text).length; } catch (e) {}
+    info.textContent = "将导出 " + c + " 题（约 " + Math.round(text.length / 1024) + " KB）" + (state.pStarredOnly ? " · 仅收藏" : "");
+  }
+  catSel.addEventListener("change", refresh);
+  tpSel.addEventListener("change", refresh);
+  refresh();
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const closeBtn = el("button", "btn", "关闭");
+  const copyBtn = el("button", "btn", "复制全部");
+  const dlBtn = el("button", "btn", "下载 JSON");
+  const ankiBtn = el("button", "btn", "⬇ Anki CSV");
+  closeBtn.addEventListener("click", function () { ov.remove(); });
+  copyBtn.addEventListener("click", function () { copyText(ta.value).then(function () { confirmPopup("已复制"); }).catch(function (e) { confirmPopup("失败：" + e.message); }); });
+  dlBtn.addEventListener("click", function () { downloadText("考研政治题库_" + formatDate(new Date()) + ".json", ta.value); });
+  ankiBtn.addEventListener("click", function () {
+    let qs = politicsQuestionStore.data.slice();
+    if (catSel.value !== "全部") qs = qs.filter(q => q.category === catSel.value);
+    if (tpSel.value !== "全部") qs = qs.filter(q => q.type === tpSel.value);
+    if (!qs.length) { confirmPopup("没有可导出的题目"); return; }
+    exportPoliticsQuestionsCsv(qs);
+  });
+  footer.appendChild(closeBtn); footer.appendChild(copyBtn); footer.appendChild(dlBtn); footer.appendChild(ankiBtn);
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+function exportPoliticsQuestionsCsv(qs) {
+  const lines = ["正面,背面,标签"];
+  for (const q of qs) {
+    let front = q.stem || q.caseStem || "";
+    let back = "";
+    if (q.type === "essay") back = (q.answer || []).join("\n");
+    else back = (q.options || []).map(o => o.key + ". " + o.text).join("\n") + "\n答案：" + (q.answer || []).join("") + "\n" + stripRichMarkup(q.explanation || "");
+    const tags = [q.category || "", QUIZ_TYPES[q.type] || q.type].filter(Boolean).join(" ");
+    lines.push([csvEscape(stripRichMarkup(front)), csvEscape(back), csvEscape(tags)].join(","));
+  }
+  downloadCsv("kaoyan306-politics-anki.csv", lines.join("\n"));
+}
+function politicsAddOrImport() {
+  if (state.pView === "quiz") openPoliticsQuestionEditor(null);
+  else openPoliticsEditor(null);
 }
 
 /* =========================================================
@@ -9136,13 +10981,18 @@ function openAiChat(opts) {
   opts = opts || {};
   const item = opts.item || null;
   const ragMode = !!opts.rag;
+  const politicsMode = !!opts.politics;
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
-  pop.appendChild(el("div", "popup-title", opts.title || (ragMode ? "🤖 AI 全库问答" : "🤖 AI 追问导师")));
+  pop.appendChild(el("div", "popup-title", opts.title || (politicsMode ? "🤖 政治 AI 问答" : ragMode ? "🤖 AI 全库问答" : "🤖 AI 追问导师")));
   const body = el("div", "popup-body");
-  body.appendChild(el("div", "hint-text", ragMode
-    ? "描述你的问题，系统会先在本地病例库检索，再让 AI 结合资料回答（末尾附参考病例）。"
-    : "围绕《" + (item && item.title || "") + "》追问，AI 会结合本条病例内容解答。"));
+  body.appendChild(el("div", "hint-text", politicsMode
+    ? (item
+      ? "围绕这张政治" + (item.question ? "记忆卡" : "题目") + "追问，AI 会结合本地政治资料解答。"
+      : "描述你的政治问题，系统会先在本地政治记忆卡和题库中检索，再让 AI 结合资料回答。")
+    : ragMode
+      ? "描述你的问题，系统会先在本地病例库检索，再让 AI 结合资料回答（末尾附参考病例）。"
+      : "围绕《" + (item && item.title || "") + "》追问，AI 会结合本条病例内容解答。"));
   const box = el("div", "chat-box");
   body.appendChild(box);
   const inputRow = el("div", "chat-input-row");
@@ -9168,7 +11018,28 @@ function openAiChat(opts) {
     box.scrollTop = box.scrollHeight;
     return m;
   }
+  function politicsQuestionPlain(q) {
+    let t = "【政治题目 · " + (q.category || "") + " · " + (QUIZ_TYPES[q.type] || q.type) + "】\n" + (q.stem || "");
+    if (q.options && q.options.length) t += "\n" + q.options.map(o => o.key + ". " + o.text).join("\n");
+    t += "\n答案：" + (q.answer || []).join("、");
+    if (q.explanation) t += "\n解析：" + q.explanation;
+    if (q.tags && q.tags.length) t += "\n标签：" + q.tags.join("、");
+    return t;
+  }
   function contextFor(question) {
+    if (politicsMode) {
+      if (item) {
+        const text = item.question ? politicsCardToText(item) : politicsQuestionPlain(item);
+        return "【当前政治资料】\n" + stripRichMarkup(text).slice(0, 6000);
+      }
+      const tokens = String(question || "").toLowerCase().split(/[\s,，。.；;：:、？！?!()（）【】\[\]《》]+/).filter(t => t.length >= 1).slice(0, 8);
+      const cards = politicsStore.data.filter(c => !tokens.length || tokens.some(t => politicsKeywordMatches(c, t))).slice(0, 4);
+      const qs = politicsQuestionStore.data.filter(q => !tokens.length || tokens.some(t => politicsQuestionKeywordMatches(q, t))).slice(0, 4);
+      let ctx = "";
+      cards.forEach(c => { ctx += politicsCardToText(c) + "\n\n"; });
+      qs.forEach(q => { ctx += politicsQuestionPlain(q) + "\n\n"; });
+      return ctx.slice(0, 7000);
+    }
     if (item && !ragMode) {
       return "【当前病例】\n" + stripRichMarkup(itemToPlainText(item)).slice(0, 4500);
     }
@@ -9191,9 +11062,12 @@ function openAiChat(opts) {
     const got = contextFor(text);
     const ctx = typeof got === "string" ? got : got.ctx;
     const found = typeof got === "string" ? [] : got.found;
-    const sys = "你是考研西医综合 306 的答疑导师。回答要求：准确、分点、简洁，结合给定资料；资料没覆盖时明确说明并给通用结论。" +
-      (ragMode ? "回答末尾另起一行输出「参考病例：」并列出你用到的病例标题（若无资料则写“无”）。" : "") +
-      (ctx ? "\n\n【资料】\n" + ctx : "");
+    const sys = politicsMode
+      ? "你是考研政治（101 思想政治理论）的答疑导师。回答要求：准确、分点、简洁，尽量结合给定政治资料；资料没覆盖时明确说明并给教材通用结论，不要编造。" +
+        (ctx ? "\n\n【资料】\n" + ctx : "")
+      : "你是考研西医综合 306 的答疑导师。回答要求：准确、分点、简洁，结合给定资料；资料没覆盖时明确说明并给通用结论。" +
+        (ragMode ? "回答末尾另起一行输出「参考病例：」并列出你用到的病例标题（若无资料则写“无”）。" : "") +
+        (ctx ? "\n\n【资料】\n" + ctx : "");
     const msgs = [{ role: "system", content: sys }];
     history.slice(-6).forEach(h => msgs.push(h));
     msgs.push({ role: "user", content: text });
@@ -9218,7 +11092,7 @@ function openAiChat(opts) {
       }
     } catch (e) {
       loadEl.className = "chat-msg err";
-      loadEl.textContent = "❌ " + e.message + "\n（请在病例模式「🤖 AI出题」或刷题模式「AI出题」面板中配置服务商与 Key）";
+      loadEl.textContent = "❌ " + e.message + "\n（请在「设置」中配置 AI 服务商与 Key）";
     }
     busy = false; sendBtn.disabled = false;
     box.scrollTop = box.scrollHeight;
@@ -9626,24 +11500,27 @@ function openExamResult(ctx) {
   const total = ctx.total || 0;
   const correct = ctx.correct || 0;
   const pct = total > 0 ? Math.round(correct / total * 100) : 0;
-  examHistory.add({
-    at: Date.now(),
-    total: total,
-    correct: correct,
-    pct: pct,
-    timeUsed: ctx.timeUsed || 0,
-    subjects: ctx.subjects || {},
-  });
+  const isPolitics = !!(ctx.quizOpts && ctx.quizOpts.politics);
+  if (!isPolitics) {
+    examHistory.add({
+      at: Date.now(),
+      total: total,
+      correct: correct,
+      pct: pct,
+      timeUsed: ctx.timeUsed || 0,
+      subjects: ctx.subjects || {},
+    });
+  }
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
-  pop.appendChild(el("div", "popup-title", "📝 考试结果"));
+  pop.appendChild(el("div", "popup-title", isPolitics ? "📝 政治考试结果" : "📝 考试结果"));
   const body = el("div", "popup-body");
   const score = el("div", "exam-score", pct + " 分");
   body.appendChild(score);
   const line = el("div", "detail-meta", "共作答 " + total + " 题 · 答对 " + correct + " · 用时 " + formatDuration(ctx.timeUsed || 0));
   body.appendChild(line);
   const scroll = el("div", "detail-scroll");
-  scroll.appendChild(el("div", "gh-section-title", "各科目得分率"));
+  scroll.appendChild(el("div", "gh-section-title", isPolitics ? "各类别得分率" : "各科目得分率"));
   const subs = Object.keys(ctx.subjects || {});
   if (!subs.length) scroll.appendChild(el("div", "empty-note", "暂无数据"));
   subs.sort().forEach(sj => {
@@ -9668,7 +11545,7 @@ function openExamResult(ctx) {
       const stem = q.type === "B" ? ((q.subQuestions[0] && q.subQuestions[0].stem) || "B型题") : q.type === "A3" ? (q.caseStem || "病例串题") : (q.stem || "");
       item.appendChild(el("span", "dt", stem.slice(0, 42) + (stem.length > 42 ? "…" : "")));
       item.appendChild(el("span", "ds", (QUIZ_TYPES[q.type] || q.type)));
-      item.addEventListener("click", () => { ov.remove(); openQuiz([q], { mode: "review" }); });
+      item.addEventListener("click", () => { ov.remove(); openQuiz([q], Object.assign({ mode: "review" }, ctx.quizOpts || {})); });
       scroll.appendChild(item);
     });
   }
@@ -9677,7 +11554,7 @@ function openExamResult(ctx) {
   const footer = el("div", "popup-footer");
   if (wrongs.length) {
     const redoBtn = el("button", "btn", "重做错题");
-    redoBtn.addEventListener("click", () => { ov.remove(); openQuiz(wrongs, { mode: "practice" }); });
+    redoBtn.addEventListener("click", () => { ov.remove(); openQuiz(wrongs, Object.assign({ mode: "practice" }, ctx.quizOpts || {})); });
     footer.appendChild(redoBtn);
   }
   const closeBtn = el("button", "btn", "关闭");
@@ -10007,11 +11884,24 @@ function bindEvents() {
   document.getElementById("modeCasesBtn").addEventListener("click", () => setMode("cases"));
   document.getElementById("modeQuizBtn").addEventListener("click", () => setMode("quiz"));
   document.getElementById("modePoliticsBtn").addEventListener("click", () => setMode("politics"));
+  document.getElementById("pViewSel").addEventListener("change", function (e) {
+    state.pView = e.target.value === "quiz" ? "quiz" : "cards";
+    state.pTag = "全部";
+    state.pFilter = "全部";
+    saveSettings();
+    renderPoliticsList();
+  });
   document.getElementById("pCategorySel").addEventListener("change", function (e) {
     state.pCategory = e.target.value; saveSettings(); renderPoliticsList();
   });
   document.getElementById("pFilterSel").addEventListener("change", function (e) {
     state.pFilter = e.target.value; saveSettings(); renderPoliticsList();
+  });
+  document.getElementById("pTagSel").addEventListener("change", function (e) {
+    state.pTag = e.target.value; saveSettings(); renderPoliticsList();
+  });
+  document.getElementById("pSortSel").addEventListener("change", function (e) {
+    state.pSort = e.target.value; saveSettings(); renderPoliticsList();
   });
   let __pt = null;
   document.getElementById("pSearchInput").addEventListener("input", function (e) {
@@ -10020,12 +11910,38 @@ function bindEvents() {
     __pt = setTimeout(() => { state.pSearch = v; renderPoliticsList(); }, 180);
   });
   document.getElementById("pStudyBtn").addEventListener("click", startPoliticsSession);
-  document.getElementById("pAddBtn").addEventListener("click", function () { openPoliticsEditor(null); });
+  document.getElementById("pAddBtn").addEventListener("click", politicsAddOrImport);
+  document.getElementById("pRandomBtn").addEventListener("click", politicsRandom);
+  document.getElementById("pStarBtn").addEventListener("click", function () {
+    state.pStarredOnly = !state.pStarredOnly;
+    saveSettings();
+    updatePoliticsHeader();
+    renderPoliticsList();
+  });
+  document.getElementById("pAskBtn").addEventListener("click", function () { openAiChat({ politics: true }); });
+  document.getElementById("pQuizBtn").addEventListener("click", openPoliticsQuizPicker);
+  document.getElementById("pContinueQuizBtn").addEventListener("click", continuePoliticsQuiz);
+  document.getElementById("pSrsBtn").addEventListener("click", function () {
+    if (state.pView === "quiz") { startPoliticsSrsReview(); return; }
+    const due = politicsStore.data.filter(c => {
+      const st = politicsSrs.stateOf(c);
+      return st === "due" || st === "new";
+    });
+    if (!due.length) { confirmPopup("🎉 今天没有到期的政治记忆卡"); return; }
+    openPoliticsStudy(due.slice(0, 20));
+  });
+  document.getElementById("pWrongBookBtn").addEventListener("click", openPoliticsWrongBook);
+  document.getElementById("pStatsBtn").addEventListener("click", openPoliticsStats);
+  document.getElementById("pRecordBtn").addEventListener("click", openPoliticsReviewSheet);
+  document.getElementById("pPdfBtn").addEventListener("click", openPoliticsPdfExport);
   document.getElementById("pImportBtn").addEventListener("click", openPoliticsImport);
   document.getElementById("pExportBtn").addEventListener("click", openPoliticsExport);
   document.getElementById("pClearBtn").addEventListener("click", confirmClearPolitics);
   document.getElementById("pRestoreBtn").addEventListener("click", restorePoliticsBuiltins);
-  document.getElementById("pUploadBtn").addEventListener("click", function () { openUpload("politics"); });
+  document.getElementById("pUploadBtn").addEventListener("click", function () {
+    if (state.pView === "quiz") openPoliticsQuestionImport();
+    else openUpload("politics");
+  });
   document.getElementById("pSettingsBtn").addEventListener("click", openSettings);
   document.getElementById("subjectSel").addEventListener("change", function (e) {
     state.subject = e.target.value; state.chapter = "全部";
@@ -10110,6 +12026,67 @@ function bindEvents() {
 }
 
 /* =========================================================
+   系统分享图片
+   ========================================================= */
+function nativeSharedFileUrl(path) {
+  try {
+    if (window.Capacitor && typeof window.Capacitor.convertFileSrc === "function") {
+      const u = window.Capacitor.convertFileSrc(path);
+      if (u && u !== path) return u;
+    }
+  } catch (e) {}
+  return "https://localhost/_capacitor_file_" + (String(path).charAt(0) === "/" ? path : "/" + path);
+}
+async function loadNativeSharedImages() {
+  if (!window.KANative || typeof window.KANative.consumeSharedImages !== "function") return;
+  let raw = "";
+  try { raw = window.KANative.consumeSharedImages(); } catch (e) { return; }
+  if (!raw) return;
+  let list = [];
+  try { list = JSON.parse(raw); } catch (e) { return; }
+  if (!Array.isArray(list) || !list.length) return;
+  const files = [];
+  for (const item of list) {
+    if (!item || !item.path) continue;
+    try {
+      const resp = await fetch(nativeSharedFileUrl(item.path));
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const blob = await resp.blob();
+      files.push(new File([blob], item.name || ("分享图片-" + (files.length + 1)), {
+        type: item.mime || blob.type || "image/jpeg",
+      }));
+    } catch (e) {
+      console.warn("读取分享图片失败", e);
+    }
+  }
+  if (!files.length) { confirmPopup("读取分享图片失败，请重新分享"); return; }
+  openSharedImageTargetPicker(files);
+}
+function openSharedImageTargetPicker(files) {
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-sm");
+  pop.appendChild(el("div", "popup-title", "识别分享的图片"));
+  const body = el("div", "popup-body");
+  body.appendChild(el("div", "confirm-msg", "已收到 " + files.length + " 张图片。选择生成目标，下一步会自动 OCR，识别结果可预览后再导入。"));
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const cancel = el("button", "btn", "取消");
+  cancel.addEventListener("click", function () { ov.remove(); });
+  footer.appendChild(cancel);
+  [["政治记忆卡", "politics"], ["政治题库", "politicsQuestions"], ["病例 JSON", "cases"], ["医学题库", "questions"]].forEach(function (pair) {
+    const b = el("button", "btn", pair[0]);
+    b.addEventListener("click", function () {
+      ov.remove();
+      openAiImport(pair[1], files);
+    });
+    footer.appendChild(b);
+  });
+  pop.appendChild(footer);
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+/* =========================================================
    初始化
    ========================================================= */
 async function init() {
@@ -10121,6 +12098,10 @@ async function init() {
   examHistory.load();
   politicsStore.load();
   politicsSrs.load();
+  politicsQuestionStore.load();
+  politicsAnswerLog.load();
+  politicsQuizSrs.load();
+  politicsQuizProgress.load();
   try {
     await Promise.race([
       Promise.all([store.load(), questionStore.load()]),
@@ -10145,8 +12126,11 @@ async function init() {
   rebuildQSubjectValues();
   document.getElementById("qTypeSel").value = state.qType;
   document.getElementById("qSubjectSel").value = state.qSubject;
+  document.getElementById("pViewSel").value = state.pView;
   document.getElementById("pFilterSel").value = state.pFilter;
   setMode(state.mode || "cases");
+  window.addEventListener("kaoyan:shared-images", function () { loadNativeSharedImages(); });
+  setTimeout(loadNativeSharedImages, 400);
   requestAnimationFrame(() => { restoreScroll(); setTimeout(restoreScroll, 120); });
 }
 
