@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "savedAt": "2026-10-18T03:22:08.646Z",
+    "savedAt": "2026-10-31T12:17:28.113Z",
     "version": 2
   },
   "version": 2,
-  "active": "opencode_srv",
+  "active": "deepseek",
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -12,7 +12,7 @@
     },
     "deepseek": {
       "base_url": "https://api.deepseek.com/v1",
-      "model": "deepseek-flash"
+      "model": "deepseek-v4.1-flash-free"
     },
     "opencode_srv": {
       "base_url": "http://127.0.0.1:4096",
@@ -21,13 +21,13 @@
   },
   "custom_presets": [],
   "temperature": 0.2,
-  "max_tokens": 8000,
-  "chunk_size": 5000,
+  "max_tokens": 80000,
+  "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "内科学",
-  "chapter_sel": "__keep__",
+  "subject_target": "生理学",
+  "chapter_sel": "绪论",
   "custom_models": {},
-  "provider": "opencode_srv",
-  "base_url": "http://127.0.0.1:4096",
-  "model": "opencode/deepseek-v4.1-flash-free"
+  "provider": "deepseek",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-v4.1-flash-free"
 }
