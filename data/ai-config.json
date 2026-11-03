@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-11-03T11:35:39.831Z",
+    "savedAt": "2026-11-03T11:43:47.822Z",
     "version": 2
   },
   "version": 2,
@@ -23,7 +23,7 @@
       "model": ""
     },
     "ollama": {
-      "base_url": "http://127.0.0.1:8080/v1",
+      "base_url": "http://127.0.0.1:8081/v1",
       "model": "qwen2.5-3b"
     },
     "lmstudio": {
@@ -40,6 +40,6 @@
   "chapter_sel": "细胞的基本功能",
   "custom_models": {},
   "provider": "ollama",
-  "base_url": "http://127.0.0.1:8080/v1",
+  "base_url": "http://127.0.0.1:8081/v1",
   "model": "qwen2.5-3b"
 }
