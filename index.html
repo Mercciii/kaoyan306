@@ -421,8 +421,8 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
       <option value="外科学">外科学</option>
       <option value="生理学">生理学</option>
       <option value="生物化学">生物化学</option>
-      <option value="病理学总论">病理学总论</option>
-      <option value="病理学各论">病理学各论</option>
+      <option value="病理学">病理学</option>
+      <option value="诊断学">诊断学</option>
       <option value="人文精神">人文精神</option>
     </select>
     <select id="chapterSel"></select>
@@ -555,14 +555,19 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
 /* =========================================================
    常量
    ========================================================= */
-const SUBJECTS = ["内科学", "外科学", "生理学", "生物化学", "病理学总论", "病理学各论", "人文精神"];
+const SUBJECTS = ["内科学", "外科学", "生理学", "生物化学", "病理学", "诊断学", "人文精神"];
+function normalizeSubjectName(s) {
+  const v = String(s == null ? "" : s).trim();
+  if (v === "病理学总论" || v === "病理学各论") return "病理学";
+  return v || SUBJECTS[0];
+}
 const FREQ_OPTIONS = ["", "★", "★★", "★★★", "★★★★", "★★★★★"];
 const STATUS_OPTIONS = ["未看", "需复习", "已掌握"];
 const STATUS_COLORS = { "未看":"#999999", "需复习":"#ff9933", "已掌握":"#4dcc66" };
 const SUBJECT_COLORS = {
   "内科学":"#d94747", "外科学":"#8c47bf", "生理学":"#338ce6",
-  "生物化学":"#33b366", "病理学总论":"#f5a623", "病理学各论":"#d97719",
-  "人文精神":"#737380",
+  "生物化学":"#33b366", "病理学":"#f5a623",
+  "诊断学":"#16a085", "人文精神":"#737380",
 };
 const SORT_OPTIONS = ["默认", "频率高→低", "频率低→高", "标题", "ID升序", "ID降序"];
 const QUIZ_TYPES = { single:"单选", multiple:"多选", judge:"判断", B:"B型题", A3:"病例串题", essay:"主观题" };
@@ -596,38 +601,49 @@ const ABBR_MAP = {
 
 /* =========================================================
    字段模板
-   - 病理学拆分为：病理学总论（总论模板）+ 病理学各论（各论模板，仅增加不删减）
+   - 病理学：合并总论与各论模板（总论 8 项 + 各论 14 项）
    ========================================================= */
 const FIELD_SCHEMAS = {
   "内科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "外科学": [["overview","概述"],["epidemiology","流行病学"],["etiology","病因"],["pathogenesis","发病机制"],["pathology","病理"],["pathophysiology","病理生理"],["classification","分类"],["typing","分型"],["staging","分期"],["manifestations","临床表现"],["lab_tests","实验室及其他检查"],["diagnosis","诊断"],["differential","鉴别诊断"],["complications","并发症"],["treatment","治疗"],["prevention","预防"],["prognosis","预后"]],
   "生理学": [["overview","概述"],["phys_basic","基本概念"],["phys_mechanism","发生机制"],["phys_regulation","调节因素"],["phys_factors","影响因素"],["phys_experiment","实验现象 / 指标"],["phys_clinical","临床联系"],["phys_summary","小结"]],
   "生物化学": [["overview","概述"],["biochem_structure","结构 / 构象要点"],["biochem_bond","关键化学键与作用力"],["biochem_property","理化性质与应用"],["biochem_nucleic_property","核酸理化性质"],["biochem_vitamin_mineral","维生素 / 无机元素"],["biochem_coenzyme","辅酶 / 辅因子"],["biochem_pathway","代谢途径 / 反应过程"],["biochem_enzyme","关键酶 / 限速酶"],["biochem_regulation","调节方式"],["biochem_energy","能量计算"],["biochem_kinetics","动力学 / 定量参数"],["biochem_inhibitor","抑制剂 / 药物"],["biochem_location","亚细胞定位"],["biochem_energy_molecule","高能化合物"],["biochem_lipoprotein","血浆脂蛋白"],["biochem_metabolic_disease","代谢性疾病"],["biochem_mb_element","分子生物学元件与序列"],["biochem_mb_process","遗传信息传递要点"],["biochem_pro_vs_euk","原核 vs 真核对"],["biochem_tech","相关技术 / 方法原理"],["biochem_tool_enzyme","工具酶与载体"],["biochem_regulation_level","表达调控层次"],["biochem_signal","信号转导通路"],["biochem_gene_abnormal","基因异常与疾病"],["biochem_organ","组织器官代谢特点"],["biochem_clinical","临床意义 / 相关疾病"],["biochem_compare","对比鉴别"],["biochem_summary","小结 / 口诀"]],
-  "病理学总论": [
-    ["general_concept","概念与定义"],
-    ["general_classification","分类与分型"],
-    ["general_etiology_mechanism","病因与发生机制"],
-    ["general_pathology","基本病理变化"],
-    ["general_outcome","结局与转归"],
-    ["general_clinical","临床病理联系"],
-    ["general_confusion","易混概念辨析"],
-    ["general_keypoints","高频考点 / 记忆口诀"],
+  "病理学": [
+    ["general_concept","总论 · 概念与定义"],
+    ["general_classification","总论 · 分类与分型"],
+    ["general_etiology_mechanism","总论 · 病因与发生机制"],
+    ["general_pathology","总论 · 基本病理变化"],
+    ["general_outcome","总论 · 结局与转归"],
+    ["general_clinical","总论 · 临床病理联系"],
+    ["general_confusion","总论 · 易混概念辨析"],
+    ["general_keypoints","总论 · 高频考点 / 记忆口诀"],
+    ["overview","各论 · 概述"],
+    ["patho_classification","各论 · 分类与分型"],
+    ["patho_etiology","各论 · 病因"],
+    ["patho_mechanism","各论 · 发病机制"],
+    ["patho_location","各论 · 好发部位与人群"],
+    ["patho_gross","各论 · 大体变化"],
+    ["patho_micro","各论 · 镜下变化"],
+    ["patho_ihc","各论 · 免疫组化 / 特殊染色"],
+    ["patho_molecular","各论 · 分子病理"],
+    ["patho_clinical","各论 · 临床病理联系"],
+    ["patho_complications","各论 · 并发症"],
+    ["patho_outcome","各论 · 结局与转归"],
+    ["patho_differential","各论 · 鉴别诊断"],
+    ["patho_keypoints","各论 · 高频考点 / 易错点"],
   ],
-  "病理学各论": [
+  "诊断学": [
     ["overview","概述"],
-    ["patho_classification","分类与分型"],
-    ["patho_etiology","病因"],
-    ["patho_mechanism","发病机制"],
-    ["patho_location","好发部位与人群"],
-    ["patho_gross","大体变化"],
-    ["patho_micro","镜下变化"],
-    ["patho_ihc","免疫组化 / 特殊染色"],
-    ["patho_molecular","分子病理"],
-    ["patho_clinical","临床病理联系"],
-    ["patho_complications","并发症"],
-    ["patho_outcome","结局与转归"],
-    ["patho_differential","鉴别诊断"],
-    ["patho_keypoints","高频考点 / 易错点"],
+    ["diag_symptoms","常见症状"],
+    ["diag_history","问诊要点"],
+    ["diag_physical","体格检查"],
+    ["diag_lab","实验室检查"],
+    ["diag_aux","辅助检查（心电图 / 影像 / 内镜）"],
+    ["diag_criteria","诊断标准"],
+    ["diag_differential","鉴别诊断"],
+    ["diag_clinical","临床意义"],
+    ["diag_pitfall","易错点 / 注意事项"],
+    ["diag_keypoints","高频考点 / 记忆口诀"],
   ],
   "人文精神": [["overview","概述"],["hum_principle","核心原则"],["hum_scenario","典型情景"],["hum_regulation","法规条款"],["hum_ethics","伦理要点"],["hum_exam","考点提示"]],
 };
@@ -650,7 +666,7 @@ const SRS_KEY="kaoyan_srs", CHECKIN_KEY="kaoyan_checkin", EXAM_HIST_KEY="kaoyan_
       POLITICS_QUIZ_SRS_KEY="kaoyan_politics_quiz_srs",
       POLITICS_QUIZ_PROGRESS_KEY="kaoyan_politics_quiz_progress";
 
-const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/cases.json";
+const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/case1.json";
 const REMOTE_QUESTIONS_URL = "https://mercciii.github.io/kaoyan306/data/questions.json";
 
 const EMPTY_HINT = "暂无数据\n\n点击底部「导入」粘贴 JSON 数组，\n或点「＋新增」逐条录入。\n\n也可点「导入 → 🤖 AI 生成」，上传 PDF / 图片自动生成 JSON。";
@@ -857,9 +873,8 @@ function genId() { let s = ""; for (let i = 0; i < 8; i++) s += Math.floor(Math.
    ID 自动编号
    ========================================================= */
 const SUBJECT_CODE_MAP = {
-  "生理学":"01", "生物化学":"02", "病理学总论":"03",
-  "内科学":"04", "外科学":"05", "人文精神":"06",
-  "病理学各论":"07",
+  "生理学":"01", "生物化学":"02", "病理学":"03",
+  "诊断学":"04", "内科学":"05", "外科学":"06", "人文精神":"07",
 };
 const SYSTEM_CODE_MAP = {
   "内科学": [
@@ -882,7 +897,7 @@ const SYSTEM_CODE_MAP = {
     { keys:["泌尿外科","前列腺","膀胱","肾结石","尿路"], code:"07", name:"泌尿外科疾病" },
     { keys:["骨科","骨折","关节","脊柱","椎间盘"], code:"08", name:"骨科疾病" },
   ],
-  "病理学总论": [
+  "病理学": [
     { keys:["细胞和组织的适应与损伤","适应与损伤","适应和损伤"], code:"01", name:"细胞和组织的适应与损伤" },
     { keys:["损伤的修复","修复"], code:"02", name:"损伤的修复" },
     { keys:["局部血液循环障碍","局部血液循环","血液循环障碍"], code:"03", name:"局部血液循环障碍" },
@@ -891,8 +906,6 @@ const SYSTEM_CODE_MAP = {
     { keys:["肿瘤"], code:"06", name:"肿瘤" },
     { keys:["环境和营养性疾病","环境","营养"], code:"07", name:"环境和营养性疾病" },
     { keys:["遗传性疾病和儿童疾病","遗传性疾病","遗传"], code:"08", name:"遗传性疾病和儿童疾病" },
-  ],
-  "病理学各论": [
     { keys:["心血管系统疾病","心血管"], code:"09", name:"心血管系统疾病" },
     { keys:["呼吸系统疾病","呼吸系统"], code:"10", name:"呼吸系统疾病" },
     { keys:["消化系统疾病","消化系统"], code:"11", name:"消化系统疾病" },
@@ -906,6 +919,13 @@ const SYSTEM_CODE_MAP = {
     { keys:["寄生虫病"], code:"19", name:"寄生虫病" },
     { keys:["病理学诊断与研究技术","病理学诊断","研究技术"], code:"20", name:"病理学诊断与研究技术" },
   ],
+  "诊断学": [
+    { keys:["常见症状学","常见症状","症状学","发热","疼痛","水肿","呼吸困难","咯血","呕血","便血","黄疸","意识障碍","心悸","恶心","呕吐"], code:"01", name:"常见症状学" },
+    { keys:["体格检查","查体","一般检查","头颈部检查","胸部检查","腹部检查","脊柱四肢检查","神经系统检查","肛门直肠检查","生殖器检查"], code:"02", name:"体格检查" },
+    { keys:["实验室检查","实验诊断","血液检查","尿液检查","粪便检查","体液检查","生化检查","免疫学检查","病原体检查","分子诊断"], code:"03", name:"实验室检查" },
+    { keys:["器械检查","心电图检查","心电图","ECG","ecg","心电监护","影像学检查","影像学","X线","CT","MRI","超声","核医学","放射","内镜检查","内镜","胃镜","肠镜","支气管镜","腹腔镜","膀胱镜","肺功能","血气分析"], code:"04", name:"器械检查" },
+    { keys:["常用临床操作","临床操作","穿刺","活检","置管","导尿","插管","心肺复苏","洗胃","灌肠","换药","缝合","拆线","三腔二囊管"], code:"05", name:"常用临床操作" },
+  ],
 };
 
 const CHAPTER_WHITELIST = {
@@ -913,8 +933,8 @@ const CHAPTER_WHITELIST = {
   "外科学": ["外科学总论","神经外科疾病","颈部和乳腺外科疾病","胸部外科疾病","心脏与血管外科疾病","腹部外科疾病","泌尿外科疾病","骨科疾病"],
   "生理学": ["绪论","细胞的基本功能","血液","血液循环","呼吸","消化和吸收","能量代谢与体温","尿的生成和排出","感觉器官的功能","神经系统的功能","内分泌","生殖","生长发育和衰老"],
   "生物化学": ["蛋白质的结构与功能","酶与酶促反应","核酸的结构与功能","糖蛋白和蛋白聚糖的结构与功能","水和无机元素","维生素","糖代谢","脂质代谢","氨基酸代谢","生物氧化","核苷酸代谢","代谢的整合与调节","真核基因与基因组","DNA的合成","RNA的生物合成","蛋白质的合成","基因表达调控","常用的分子生物学技术","DNA重组和重组DNA技术","细胞信号转导与疾病","DNA损伤和损伤修复","疾病相关基因","癌症的分子基础","基因诊断和基因治疗","肝的生物化学","血液的生物化学","其他重要器官和组织的生物化学"],
-  "病理学总论": ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"],
-  "病理学各论": ["心血管系统疾病","呼吸系统疾病","消化系统疾病","淋巴造血系统疾病","泌尿系统疾病","生殖系统和乳腺疾病","内分泌系统疾病","神经系统疾病","骨关节和软组织疾病","传染病","寄生虫病","病理学诊断与研究技术"],
+  "病理学": ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病","心血管系统疾病","呼吸系统疾病","消化系统疾病","淋巴造血系统疾病","泌尿系统疾病","生殖系统和乳腺疾病","内分泌系统疾病","神经系统疾病","骨关节和软组织疾病","传染病","寄生虫病","病理学诊断与研究技术"],
+  "诊断学": ["常见症状学","体格检查","实验室检查","器械检查","常用临床操作"],
   "人文精神": ["医学伦理","医学心理","卫生法规","医患沟通"],
 };
 const CHAPTER_OTHER = "其他";
@@ -2096,7 +2116,7 @@ function normalizeItem(raw) {
   const item = {
     id: String(raw.id || genId()),
     title: String(raw.title || "").trim(),
-    subject: String(raw.subject || "").trim() || SUBJECTS[0],
+    subject: normalizeSubjectName(raw.subject),
     chapter: String(raw.chapter || "").trim(),
     frequency: String(raw.frequency || "").trim(),
     starred: parseBool(raw.starred),
@@ -2164,7 +2184,7 @@ function parseJsonList(text) {
 function normalizeQuestion(raw) {
   const q = {
     id: String(raw.id || genId()),
-    subject: String(raw.subject || "").trim() || SUBJECTS[0],
+    subject: normalizeSubjectName(raw.subject),
     chapter: String(raw.chapter || "").trim(),
     type: String(raw.type || "single").trim(),
     stem: String(raw.stem || "").trim(),
@@ -2464,6 +2484,7 @@ async function pullFromRemote(kind, silent) {
           store.data = remote.map(normalizeItem);
           store.save(false);
         }
+        try { migrateAllData(); } catch (e) {}
         if (state.mode === "quiz") renderQuizListOnly(); else render();
         confirmPopup("✅ 已覆盖拉取" + label + " " + remote.length + " 条\n（本地原有 " + before + " 条）");
       } else {
@@ -2477,6 +2498,7 @@ async function pullFromRemote(kind, silent) {
           store.data = merged.list;
           store.save(false);
         }
+        try { migrateAllData(); } catch (e) {}
         if (state.mode === "quiz") renderQuizListOnly(); else render();
         confirmPopup(
           "✅ 已合并" + label + "\n\n" +
@@ -2587,69 +2609,150 @@ const questionStore = {
 /* =========================================================
    数据迁移
    ========================================================= */
-const PATHO_GENERAL_CHAPTERS = ["细胞和组织的适应与损伤","损伤的修复","局部血液循环障碍","炎症","免疫性疾病","肿瘤","环境和营养性疾病","遗传性疾病和儿童疾病"];
-
 function migrateAllData() {
   let changedCases = false;
   let changedQuestions = false;
+  let changedCheckin = false;
+  let changedSrs = false;
+  let changedExamHist = false;
+  let changedSettings = false;
 
+  const caseIdMap = {};
+  const qIdMap = {};
   const caseIdSet = {};
-  for (let i = 0; i < store.data.length; i++) caseIdSet[store.data[i].id] = true;
-  for (let i = 0; i < store.data.length; i++) {
-    const d = store.data[i];
-    let newId = d.id;
-    let newChapter = d.chapter;
-    if (d.chapter === "外科学基础") newChapter = "外科学总论";
-    if (d.id && String(d.id).indexOf("-01外科学基础-") !== -1) {
-      newId = String(d.id).replace("-01外科学基础-", "-01外科学总论-");
+  const qIdSet = {};
+  const caseCounters = {};
+  const questionCounters = {};
+
+  function isLegacyPathoSubject(s) {
+    return s === "病理学总论" || s === "病理学各论";
+  }
+  function mergePathologyId(id, isQuestion) {
+    let s = String(id == null ? "" : id);
+    if (!s) return s;
+    if (isQuestion) {
+      s = s.replace(/^Q03病理学总论-/, "Q03病理学-")
+           .replace(/^Q07病理学各论-/, "Q03病理学-")
+           .replace(/^Q07病理学-/, "Q03病理学-");
+    } else {
+      s = s.replace(/^03病理学总论-/, "03病理学-")
+           .replace(/^07病理学各论-/, "03病理学-")
+           .replace(/^07病理学-/, "03病理学-");
     }
-    if (newId !== d.id) {
-      if (caseIdSet[newId] && newId !== d.id) {
-        newId = d.id;
-      } else {
-        delete caseIdSet[d.id];
-        caseIdSet[newId] = true;
+    return s;
+  }
+  function recodePathologySystem(id, isQuestion, chapter, text) {
+    const s = String(id == null ? "" : id);
+    if (!s) return s;
+    const seed = (chapter || "") + " " + (text || "");
+    if (isQuestion) {
+      let m = s.match(/^Q03病理学-(\d{2})(.+)-([A-Z])-(\d+)$/);
+      if (m) {
+        const sys = matchSystemCode("病理学", m[2]);
+        return "Q03病理学-" + sys.code + sys.name + "-" + m[3] + "-" + m[4];
+      }
+      m = s.match(/^Q03病理学-([A-Z])-(\d+)$/);
+      if (m) {
+        const sys = matchSystemCode("病理学", seed);
+        return "Q03病理学-" + sys.code + sys.name + "-" + m[1] + "-" + m[2];
+      }
+    } else {
+      let m = s.match(/^03病理学-(\d{2})(.+)-(\d+)$/);
+      if (m) {
+        const sys = matchSystemCode("病理学", m[2]);
+        return "03病理学-" + sys.code + sys.name + "-" + m[3];
+      }
+      m = s.match(/^03病理学-(\d+)$/);
+      if (m) {
+        const sys = matchSystemCode("病理学", seed);
+        return "03病理学-" + sys.code + sys.name + "-" + m[1];
       }
     }
-    if (newId !== d.id || newChapter !== d.chapter) {
-      d.id = newId;
+    return s;
+  }
+  function nextCaseId(d) {
+    let id = "";
+    do { id = buildCaseId(d, store.data, caseCounters); } while (caseIdSet[id]);
+    return id;
+  }
+  function nextQuestionId(q) {
+    let id = "";
+    do { id = buildQuestionId(q, questionStore.data, questionCounters); } while (qIdSet[id]);
+    return id;
+  }
+
+  for (let i = 0; i < store.data.length; i++) caseIdSet[store.data[i].id] = true;
+  for (let i = 0; i < questionStore.data.length; i++) qIdSet[questionStore.data[i].id] = true;
+
+  for (let i = 0; i < store.data.length; i++) {
+    const d = store.data[i];
+    if (isLegacyPathoSubject(d.subject)) {
+      d.subject = "病理学";
+      changedCases = true;
+    }
+  }
+  for (let i = 0; i < questionStore.data.length; i++) {
+    const q = questionStore.data[i];
+    if (isLegacyPathoSubject(q.subject)) {
+      q.subject = "病理学";
+      changedQuestions = true;
+    }
+  }
+
+  for (let i = 0; i < store.data.length; i++) {
+    const d = store.data[i];
+    const oldId = String(d.id || "");
+    let newId = oldId;
+    let newChapter = d.chapter;
+    if (d.chapter === "外科学基础") newChapter = "外科学总论";
+    if (oldId.indexOf("-01外科学基础-") !== -1) {
+      newId = oldId.replace("-01外科学基础-", "-01外科学总论-");
+    }
+    newId = mergePathologyId(newId, false);
+    newId = recodePathologySystem(newId, false, newChapter, d.title);
+    if (newId !== oldId) {
+      if (caseIdSet[newId]) {
+        if (/^(03病理学总论|07病理学各论|07病理学)-/.test(oldId)) {
+          newId = nextCaseId(d);
+        } else {
+          newId = oldId;
+        }
+      }
+      if (newId !== oldId) {
+        delete caseIdSet[oldId];
+        caseIdSet[newId] = true;
+        caseIdMap[oldId] = newId;
+        d.id = newId;
+        changedCases = true;
+      }
+    }
+    if (newChapter !== d.chapter) {
       d.chapter = newChapter;
       changedCases = true;
     }
   }
 
-  for (let i = 0; i < store.data.length; i++) {
-    const d = store.data[i];
-    if (d.subject === "病理学") {
-      const isGeneral = PATHO_GENERAL_CHAPTERS.indexOf(d.chapter) !== -1;
-      d.subject = isGeneral ? "病理学总论" : "病理学各论";
-      changedCases = true;
-    }
-  }
-  for (let i = 0; i < questionStore.data.length; i++) {
-    const q = questionStore.data[i];
-    if (q.subject === "病理学") {
-      const isGeneral = PATHO_GENERAL_CHAPTERS.indexOf(q.chapter) !== -1;
-      q.subject = isGeneral ? "病理学总论" : "病理学各论";
-      changedQuestions = true;
-    }
-  }
-
-  const qIdSet = {};
-  const qIdMap = {};
-  for (let i = 0; i < questionStore.data.length; i++) qIdSet[questionStore.data[i].id] = true;
   for (let i = 0; i < questionStore.data.length; i++) {
     const q = questionStore.data[i];
     const oldId = String(q.id || "");
-    const m = oldId.match(/^Q(\d{2})([^-]+)-([A-Z])-(\d+)$/);
-    if (!m) continue;
-    const subj = m[2];
-    const typeCode = m[3];
-    const seq = m[4];
-    const sys = matchSystemCode(subj, (q.chapter || "") + " " + (q.stem || "") + " " + (q.caseStem || ""));
-    const newId = "Q" + m[1] + subj + "-" + sys.code + sys.name + "-" + typeCode + "-" + seq;
+    let newId = mergePathologyId(oldId, true);
+    newId = recodePathologySystem(newId, true, q.chapter, (q.stem || "") + " " + (q.caseStem || ""));
+    const m = newId.match(/^Q(\d{2})([^-]+)-([A-Z])-(\d+)$/);
+    if (m) {
+      const subj = m[2];
+      const typeCode = m[3];
+      const seq = m[4];
+      const sys = matchSystemCode(subj, (q.chapter || "") + " " + (q.stem || "") + " " + (q.caseStem || ""));
+      newId = "Q" + m[1] + subj + "-" + sys.code + sys.name + "-" + typeCode + "-" + seq;
+    }
     if (newId === oldId) continue;
-    if (qIdSet[newId] && newId !== oldId) continue;
+    if (qIdSet[newId]) {
+      if (/^Q(03病理学总论|07病理学各论|07病理学)-/.test(oldId)) {
+        newId = nextQuestionId(q);
+      } else {
+        continue;
+      }
+    }
     delete qIdSet[oldId];
     qIdSet[newId] = true;
     q.id = newId;
@@ -2660,17 +2763,56 @@ function migrateAllData() {
   if (changedCases) store.save(false);
   if (changedQuestions) questionStore.save();
 
-  const renamed = Object.keys(qIdMap);
-  if (renamed.length) {
+  const renamedCases = Object.keys(caseIdMap);
+  if (renamedCases.length) {
+    try {
+      const days = checkin.data && checkin.data.days;
+      if (days && typeof days === "object") {
+        for (const dayKey in days) {
+          const day = days[dayKey];
+          if (!day || !day.cset || typeof day.cset !== "object") continue;
+          for (const oldId of renamedCases) {
+            const newId = caseIdMap[oldId];
+            if (day.cset[oldId] === undefined) continue;
+            if (day.cset[newId] === undefined) day.cset[newId] = day.cset[oldId];
+            delete day.cset[oldId];
+            changedCheckin = true;
+          }
+        }
+      }
+    } catch (e) {}
+    if (changedCheckin) checkin.save();
+  }
+
+  const renamedQuestions = Object.keys(qIdMap);
+  if (renamedQuestions.length) {
     let logChanged = false;
-    for (const oldId of renamed) {
+    for (const oldId of renamedQuestions) {
       const newId = qIdMap[oldId];
-      if (answerLog.data[oldId] === undefined) continue;
-      if (answerLog.data[newId] === undefined) answerLog.data[newId] = answerLog.data[oldId];
-      delete answerLog.data[oldId];
-      logChanged = true;
+      for (const key of Object.keys(answerLog.data)) {
+        if (key !== oldId && key.indexOf(oldId + "#") !== 0) continue;
+        const nk = newId + key.slice(oldId.length);
+        if (answerLog.data[nk] === undefined) answerLog.data[nk] = answerLog.data[key];
+        delete answerLog.data[key];
+        logChanged = true;
+      }
     }
     if (logChanged) answerLog.save();
+
+    try {
+      for (const oldId of renamedQuestions) {
+        const newId = qIdMap[oldId];
+        for (const key of Object.keys(srs.data)) {
+          if (key !== oldId && key.indexOf(oldId + "#") !== 0) continue;
+          const nk = newId + key.slice(oldId.length);
+          if (srs.data[nk] === undefined) srs.data[nk] = srs.data[key];
+          delete srs.data[key];
+          changedSrs = true;
+        }
+      }
+      if (changedSrs) srs.save();
+    } catch (e) {}
+
     try {
       const p = quizProgress.load();
       if (p && Array.isArray(p.poolIds)) {
@@ -2682,7 +2824,7 @@ function migrateAllData() {
     try {
       const notes = loadQNotes();
       let nc = false;
-      for (const oldId of renamed) {
+      for (const oldId of renamedQuestions) {
         if (notes[oldId] === undefined) continue;
         if (notes[qIdMap[oldId]] === undefined) notes[qIdMap[oldId]] = notes[oldId];
         delete notes[oldId];
@@ -2691,6 +2833,31 @@ function migrateAllData() {
       if (nc) saveQNotes(notes);
     } catch (e) {}
   }
+
+  try {
+    if (Array.isArray(examHistory.data)) {
+      for (const rec of examHistory.data) {
+        if (!rec || !rec.subjects || typeof rec.subjects !== "object") continue;
+        let recChanged = false;
+        for (const oldSj of ["病理学总论", "病理学各论"]) {
+          const st = rec.subjects[oldSj];
+          if (!st) continue;
+          const cur = rec.subjects["病理学"] || { correct: 0, total: 0 };
+          cur.correct = (cur.correct || 0) + (st.correct || 0);
+          cur.total = (cur.total || 0) + (st.total || 0);
+          rec.subjects["病理学"] = cur;
+          delete rec.subjects[oldSj];
+          recChanged = true;
+        }
+        if (recChanged) changedExamHist = true;
+      }
+      if (changedExamHist) examHistory.save();
+    }
+  } catch (e) {}
+
+  if (isLegacyPathoSubject(state.subject)) { state.subject = "病理学"; changedSettings = true; }
+  if (isLegacyPathoSubject(state.qSubject)) { state.qSubject = "病理学"; changedSettings = true; }
+  if (changedSettings) saveSettings();
 }
 
 /* =========================================================
@@ -2806,7 +2973,7 @@ function quizPriority(q) {
    GitHub 上传相关
    ========================================================= */
 function guessGhDefaults() {
-  const d = { owner: "Mercciii", repo: "kaoyan306", branch: "main", path: "data/cases.json" };
+  const d = { owner: "Mercciii", repo: "kaoyan306", branch: "main", path: "data/case1.json" };
   try {
     const host = location.hostname || "";
     if (/\.github\.io$/i.test(host)) {
@@ -2819,7 +2986,7 @@ function guessGhDefaults() {
 }
 function loadGhConfig() {
   const d = Object.assign({
-    owner: "", repo: "", branch: "main", path: "data/cases.json",
+    owner: "", repo: "", branch: "main", path: "data/case1.json",
     questions_path: "", cases_path: "", politics_path: "",
     token: "", message: "更新数据", upload_mode: "git",
     image_dir: "images", image_base_url: "",
@@ -2839,7 +3006,7 @@ function loadGhConfig() {
 function saveGhConfig(cfg) {
   try {
     const prev = loadGhConfig();
-    const casesPath = cfg.cases_path || prev.cases_path || prev.path || "data/cases.json";
+    const casesPath = cfg.cases_path || prev.cases_path || prev.path || "data/case1.json";
     localStorage.setItem(GH_KEY, JSON.stringify({
       owner: cfg.owner, repo: cfg.repo, branch: cfg.branch, path: casesPath,
       questions_path: cfg.questions_path || prev.questions_path || "",
@@ -3482,29 +3649,15 @@ function buildCasePrompt(subject) {
   const chapterLine = chapters.length
     ? '    "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapters.join(" / ") + '",'
     : '    "chapter": "所属章节",';
-  const extra = subject === "病理学总论"
+  const extra = subject === "病理学"
     ? [
-        "【病理学总论特别说明】",
-        "本章为总论，研究对象是“基本病理过程”而非具体疾病。",
-        "  · 概念与定义：写清本质特征、核心要素；",
-        "  · 分类与分型：按什么标准划分、各型名称与判断依据；",
-        "  · 病因与发生机制：分子 / 细胞 / 血流动力学等层面；",
-        "  · 基本病理变化：形态学规律（大体与镜下概括性描述）；",
-        "  · 结局与转归：吸收、机化、钙化、蔓延、慢性化等；",
-        "  · 临床病理联系：全身反应、典型症状、实验室改变；",
-        "  · 易混概念辨析：与相邻概念（如凋亡 vs 坏死、渗出 vs 漏出）的对照；",
-        "  · 高频考点 / 记忆口诀：金标准、关键词、口诀。",
+        "【病理学特别说明】",
+        "病理学已合并总论与各论：总论条目写基本病理过程，各论条目写具体疾病。",
+        "  · 总论：概念与定义、分类与分型、病因与发生机制、基本病理变化、结局与转归、临床病理联系、易混概念辨析、高频考点；",
+        "  · 各论：分类与分型、好发部位与人群、大体与镜下变化、免疫组化 / 特殊染色、分子病理、并发症、鉴别诊断、高频考点；",
+        "  · 按条目性质填写对应字段，未涉及的字段留空字符串。",
       ].join("\n")
-    : subject === "病理学各论"
-      ? [
-          "【病理学各论特别说明】",
-          "本章为各论，研究对象是具体疾病。",
-          "  · 分类与分型、好发部位与人群必须写全；",
-          "  · 镜下变化要写清特征性结构（细胞形态、排列方式、特殊小体）；",
-          "  · 免疫组化 / 特殊染色、分子病理要写明具体标记物与意义；",
-          "  · 并发症、鉴别诊断、高频考点 / 易错点务必分点列出。",
-        ].join("\n")
-      : "";
+    : "";
   return [
     "你是考研西医综合 306 的病例数据整理助手。",
     "请把用户提供的医学资料整理成一个 JSON 数组，每个元素代表一个疾病/病例条目。",
@@ -4996,7 +5149,7 @@ function openEdit(item) {
     syncCurrentToDraft();
     fieldsContainer.innerHTML = ""; fieldInputs = {};
     const fields = getFieldsForSubject(subject);
-    const hint = el("div", "subject-hint", "当前科目：" + subject + "，共 " + fields.length + " 个字段。" + (subject === "内科学" || subject === "外科学" ? "（含分类 / 分型 / 分期）" : subject === "病理学总论" ? "（总论模板：概念 / 分类 / 机制 / 变化 / 转归 / 辨析）" : subject === "病理学各论" ? "（各论模板：含分类分型、好发部位、分子病理、并发症）" : "（切换科目不会丢失其他科字段已填内容）"));
+    const hint = el("div", "subject-hint", "当前科目：" + subject + "，共 " + fields.length + " 个字段。" + (subject === "内科学" || subject === "外科学" ? "（含分类 / 分型 / 分期）" : subject === "病理学" ? "（合并模板：总论 8 项 + 各论 14 项）" : "（切换科目不会丢失其他科字段已填内容）"));
     fieldsContainer.appendChild(hint);
     for (let i = 0; i < fields.length; i++) {
       const key = fields[i][0], name = fields[i][1];
@@ -5088,7 +5241,7 @@ function openUpload(target) {
   const unit = isP ? "张" : "条";
   const cfg = loadGhConfig();
   const storage = isP ? politicsStore : (isQ ? questionStore : store);
-  const defPath = isP ? "data/politics.json" : (isQ ? "data/questions.json" : "data/cases.json");
+  const defPath = isP ? "data/politics.json" : (isQ ? "data/questions.json" : "data/case1.json");
   const defAsset = isP ? RELEASE_ASSET_NAME_P : (isQ ? RELEASE_ASSET_NAME_Q : RELEASE_ASSET_NAME);
   const parseFn = isP ? parsePoliticsUpload : (isQ ? parseQuestionList : parseJsonList);
   const ov = el("div", "overlay");
@@ -7693,7 +7846,7 @@ function openQuizPicker() {
     state.quizScope = scSel.value; state.quizMode = "exam";
     saveSettings();
     ov.remove();
-    const ratios = { "生理学": 0.14, "生物化学": 0.12, "病理学总论": 0.06, "病理学各论": 0.06, "内科学": 0.30, "外科学": 0.23, "人文精神": 0.09 };
+    const ratios = { "生理学": 0.14, "生物化学": 0.12, "病理学": 0.12, "内科学": 0.30, "外科学": 0.23, "人文精神": 0.09 };
     const total = 180;
     const pool = [];
     for (const sj in ratios) {
@@ -11727,13 +11880,13 @@ function openSettings() {
     "  · 「保存到云端」把当前 AI 配置 + 自定义模型写入仓库 data/ai-config.json；\n" +
     "  · 「从云端加载」从该文件恢复配置；\n" +
     "  · 可选是否同步 API Key（公开仓库请勿勾选）。\n\n" +
-    "【病理学拆分】\n" +
-    "  病理学 → 拆为「病理学总论」与「病理学各论」两个科目。\n\n" +
+    "【病理学合并】\n" +
+    "  病理学总论 + 病理学各论 → 合并为「病理学」一个科目（模板与章节合并）。\n\n" +
     "【ID 自动编号】\n" +
     "  病例：{科目码}{科目名}-{系统码}{系统名}-{3位序号}\n" +
-    "        例：04内科学-01呼吸系统疾病-001\n" +
+    "        例：05内科学-01呼吸系统疾病-001\n" +
     "  题库：Q{科目码}{科目名}-{系统码}{系统名}-{题型码}-{4位序号}\n" +
-    "        例：Q04内科学-01呼吸系统疾病-S-0001\n\n" +
+    "        例：Q05内科学-01呼吸系统疾病-S-0001\n\n" +
     "【章节约束】\n" +
     "  编辑面板的章节为下拉选择，选项与科目关联。\n" +
     "  AI 生成时章节会被归一到白名单范围内。\n\n" +
@@ -12114,6 +12267,7 @@ async function init() {
       pullFromRemote("cases", true),
       pullFromRemote("questions", true),
     ]);
+    try { migrateAllData(); } catch (e) {}
   }
   bindEvents();
   refreshSrsBtn();
