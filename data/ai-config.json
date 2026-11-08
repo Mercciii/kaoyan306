@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "savedAt": "2026-11-08T04:20:02.132Z",
+    "savedAt": "2026-11-08T09:58:18.524Z",
     "version": 2
   },
   "version": 2,
-  "active": "deepseek",
+  "active": "opencode_srv",
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -37,9 +37,10 @@
   "chunk_size": 50000,
   "chunk_overlap": 300,
   "subject_target": "生物化学",
-  "chapter_sel": "蛋白质的结构与功能",
+  "chapter_sel": "酶与酶促反应",
   "custom_models": {},
-  "provider": "deepseek",
-  "base_url": "https://api.deepseek.com/v1",
-  "model": "deepseek-flash"
+  "provider": "opencode_srv",
+  "base_url": "http://127.0.0.1:4096",
+  "model": "opencode/deepseek-v4.1-flash-free",
+  "prompts": {}
 }
