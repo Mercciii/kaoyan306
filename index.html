@@ -666,8 +666,12 @@ const SRS_KEY="kaoyan_srs", CHECKIN_KEY="kaoyan_checkin", EXAM_HIST_KEY="kaoyan_
       POLITICS_QUIZ_SRS_KEY="kaoyan_politics_quiz_srs",
       POLITICS_QUIZ_PROGRESS_KEY="kaoyan_politics_quiz_progress";
 
-const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/case1.json";
+const REMOTE_DATA_URL = "https://mercciii.github.io/kaoyan306/data/cases.json";
 const REMOTE_QUESTIONS_URL = "https://mercciii.github.io/kaoyan306/data/questions.json";
+function remoteUrlFor(kind) {
+  if (kind === "questions") return state.remoteQuestionsUrl || REMOTE_QUESTIONS_URL;
+  return state.remoteCasesUrl || REMOTE_DATA_URL;
+}
 
 const EMPTY_HINT = "暂无数据\n\n点击底部「导入」粘贴 JSON 数组，\n或点「＋新增」逐条录入。\n\n也可点「导入 → 🤖 AI 生成」，上传 PDF / 图片自动生成 JSON。";
 const EMPTY_QUIZ_HINT = "题库为空\n\n点击「粘贴导入」粘贴题目 JSON，\n或点「🤖 AI出题」让 AI 根据资料出题，\n或用「上传题库」从 GitHub 拉取。";
@@ -679,7 +683,7 @@ const SETTINGS_DEFAULTS = {
   p_category:"全部", p_filter:"全部", p_view:"cards", p_tag:"全部", p_sort:"默认",
   p_starred_only:false, p_quiz_mode:"practice", p_quiz_count:20, p_quiz_scope:"all",
   quiz_mode:"practice", quiz_count:20, quiz_scope:"all",
-  auto_pull:false,
+  auto_pull:false, remote_cases_url:"", remote_questions_url:"",
   option_shuffle:false, srs_enabled:true, daily_quiz_goal:30, daily_case_goal:10,
   notify_enabled:false, notify_time:"20:00",
   shortcuts:{ submit:"Enter", next:"Space", star:"f", doubt:"q", read:"r" },
@@ -1839,6 +1843,9 @@ function compressImage(file, maxWidth, quality) {
 
 async function copyText(text) {
   try {
+    if (window.KANative && typeof window.KANative.writeClipboard === "function" && window.KANative.writeClipboard(text)) return true;
+  } catch (e) {}
+  try {
     if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; }
   } catch (e) {}
   const ta = document.createElement("textarea");
@@ -2018,7 +2025,7 @@ const state = {
   pSort: "默认", pStarredOnly: false,
   pQuizMode: "practice", pQuizCount: 20, pQuizScope: "all",
   quizMode: "practice", quizCount: 20, quizScope: "all",
-  autoPull: false,
+  autoPull: false, remoteCasesUrl: "", remoteQuestionsUrl: "",
   optionShuffle: false, srsEnabled: true, dailyQuizGoal: 30, dailyCaseGoal: 10,
   notifyEnabled: false, notifyTime: "20:00",
   shortcuts: { submit: "Enter", next: "Space", star: "f", doubt: "q", read: "r" },
@@ -2061,6 +2068,8 @@ function loadSettings() {
   state.quizCount = Number(data.quiz_count) || 20;
   state.quizScope = data.quiz_scope || "all";
   state.autoPull = !!data.auto_pull;
+  state.remoteCasesUrl = typeof data.remote_cases_url === "string" ? data.remote_cases_url.trim() : "";
+  state.remoteQuestionsUrl = typeof data.remote_questions_url === "string" ? data.remote_questions_url.trim() : "";
   state.optionShuffle = !!data.option_shuffle;
   state.srsEnabled = data.srs_enabled !== false;
   state.dailyQuizGoal = clamp(Number(data.daily_quiz_goal) || 30, 0, 500);
@@ -2086,6 +2095,7 @@ function saveSettings() {
       p_quiz_mode: state.pQuizMode, p_quiz_count: state.pQuizCount, p_quiz_scope: state.pQuizScope,
       quiz_mode: state.quizMode, quiz_count: state.quizCount, quiz_scope: state.quizScope,
       auto_pull: state.autoPull,
+      remote_cases_url: state.remoteCasesUrl, remote_questions_url: state.remoteQuestionsUrl,
       option_shuffle: state.optionShuffle, srs_enabled: state.srsEnabled,
       daily_quiz_goal: state.dailyQuizGoal, daily_case_goal: state.dailyCaseGoal,
       notify_enabled: state.notifyEnabled, notify_time: state.notifyTime,
@@ -2279,7 +2289,7 @@ const store = {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 3000);
-      const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now(), { signal: controller.signal });
+      const resp = await fetch(remoteUrlFor("cases") + "?t=" + Date.now(), { signal: controller.signal });
       clearTimeout(timer);
       if (resp.ok) {
         const payload = await resp.json();
@@ -2297,12 +2307,12 @@ const store = {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 3000);
-      const resp = await fetch(REMOTE_DATA_URL + "?t=" + Date.now(), { signal: controller.signal });
+      const resp = await fetch(remoteUrlFor("cases") + "?t=" + Date.now(), { signal: controller.signal });
       clearTimeout(timer);
       if (!resp.ok) return;
       const remoteData = coercePayloadArray(await resp.json(), "cases");
       if (!remoteData || !remoteData.length) return;
-      if (remoteData.length !== localCount) showRemoteUpdateBar("病例", remoteData.length, localCount, REMOTE_DATA_URL, "cases");
+      if (remoteData.length !== localCount) showRemoteUpdateBar("病例", remoteData.length, localCount, remoteUrlFor("cases"), "cases");
     } catch (e) {}
   },
   save(withBackup) {
@@ -2448,7 +2458,7 @@ function mergeRemoteList(localList, remoteList, isQ) {
 }
 async function pullFromRemote(kind, silent) {
   const isQ = kind === "questions";
-  const url = isQ ? REMOTE_QUESTIONS_URL : REMOTE_DATA_URL;
+  const url = remoteUrlFor(isQ ? "questions" : "cases");
   const label = isQ ? "题库" : "病例";
   try {
     const resp = await fetch(url + "?t=" + Date.now());
@@ -2542,7 +2552,7 @@ const questionStore = {
     try {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), 3000);
-      const resp = await fetch(REMOTE_QUESTIONS_URL + "?t=" + Date.now(), { signal: ctl.signal });
+      const resp = await fetch(remoteUrlFor("questions") + "?t=" + Date.now(), { signal: ctl.signal });
       clearTimeout(t);
       if (resp.ok) {
         const remote = coercePayloadArray(await resp.json(), "questions");
@@ -2559,12 +2569,12 @@ const questionStore = {
     try {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), 3000);
-      const resp = await fetch(REMOTE_QUESTIONS_URL + "?t=" + Date.now(), { signal: ctl.signal });
+      const resp = await fetch(remoteUrlFor("questions") + "?t=" + Date.now(), { signal: ctl.signal });
       clearTimeout(t);
       if (!resp.ok) return;
       const remote = coercePayloadArray(await resp.json(), "questions");
       if (!remote || !remote.length) return;
-      if (remote.length !== localCount) showRemoteUpdateBar("题库", remote.length, localCount, REMOTE_QUESTIONS_URL, "questions");
+      if (remote.length !== localCount) showRemoteUpdateBar("题库", remote.length, localCount, remoteUrlFor("questions"), "questions");
     } catch (e) {}
   },
   save() { try { localStorage.setItem(QUESTIONS_KEY, JSON.stringify(this.data)); } catch (e) {} },
@@ -2973,7 +2983,7 @@ function quizPriority(q) {
    GitHub 上传相关
    ========================================================= */
 function guessGhDefaults() {
-  const d = { owner: "Mercciii", repo: "kaoyan306", branch: "main", path: "data/case1.json" };
+  const d = { owner: "Mercciii", repo: "kaoyan306", branch: "main", path: "data/cases.json" };
   try {
     const host = location.hostname || "";
     if (/\.github\.io$/i.test(host)) {
@@ -2986,7 +2996,7 @@ function guessGhDefaults() {
 }
 function loadGhConfig() {
   const d = Object.assign({
-    owner: "", repo: "", branch: "main", path: "data/case1.json",
+    owner: "", repo: "", branch: "main", path: "data/cases.json",
     questions_path: "", cases_path: "", politics_path: "",
     token: "", message: "更新数据", upload_mode: "git",
     image_dir: "images", image_base_url: "",
@@ -3006,7 +3016,7 @@ function loadGhConfig() {
 function saveGhConfig(cfg) {
   try {
     const prev = loadGhConfig();
-    const casesPath = cfg.cases_path || prev.cases_path || prev.path || "data/case1.json";
+    const casesPath = cfg.cases_path || prev.cases_path || prev.path || "data/cases.json";
     localStorage.setItem(GH_KEY, JSON.stringify({
       owner: cfg.owner, repo: cfg.repo, branch: cfg.branch, path: casesPath,
       questions_path: cfg.questions_path || prev.questions_path || "",
@@ -3265,7 +3275,7 @@ const AI_PRESETS = {
   openai: { label:"OpenAI 官方（需充值）", base_url:"https://api.openai.com/v1", model:"gpt-4o-mini", models:["gpt-4o-mini","gpt-4o","gpt-4.1-mini"], cors:true, free:"💸 无免费层，需绑卡充值", note:"质量稳定，但国内访问需要网络条件。", key_hint:"sk-...", key_url:"https://platform.openai.com/api-keys", peak:null },
   ollama: { label:"Ollama 本地模型（完全免费·离线）", base_url:"http://localhost:11434/v1", model:"qwen2.5:7b", models:["qwen2.5:7b","qwen2.5:14b","deepseek-r1:7b","llama3.1:8b"], cors:true, free:"💰 完全免费，无 Key，无网络费用", note:"需本机安装 Ollama 并拉取模型；\n运行前设置 OLLAMA_ORIGINS=* 允许跨域。", key_hint:"（本地无需 Key，填 ollama 即可）", key_url:"https://ollama.com/download", no_key:true, peak:null },
   lmstudio: { label:"LM Studio 本地模型（完全免费）", base_url:"http://localhost:1234/v1", model:"local-model", models:["local-model"], cors:true, free:"💰 完全免费，图形界面管理模型", note:"启动 LM Studio 的 Local Server 即可。", key_hint:"（本地无需 Key，随意填）", key_url:"https://lmstudio.ai/", no_key:true, peak:null },
-  manual: { label:"手动模式（复制 Prompt 到网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，使用 ChatGPT / DeepSeek / Kimi 网页版", note:"不调用 API，只生成 Prompt；\n把 Prompt 贴到任意网页版 AI，再把返回 JSON 贴回结果框。", key_hint:"", key_url:"", manual:true, peak:null },
+  manual: { label:"手动模式（内置网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，内置打开 ChatGPT / DeepSeek / Kimi 等网页版", note:"不调用 API；点「开始生成」会复制 Prompt 并打开内置网页版 AI（App 内）；\n把返回 JSON 粘贴回结果框即可。网页端则在新标签页打开。", key_hint:"", key_url:"", manual:true, peak:null },
   custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"", peak:null },
 };
 
@@ -5241,7 +5251,7 @@ function openUpload(target) {
   const unit = isP ? "张" : "条";
   const cfg = loadGhConfig();
   const storage = isP ? politicsStore : (isQ ? questionStore : store);
-  const defPath = isP ? "data/politics.json" : (isQ ? "data/questions.json" : "data/case1.json");
+  const defPath = isP ? "data/politics.json" : (isQ ? "data/questions.json" : "data/cases.json");
   const defAsset = isP ? RELEASE_ASSET_NAME_P : (isQ ? RELEASE_ASSET_NAME_Q : RELEASE_ASSET_NAME);
   const parseFn = isP ? parsePoliticsUpload : (isQ ? parseQuestionList : parseJsonList);
   const ov = el("div", "overlay");
@@ -6671,6 +6681,109 @@ function openAiImport(target, initialFiles) {
   }
   outTa.addEventListener("input", setCount);
 
+  const WEB_AI_SITES = [
+    { url: "https://chat.deepseek.com/", label: "DeepSeek" },
+    { url: "https://chatgpt.com/", label: "ChatGPT" },
+    { url: "https://www.kimi.com/", label: "Kimi" },
+    { url: "https://chatglm.cn/", label: "智谱清言" },
+    { url: "https://www.doubao.com/chat/", label: "豆包" },
+    { url: "https://tongyi.aliyun.com/qianwen/", label: "通义千问" },
+    { url: "__custom__", label: "自定义网址…" },
+  ];
+  let webAiSel;
+  {
+    const siteRow = el("div", "import-row");
+    siteRow.appendChild(el("div", "row-label", "内置网页版"));
+    webAiSel = document.createElement("select");
+    webAiSel.className = "edit-select";
+    WEB_AI_SITES.forEach(function (site) {
+      const op = document.createElement("option");
+      op.value = site.url; op.textContent = site.label; webAiSel.appendChild(op);
+    });
+    let savedSite = "";
+    try { savedSite = localStorage.getItem("kaoyan_ai_web_url") || ""; } catch (e) {}
+    if (savedSite) {
+      let found = false;
+      for (let i = 0; i < webAiSel.options.length; i++) if (webAiSel.options[i].value === savedSite) { found = true; break; }
+      if (!found) {
+        const op = document.createElement("option");
+        op.value = savedSite; op.textContent = "上次使用：" + savedSite;
+        webAiSel.insertBefore(op, webAiSel.lastElementChild);
+      }
+      webAiSel.value = savedSite;
+    }
+    webAiSel.addEventListener("change", function () {
+      try { localStorage.setItem("kaoyan_ai_web_url", webAiSel.value); } catch (e) {}
+    });
+    const openBtn = el("button", "btn", "打开");
+    openBtn.style.flex = "none"; openBtn.style.width = "auto"; openBtn.style.padding = "0 12px";
+    openBtn.addEventListener("click", function () { openWebAiInApp(); });
+    siteRow.appendChild(webAiSel); siteRow.appendChild(openBtn);
+    form.appendChild(siteRow);
+    const pasteBtn = el("button", "btn", "📋 从剪贴板粘贴生成结果");
+    pasteBtn.style.flex = "none"; pasteBtn.style.height = "40px";
+    pasteBtn.addEventListener("click", function () { pasteResultFromClipboard(); });
+    form.appendChild(pasteBtn);
+  }
+  function currentWebAiSite() {
+    let url = webAiSel.value;
+    let label = webAiSel.options[webAiSel.selectedIndex] ? webAiSel.options[webAiSel.selectedIndex].textContent : "网页版 AI";
+    if (url === "__custom__") {
+      let prev = "";
+      try { prev = localStorage.getItem("kaoyan_ai_web_custom") || ""; } catch (e) {}
+      const v = window.prompt("输入网页版 AI 地址（需 https://）", prev || "https://");
+      if (!v) return null;
+      url = v.trim();
+      if (!/^https?:\/\//i.test(url)) { confirmPopup("地址需以 http:// 或 https:// 开头"); return null; }
+      try { localStorage.setItem("kaoyan_ai_web_custom", url); } catch (e) {}
+      label = "自定义网页";
+    }
+    try { localStorage.setItem("kaoyan_ai_web_url", webAiSel.value); } catch (e) {}
+    return { url: url, label: label };
+  }
+  async function copyPromptToClipboard() {
+    await ensureQueueText();
+    const queueText = fileQueue.filter(function (f) { return f.text; }).map(function (f) { return f.text; }).join("\n\n");
+    const text = [queueText, casePoolText, ta.value.trim()].filter(Boolean).join("\n\n");
+    if (!text) return 0;
+    const full = buildPromptForTarget() + "\n\n=====\n以下是" + sourceName() + "：\n\n" + text;
+    await copyText(full);
+    log("📋 已复制 Prompt（含 " + text.length + " 字资料）");
+    return text.length;
+  }
+  async function openWebAiInApp() {
+    const site = currentWebAiSite();
+    if (!site) return;
+    try { await copyPromptToClipboard(); } catch (e) { log("复制 Prompt 失败：" + e.message); }
+    if (window.KANative && typeof window.KANative.openWebAi === "function") {
+      try {
+        window.KANative.openWebAi(site.url, site.label);
+        log("🌐 已打开内置 " + site.label + "，登录后粘贴 Prompt。");
+        log("拿到返回 JSON 后，回到本页点「从剪贴板粘贴生成结果」。");
+        return;
+      } catch (e) { log("打开内置网页失败：" + (e.message || e)); }
+    }
+    try {
+      window.open(site.url, "_blank", "noopener");
+      log("🌐 已打开 " + site.label + "，请在新页面粘贴 Prompt。");
+    } catch (e) { confirmPopup("无法打开网页：" + site.url); }
+  }
+  async function pasteResultFromClipboard() {
+    let text = "";
+    try {
+      if (window.KANative && typeof window.KANative.readClipboard === "function") text = String(window.KANative.readClipboard() || "");
+    } catch (e) {}
+    if (!text.trim()) {
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.readText === "function") text = await navigator.clipboard.readText();
+      } catch (e) {}
+    }
+    if (!text.trim()) { confirmPopup("剪贴板为空，或系统未允许读取剪贴板"); return; }
+    outTa.value = text.trim();
+    setCount();
+    log("📋 已从剪贴板粘贴结果（" + outTa.value.length + " 字），可直接点「导入结果」。");
+  }
+
   async function ensureQueueText() {
     for (const item of fileQueue) {
       if (item.text) continue;
@@ -6818,6 +6931,15 @@ function openAiImport(target, initialFiles) {
         await copyText(full);
         logEl.textContent = "";
         log("📋 已复制 Prompt（含 " + text.length + " 字资料）");
+        const site = currentWebAiSite();
+        if (site && window.KANative && typeof window.KANative.openWebAi === "function") {
+          try {
+            window.KANative.openWebAi(site.url, site.label);
+            log("🌐 已打开内置 " + site.label + "，登录后粘贴 Prompt。");
+            log("拿到返回 JSON 后，回到本页点「从剪贴板粘贴生成结果」，再点「导入结果」。");
+            return;
+          } catch (e) {}
+        }
         log("请到任意网页版 AI 粘贴，再把返回 JSON 贴到下方框。");
       } catch (e) { confirmPopup("复制失败：" + e.message); }
       finally { genBtn.disabled = false; }
@@ -11839,6 +11961,27 @@ function openSettings() {
   });
   pullWrap.appendChild(pullCaseBtn); pullWrap.appendChild(pullQuizBtn);
   addRow("🔄 强制拉取", pullWrap);
+  function addRemoteUrlRow(labelText, key, defaultUrl) {
+    const wrap = el("div", "font-wrap");
+    const inp = document.createElement("input");
+    inp.className = "edit-input"; inp.type = "url"; inp.spellcheck = false;
+    inp.placeholder = defaultUrl;
+    inp.value = state[key] || "";
+    inp.style.flex = "1"; inp.style.minWidth = "0";
+    inp.addEventListener("change", () => {
+      const v = inp.value.trim();
+      if (v && !/^https?:\/\//i.test(v)) { confirmPopup("拉取地址需以 http:// 或 https:// 开头"); inp.value = state[key] || ""; return; }
+      state[key] = v; saveSettings();
+    });
+    const resetBtn = el("button", "btn", "默认");
+    resetBtn.style.flex = "none"; resetBtn.style.width = "auto"; resetBtn.style.padding = "0 10px";
+    resetBtn.addEventListener("click", () => { state[key] = ""; inp.value = ""; saveSettings(); confirmPopup("已恢复默认地址"); });
+    wrap.appendChild(inp); wrap.appendChild(resetBtn);
+    addRow(labelText, wrap);
+  }
+  addRemoteUrlRow("病例拉取地址", "remoteCasesUrl", REMOTE_DATA_URL);
+  addRemoteUrlRow("题库拉取地址", "remoteQuestionsUrl", REMOTE_QUESTIONS_URL);
+  body.appendChild(el("div", "settings-info", "拉取地址留空时使用内置 GitHub Pages 地址；填写后「强制拉取」「启动时自动拉取」都会使用该地址。"));
   const autoPullBtn = el("button", "btn", state.autoPull ? "已开启" : "已关闭");
   autoPullBtn.addEventListener("click", () => {
     state.autoPull = !state.autoPull;
@@ -11897,7 +12040,8 @@ function openSettings() {
     "  面板顶部显示当前服务商的「高峰 / 空闲」状态。\n\n" +
     "【远端同步】\n" +
     "  设置面板「强制拉取」可随时用 GitHub 上的版本覆盖本地。\n" +
-    "  「启动时自动拉取」开启后，每次打开页面都会无条件从 GitHub 拉。\n\n" +
+    "  可在设置中为病例 / 题库分别填写「拉取地址」；留空时使用内置 GitHub Pages 地址。\n" +
+    "  「启动时自动拉取」开启后，每次打开页面都会无条件从所填地址拉。\n\n" +
     "【如何更新题库】\n" +
     "方法 1 · GitHub 网页编辑 data/questions.json；\n" +
     "方法 2 · 刷题模式 →「粘贴导入」或「🤖 AI出题」；\n" +
