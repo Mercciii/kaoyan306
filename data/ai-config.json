@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-11-08T12:13:53.557Z",
+    "savedAt": "2026-11-08T23:28:54.043Z",
     "version": 2
   },
   "version": 2,
@@ -41,7 +41,7 @@
   "chunk_size": 50000,
   "chunk_overlap": 300,
   "subject_target": "生物化学",
-  "chapter_sel": "水和无机元素",
+  "chapter_sel": "氨基酸代谢",
   "custom_models": {},
   "provider": "siliconflow",
   "base_url": "https://api.siliconflow.cn/v1",
