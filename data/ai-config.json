@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "savedAt": "2026-11-08T23:28:54.043Z",
+    "savedAt": "2026-11-10T10:35:12.900Z",
     "version": 2
   },
   "version": 2,
-  "active": "siliconflow",
+  "active": "custom:fff6d8fe",
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -32,19 +32,42 @@
     },
     "siliconflow": {
       "base_url": "https://api.siliconflow.cn/v1",
-      "model": "deepseek-ai/DeepSeek-V4.1-Flash"
+      "model": "Qwen/Qwen2.5-7B-Instruct"
+    },
+    "modelscope": {
+      "base_url": "https://api-inference.modelscope.cn/v1",
+      "model": "Qwen/Qwen2.5-7B-Instruct"
+    },
+    "groq": {
+      "base_url": "https://api.groq.com/openai/v1",
+      "model": "openai/gpt-oss-120b"
     }
   },
-  "custom_presets": [],
+  "custom_presets": [
+    {
+      "id": "fff6d8fe",
+      "name": "NVIDIA NIM",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "models": [
+        "deepseek-ai/deepseek-v4.1-flash"
+      ]
+    }
+  ],
   "temperature": 0.2,
   "max_tokens": 80000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "生物化学",
-  "chapter_sel": "氨基酸代谢",
-  "custom_models": {},
-  "provider": "siliconflow",
-  "base_url": "https://api.siliconflow.cn/v1",
-  "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+  "subject_target": "病理学",
+  "chapter_sel": "细胞和组织的适应与损伤",
+  "custom_models": {
+    "siliconflow": [
+      "deepseek-ai/DeepSeek-V4.1-Flash",
+      "Qwen/Qwen3.5-4B"
+    ]
+  },
+  "provider": "custom",
+  "base_url": "https://integrate.api.nvidia.com/v1",
+  "model": "deepseek-ai/deepseek-v4.1-flash",
   "prompts": {}
 }
