@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "savedAt": "2026-11-10T10:35:12.900Z",
+    "savedAt": "2026-11-11T02:53:28.211Z",
     "version": 2
   },
   "version": 2,
-  "active": "custom:fff6d8fe",
+  "active": "opencode_srv",
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -41,6 +41,10 @@
     "groq": {
       "base_url": "https://api.groq.com/openai/v1",
       "model": "openai/gpt-oss-120b"
+    },
+    "nvidia": {
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "deepseek-ai/deepseek-v4.1-flash"
     }
   },
   "custom_presets": [
@@ -52,6 +56,13 @@
       "models": [
         "deepseek-ai/deepseek-v4.1-flash"
       ]
+    },
+    {
+      "id": "e67b93c2",
+      "name": "自定义方案 1",
+      "base_url": "",
+      "model": "",
+      "models": []
     }
   ],
   "temperature": 0.2,
@@ -59,15 +70,18 @@
   "chunk_size": 50000,
   "chunk_overlap": 300,
   "subject_target": "病理学",
-  "chapter_sel": "细胞和组织的适应与损伤",
+  "chapter_sel": "局部血液循环障碍",
   "custom_models": {
     "siliconflow": [
       "deepseek-ai/DeepSeek-V4.1-Flash",
       "Qwen/Qwen3.5-4B"
+    ],
+    "nvidia": [
+      "deepseek-ai/deepseek-v4.1-flash"
     ]
   },
-  "provider": "custom",
-  "base_url": "https://integrate.api.nvidia.com/v1",
-  "model": "deepseek-ai/deepseek-v4.1-flash",
+  "provider": "opencode_srv",
+  "base_url": "http://127.0.0.1:4096",
+  "model": "opencode/deepseek-v4.1-flash-free",
   "prompts": {}
 }
