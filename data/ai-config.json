@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-11-11T02:53:28.211Z",
+    "savedAt": "2026-11-12T11:53:10.860Z",
     "version": 2
   },
   "version": 2,
@@ -45,6 +45,10 @@
     "nvidia": {
       "base_url": "https://integrate.api.nvidia.com/v1",
       "model": "deepseek-ai/deepseek-v4.1-flash"
+    },
+    "opencode": {
+      "base_url": "https://opencode.ai/zen/v1",
+      "model": "claude-sonnet-4-5"
     }
   },
   "custom_presets": [
@@ -69,8 +73,9 @@
   "max_tokens": 80000,
   "chunk_size": 50000,
   "chunk_overlap": 300,
-  "subject_target": "病理学",
-  "chapter_sel": "局部血液循环障碍",
+  "ai_timeout": 1200,
+  "subject_target": "内科学",
+  "chapter_sel": "循环系统疾病",
   "custom_models": {
     "siliconflow": [
       "deepseek-ai/DeepSeek-V4.1-Flash",
