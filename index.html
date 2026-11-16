@@ -654,6 +654,7 @@ const getFieldsForSubject = sj => FIELD_SCHEMAS[sj] || FIELD_SCHEMAS["内科学"
 const DATA_KEY="kaoyan_data", QUESTIONS_KEY="kaoyan_questions", ANSWER_LOG_KEY="kaoyan_answer_log",
       QUIZ_PROGRESS_KEY="kaoyan_quiz_progress", QNOTE_KEY="kaoyan_q_notes", SETTINGS_KEY="kaoyan_settings",
       BACKUP_KEY="kaoyan_backups", BACKUP_PREFIX="kaoyan_backup_", GH_KEY="kaoyan_github", AI_KEY="kaoyan_ai_cfg",
+      AI_PROMPT_KEY="kaoyan_ai_prompts",
       IMPORT_CFG_KEY="kaoyan_import_cfg",
       DRAFT_KEY="kaoyan_record_drafts", MAX_BACKUPS=5, DRAFT_MAX=50,
       RELEASE_TAG="data", RELEASE_ASSET_NAME="cases.json", RELEASE_ASSET_NAME_Q="questions.json",
@@ -3276,6 +3277,7 @@ const AI_PRESETS = {
   ollama: { label:"Ollama 本地模型（完全免费·离线）", base_url:"http://localhost:11434/v1", model:"qwen2.5:7b", models:["qwen2.5:7b","qwen2.5:14b","deepseek-r1:7b","llama3.1:8b"], cors:true, free:"💰 完全免费，无 Key，无网络费用", note:"需本机安装 Ollama 并拉取模型；\n运行前设置 OLLAMA_ORIGINS=* 允许跨域。", key_hint:"（本地无需 Key，填 ollama 即可）", key_url:"https://ollama.com/download", no_key:true, peak:null },
   lmstudio: { label:"LM Studio 本地模型（完全免费）", base_url:"http://localhost:1234/v1", model:"local-model", models:["local-model"], cors:true, free:"💰 完全免费，图形界面管理模型", note:"启动 LM Studio 的 Local Server 即可。", key_hint:"（本地无需 Key，随意填）", key_url:"https://lmstudio.ai/", no_key:true, peak:null },
   manual: { label:"手动模式（内置网页版·完全免费）", base_url:"", model:"", models:[], cors:true, free:"💰 完全免费，内置打开 ChatGPT / DeepSeek / Kimi 等网页版", note:"不调用 API；点「开始生成」会复制 Prompt 并打开内置网页版 AI（App 内）；\n把返回 JSON 粘贴回结果框即可。网页端则在新标签页打开。", key_hint:"", key_url:"", manual:true, peak:null },
+  nvidia: { label:"NVIDIA NIM（App 内直连·部分模型免费）", base_url:"https://integrate.api.nvidia.com/v1", model:"deepseek-ai/deepseek-r1", models:["deepseek-ai/deepseek-v4.1-flash","deepseek-ai/deepseek-r1","qwen/qwen3-235b-a22b","meta/llama-3.3-70b-instruct","nvidia/llama-3.3-nemotron-super-49b-v1.5","moonshotai/kimi-k2-instruct"], cors:"native", free:"💰 build.nvidia.com 注册后每个模型有免费调用额度", note:"在 build.nvidia.com 选择模型并获取 API Key（nvapi-...）。\nAndroid App 已内置原生流式直连（stream:true，绕过 CORS，长时间生成不易中断）；\n网页版没有原生桥，需自建代理或改用其他服务商。\n提示：推理模型（r1 / thinking）首字较慢，追求速度可换 llama-3.3-70b。", key_hint:"nvapi-...", key_url:"https://build.nvidia.com", peak:null },
   custom: { label:"自定义（手填 Base URL / 模型）", base_url:"", model:"", models:[], cors:"maybe", free:"取决于你填的服务", note:"适用于任意 OpenAI 兼容接口，包括自建代理。", key_hint:"sk-...", key_url:"", peak:null },
 };
 
@@ -3344,6 +3346,25 @@ function lastUsageText() {
   return (lastAiUsage && lastAiUsage.total) ? "（本次 " + lastAiUsage.total + " tokens）" : "";
 }
 function aiUrlHost(u) { try { return new URL(u).host; } catch (e) { return ""; } }
+function aiNativeHttpAvailable() {
+  return !!(window.KANative && typeof window.KANative.httpRequestAsync === "function");
+}
+function aiNativeStreamAvailable() {
+  return !!(window.KANative && typeof window.KANative.httpStreamAsync === "function");
+}
+const __kanAiStreams = {};
+let __kanAiStreamSeq = 0;
+window.__kanHttpStreamChunk = function (id, chunk) {
+  const s = __kanAiStreams[id];
+  if (!s) return;
+  try { s.onChunk(String(chunk == null ? "" : chunk)); } catch (e) { }
+};
+window.__kanHttpStreamEnd = function (id, status, ok, error) {
+  const s = __kanAiStreams[id];
+  if (!s) return;
+  delete __kanAiStreams[id];
+  try { s.onEnd(Number(status) || 0, !!ok, String(error == null ? "" : error)); } catch (e) { }
+};
 
 function getPeakStatus(providerKey) {
   const preset = AI_PRESETS[providerKey];
@@ -3402,7 +3423,8 @@ function loadAiConfig() {
     version: 2, active: "gemini",
     providers: {}, custom_presets: [],
     provider: "gemini", base_url: AI_PRESETS.gemini.base_url, model: AI_PRESETS.gemini.model,
-    api_key: "", temperature: 0.2, max_tokens: 8000, chunk_size: 5000, chunk_overlap: 300,
+    api_key: "", temperature: 0.2, max_tokens: 4000, chunk_size: 2500, chunk_overlap: 300,
+    ai_timeout: 600,
     subject_target: "", chapter_sel: "__keep__",
     custom_models: {},
   };
@@ -3411,7 +3433,7 @@ function loadAiConfig() {
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === "object" && !Array.isArray(o)) {
-        ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+        ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "ai_timeout", "subject_target", "chapter_sel"].forEach(k => {
           if (o[k] !== undefined) d[k] = o[k];
         });
         if (o.custom_models && typeof o.custom_models === "object" && !Array.isArray(o.custom_models))
@@ -3507,6 +3529,7 @@ function saveAiConfig(cfg) {
       max_tokens: cfg.max_tokens,
       chunk_size: cfg.chunk_size,
       chunk_overlap: cfg.chunk_overlap,
+      ai_timeout: cfg.ai_timeout,
       subject_target: cfg.subject_target || "",
       chapter_sel: cfg.chapter_sel || "__keep__",
       provider: active.indexOf("custom:") === 0 ? "custom" : active,
@@ -3547,7 +3570,7 @@ function aiMergeCloudV2(cur, obj) {
   if (typeof obj.active === "string" && aiSchemeInfo(merged, obj.active)) merged.active = obj.active;
   if (obj.custom_models && typeof obj.custom_models === "object" && !Array.isArray(obj.custom_models))
     merged.custom_models = Object.assign({}, merged.custom_models || {}, obj.custom_models);
-  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "ai_timeout", "subject_target", "chapter_sel"].forEach(k => {
     if (obj[k] !== undefined) merged[k] = obj[k];
   });
   const act = aiSchemeInfo(merged, merged.active);
@@ -3590,7 +3613,7 @@ function aiMergeCloudLegacy(cur, obj) {
     if (provider === "custom" && Array.isArray(obj.custom_models["custom"]) && merged.custom_presets[0])
       merged.custom_presets[0].models = obj.custom_models["custom"].filter(x => typeof x === "string");
   }
-  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "subject_target", "chapter_sel"].forEach(k => {
+  ["temperature", "max_tokens", "chunk_size", "chunk_overlap", "ai_timeout", "subject_target", "chapter_sel"].forEach(k => {
     if (obj[k] !== undefined) merged[k] = obj[k];
   });
   const act = aiSchemeInfo(merged, merged.active) || aiSchemeInfo(merged, "gemini");
@@ -3651,13 +3674,69 @@ function setChapterSelValue(chapSel, list, keepValue) {
 /* =========================================================
    AI Prompt 构造
    ========================================================= */
-function buildCasePrompt(subject) {
+function loadAiPromptOverrides() {
+  try {
+    const raw = localStorage.getItem(AI_PROMPT_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    return (obj && typeof obj === "object" && !Array.isArray(obj)) ? obj : {};
+  } catch (e) { return {}; }
+}
+function getAiPromptOverride(type) {
+  const v = loadAiPromptOverrides()[type];
+  return typeof v === "string" ? v : "";
+}
+function saveAiPromptOverride(type, text) {
+  try {
+    const all = loadAiPromptOverrides();
+    all[type] = String(text || "");
+    localStorage.setItem(AI_PROMPT_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+function clearAiPromptOverride(type) {
+  try {
+    const all = loadAiPromptOverrides();
+    delete all[type];
+    localStorage.setItem(AI_PROMPT_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+function mergeAiPromptOverrides(obj) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return;
+  try {
+    const all = loadAiPromptOverrides();
+    Object.keys(obj).forEach(key => {
+      if (typeof obj[key] !== "string") return;
+      if (obj[key].trim()) all[key] = obj[key];
+      else delete all[key];
+    });
+    localStorage.setItem(AI_PROMPT_KEY, JSON.stringify(all));
+  } catch (e) {}
+}
+function fillAiPromptTemplate(tpl, vars) {
+  return String(tpl || "").replace(/\{\{(\w+)\}\}/g, function (m, key) {
+    return Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : m;
+  });
+}
+function buildCasePrompt(subject, opts) {
+  const templateMode = !!(opts && opts.template);
   const fields = getFieldsForSubject(subject);
   const fieldLines = fields.map(([k]) => '    "' + k + '": ""').join(",\n");
   const fieldNames = fields.map(([k, n]) => n + "(" + k + ")").join("、");
   const chapters = (CHAPTER_WHITELIST[subject] || []).concat([CHAPTER_OTHER]);
+  if (!templateMode) {
+    const custom = getAiPromptOverride("case");
+    if (custom.trim()) {
+      return fillAiPromptTemplate(custom, {
+        subject: subject,
+        chapters: chapters.join(" / "),
+        chapter_other: CHAPTER_OTHER,
+        fields: fieldLines,
+        fieldNames: fieldNames,
+      });
+    }
+  }
+  const chapterList = templateMode ? "{{chapters}}" : chapters.join(" / ");
   const chapterLine = chapters.length
-    ? '    "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapters.join(" / ") + '",'
+    ? '    "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapterList + '",'
     : '    "chapter": "所属章节",';
   const extra = subject === "病理学"
     ? [
@@ -3676,20 +3755,20 @@ function buildCasePrompt(subject) {
     "[",
     "  {",
     '    "title": "疾病名称",',
-    '    "subject": "' + subject + '",',
+    '    "subject": "' + (templateMode ? "{{subject}}" : subject) + '",',
     chapterLine,
     '    "frequency": "★~★★★★★，无法判断则留空字符串",',
     '    "status": "未看",',
     '    "tags": ["标签1", "标签2"],',
-    fieldLines,
+    templateMode ? "{{fields}}" : fieldLines,
     "  }",
     "]",
     "",
-    "字段含义：" + fieldNames + "。",
+    "字段含义：" + (templateMode ? "{{fieldNames}}" : fieldNames) + "。",
     "",
     extra ? extra + "\n" : "",
     "硬性要求：",
-    "【章节约束】chapter 必须从上面给出的列表中逐字选择，禁止自创、简称或改写；无法归类时填 \"" + CHAPTER_OTHER + "\"。",
+    "【章节约束】chapter 必须从上面给出的列表中逐字选择，禁止自创、简称或改写；无法归类时填 \"" + (templateMode ? "{{chapter_other}}" : CHAPTER_OTHER) + "\"。",
     "【格式约定】",
     "1. 时间进程内容写成多行，每行格式：@节点 | 内容（节点如 0-1h、第3天、术后24h、入院时），多行用 \\n 连接。",
     "2. 药物名称用 $$药名$$ 包裹，如 $$阿司匹林$$。",
@@ -3724,15 +3803,27 @@ function buildCasePrompt(subject) {
     "6. 每一次将所有内容合并成一个 JSON 数组。",
   ].join("\n");
 }
-function buildQuestionPrompt(subject) {
+function buildQuestionPrompt(subject, opts) {
+  const templateMode = !!(opts && opts.template);
   const chapters = (CHAPTER_WHITELIST[subject] || []).concat([CHAPTER_OTHER]);
+  if (!templateMode) {
+    const custom = getAiPromptOverride("question");
+    if (custom.trim()) {
+      return fillAiPromptTemplate(custom, {
+        subject: subject,
+        chapters: chapters.join(" / "),
+        chapter_other: CHAPTER_OTHER,
+      });
+    }
+  }
+  const chapterList = templateMode ? "{{chapters}}" : chapters.join(" / ");
   const chapterLine = chapters.length
-    ? '  "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapters.join(" / ") + '",'
+    ? '  "chapter": "必须从下列列表中原样选择一个（逐字一致）：' + chapterList + '",'
     : '  "chapter": "所属章节",';
   return [
     "你是考研西医综合 306 的出题专家。请基于用户提供的医学资料出题，每道题输出以下 JSON：",
     "{",
-    '  "subject": "' + subject + '",',
+    '  "subject": "' + (templateMode ? "{{subject}}" : subject) + '",',
     chapterLine,
     '  "type": "single",',
     '  "stem": "题干，可用 ==高亮== @@术语@@ !!禁忌!! 标记",',
@@ -3764,9 +3855,18 @@ function buildQuestionPrompt(subject) {
     "3. 解析中描述代谢途径时，必须使用 `@节点 | 内容` 的格式，并用 `==关键酶==` 进行高亮。",
   ].join("\n");
 }
-function buildPoliticsCardPrompt(category) {
+function buildPoliticsCardPrompt(category, opts) {
+  const templateMode = !!(opts && opts.template);
   const cats = POLITICS_CATEGORIES.join(" / ");
   const fixed = category && POLITICS_CATEGORIES.indexOf(category) !== -1 ? category : "";
+  if (!templateMode) {
+    const custom = getAiPromptOverride("politics_card");
+    if (custom.trim()) {
+      return fillAiPromptTemplate(custom, { category: fixed, categories: cats });
+    }
+  }
+  const categoryValue = templateMode ? "{{category}}" : fixed;
+  const categoriesValue = templateMode ? "{{categories}}" : cats;
   return [
     "你是考研政治（101 思想政治理论）的记忆卡整理助手。",
     "请把用户提供的政治资料整理成 JSON 数组，每个元素是一张可自测的记忆卡。",
@@ -3782,8 +3882,8 @@ function buildPoliticsCardPrompt(category) {
     "]",
     "",
     fixed
-      ? "【分类约束】category 必须统一使用「" + fixed + "」。"
-      : "【分类约束】category 必须从下列列表中逐字选择一个：" + cats + "；无法归类时用「其他」。",
+      ? "【分类约束】category 必须统一使用「" + categoryValue + "」。"
+      : "【分类约束】category 必须从下列列表中逐字选择一个：" + categoriesValue + "；无法归类时用「其他」。",
     "",
     "【整理要求】",
     "1. 一张卡只考一个核心知识点，问题要具体，避免“简述某章内容”这类过大的问题。",
@@ -3796,9 +3896,18 @@ function buildPoliticsCardPrompt(category) {
     "8. 保证 JSON 合法，最后一个元素后不要多余逗号；不要输出 id 字段。",
   ].join("\n");
 }
-function buildPoliticsQuestionPrompt(category) {
+function buildPoliticsQuestionPrompt(category, opts) {
+  const templateMode = !!(opts && opts.template);
   const cats = POLITICS_CATEGORIES.join(" / ");
   const fixed = category && POLITICS_CATEGORIES.indexOf(category) !== -1 ? category : "";
+  if (!templateMode) {
+    const custom = getAiPromptOverride("politics_question");
+    if (custom.trim()) {
+      return fillAiPromptTemplate(custom, { category: fixed, categories: cats });
+    }
+  }
+  const categoryValue = templateMode ? "{{category}}" : fixed;
+  const categoriesValue = templateMode ? "{{categories}}" : cats;
   return [
     "你是考研政治（101 思想政治理论）的出题专家。请基于用户提供的政治资料出题，输出 JSON 数组。",
     "",
@@ -3815,8 +3924,8 @@ function buildPoliticsQuestionPrompt(category) {
     "}",
     "",
     fixed
-      ? "【分类约束】category 必须统一使用「" + fixed + "」。"
-      : "【分类约束】category 必须从下列列表中逐字选择一个：" + cats + "；无法归类时用「其他」。",
+      ? "【分类约束】category 必须统一使用「" + categoryValue + "」。"
+      : "【分类约束】category 必须从下列列表中逐字选择一个：" + categoriesValue + "；无法归类时用「其他」。",
     "",
     "【题型要求】",
     "1. type 只能是 single（单选）、multiple（多选）、judge（判断）、essay（主观题）。",
@@ -3838,6 +3947,11 @@ function ocBodyMessage(b) {
   if (typeof b.message === "string") return b.message.slice(0, 300);
   if (b.error) return ocBodyMessage(b.error);
   return "";
+}
+function aiTimeoutMs(cfg, timeoutMs) {
+  const sec = Number(cfg && cfg.ai_timeout);
+  const base = isFinite(sec) && sec >= 30 ? Math.min(sec, 3600) * 1000 : 600000;
+  return Math.max(base, Number(timeoutMs) || 0);
 }
 async function callAiOpencodeServer(cfg, messages, timeoutMs) {
   const base = String(cfg.base_url || "").replace(/\/+$/, "");
@@ -3866,7 +3980,7 @@ async function callAiOpencodeServer(cfg, messages, timeoutMs) {
   if (chat.length === 1) prompt = String(chat[0].content || "");
   else prompt = chat.map(m => "【" + (m.role === "assistant" ? "助手" : "用户") + "】\n" + String(m.content || "")).join("\n\n");
   if (!prompt.trim()) throw new Error("opencode：没有可发送的内容");
-  const timeout = Math.max(timeoutMs || 180000, 300000);
+  const timeout = aiTimeoutMs(cfg, timeoutMs);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   const title = "kaoyan306 · " + (cfg.subject_target ? cfg.subject_target + " · " : "") + new Date().toLocaleString();
@@ -3919,7 +4033,11 @@ async function callAiOpencodeServer(cfg, messages, timeoutMs) {
     }
     return text;
   } catch (e) {
-    if (e && e.name === "AbortError") throw new Error("请求超时（opencode 生成时间较长，可减小分块大小或稍后重试）");
+    if (e && e.name === "AbortError") {
+      const err = new Error("请求超时（可在设置中调大「AI 超时」，或减小分块大小）");
+      err.isTimeout = true;
+      throw err;
+    }
     if (e && e.oc) throw e;
     throw new Error("连接 opencode 服务器失败：" + ((e && e.message) || e) +
       "\n请确认：① 已运行 opencode serve --hostname 0.0.0.0 --port 4096 --cors <本页地址>；② 地址与端口正确、设备同网；③ Android 应用需允许明文 HTTP。");
@@ -3927,28 +4045,158 @@ async function callAiOpencodeServer(cfg, messages, timeoutMs) {
     clearTimeout(timer);
   }
 }
-async function callAi(cfg, messages, timeoutMs) {
+function callAiNativeStream(cfg, messages, timeoutMs, onProgress) {
+  const url = String(cfg.base_url).replace(/\/+$/, "") + "/chat/completions";
+  const payload = {
+    model: cfg.model,
+    messages,
+    temperature: Number(cfg.temperature) || 0.2,
+    max_tokens: Number(cfg.max_tokens) || 4000,
+    stream: true,
+  };
+  const timeout = aiTimeoutMs(cfg, timeoutMs);
+  return new Promise((resolve, reject) => {
+    const id = "aistream_" + Date.now() + "_" + (++__kanAiStreamSeq);
+    let settled = false;
+    let text = "";
+    let usage = null;
+    let raw = "";
+    let lineBuf = "";
+    let streamError = "";
+    let gotFirst = false;
+    const timer = setTimeout(() => {
+      try {
+        if (window.KANative && typeof window.KANative.httpAbort === "function") window.KANative.httpAbort(id);
+      } catch (e) { }
+      finish(new Error("请求超时（可在设置中调大「AI 超时」，或减小分块大小/换模型）"), true);
+    }, timeout);
+    function finish(err, isTimeout) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      delete __kanAiStreams[id];
+      if (err) {
+        if (isTimeout) err.isTimeout = true;
+        reject(err);
+        return;
+      }
+      if (streamError) { reject(new Error(streamError)); return; }
+      if (!text) { reject(new Error("AI 返回内容为空")); return; }
+      aiUsageRecord(cfg.provider, usage, cfg.model);
+      resolve(text);
+    }
+    function progress(phase) {
+      if (gotFirst) return;
+      gotFirst = true;
+      try { onProgress && onProgress({ phase }); } catch (e) { }
+    }
+    function handleLine(line) {
+      const t = String(line || "").trim();
+      if (!t || t.startsWith(":") || !t.startsWith("data:")) return;
+      const data = t.slice(5).trim();
+      if (!data || data === "[DONE]") return;
+      let obj = null;
+      try { obj = JSON.parse(data); } catch (e) { return; }
+      if (!obj) return;
+      if (obj.error) {
+        streamError = String((obj.error && (obj.error.message || obj.error.detail)) || (typeof obj.error === "string" ? obj.error : JSON.stringify(obj.error)));
+        return;
+      }
+      if (obj.usage) usage = obj.usage;
+      const ch = obj.choices && obj.choices[0];
+      if (!ch) return;
+      const d = ch.delta || ch.message || {};
+      let piece = d.content;
+      if (Array.isArray(piece)) piece = piece.map(function (p) { return (typeof p === "string") ? p : ((p && p.text) || ""); }).join("");
+      if (typeof piece === "string" && piece) {
+        text += piece;
+        progress("content");
+      } else if (typeof d.reasoning_content === "string" || typeof d.reasoning === "string") {
+        progress("thinking");
+      }
+    }
+    function handleChunk(chunk) {
+      if (settled) return;
+      raw += chunk;
+      lineBuf += chunk;
+      let idx;
+      while ((idx = lineBuf.indexOf("\n")) >= 0) {
+        let line = lineBuf.slice(0, idx);
+        lineBuf = lineBuf.slice(idx + 1);
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        handleLine(line);
+      }
+      if (raw.length > 32 * 1024 * 1024) raw = raw.slice(-1024 * 1024);
+    }
+    __kanAiStreams[id] = {
+      onChunk: handleChunk,
+      onEnd: function (status, ok, err) {
+        if (settled) return;
+        if (lineBuf) { handleLine(lineBuf); lineBuf = ""; }
+        if (!ok || status < 200 || status > 299) {
+          let msg = "";
+          try {
+            const b = JSON.parse(raw);
+            msg = (b && b.error && (b.error.message || b.error.detail)) || (b && (b.detail || b.message)) || "";
+          } catch (e) { }
+          if (!msg) msg = err || ("HTTP " + status);
+          finish(new Error(msg));
+          return;
+        }
+        if (!text) {
+          try {
+            const b = JSON.parse(raw);
+            const c = b && b.choices && b.choices[0];
+            const mm = c && ((c.message && c.message.content) || (c.delta && c.delta.content));
+            if (typeof mm === "string") text = mm;
+            if (b && b.usage) usage = b.usage;
+            if (b && b.error) streamError = String(b.error.message || b.error.detail || "");
+          } catch (e) { }
+        }
+        finish(null);
+      }
+    };
+    try {
+      window.KANative.httpStreamAsync(id, url, "POST", JSON.stringify({
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + (cfg.api_key || "none")
+      }), JSON.stringify(payload));
+    } catch (e) {
+      finish(e);
+    }
+  });
+}
+async function callAi(cfg, messages, timeoutMs, onProgress) {
   const ocPreset = AI_PRESETS[cfg.provider];
   if (ocPreset && ocPreset.oc_server) return callAiOpencodeServer(cfg, messages, timeoutMs);
+  if (aiUrlHost(cfg.base_url) === "integrate.api.nvidia.com" && aiNativeStreamAvailable()) {
+    return callAiNativeStream(cfg, messages, timeoutMs, onProgress);
+  }
   const url = String(cfg.base_url).replace(/\/+$/, "") + "/chat/completions";
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs || 180000);
-  let resp;
+  const timeout = aiTimeoutMs(cfg, timeoutMs);
+  const timer = setTimeout(() => controller.abort(), timeout);
+  let resp = null;
+  let body = null;
   try {
     resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (cfg.api_key || "none") },
-      body: JSON.stringify({ model: cfg.model, messages, temperature: Number(cfg.temperature) || 0.2, max_tokens: Number(cfg.max_tokens) || 8000, stream: false }),
+      body: JSON.stringify({ model: cfg.model, messages, temperature: Number(cfg.temperature) || 0.2, max_tokens: Number(cfg.max_tokens) || 4000, stream: false }),
       signal: controller.signal,
     });
+    try { body = await resp.json(); }
+    catch (e) { if (e && e.name === "AbortError") throw e; }
   } catch (e) {
+    if (e && e.name === "AbortError") {
+      const err = new Error("请求超时（可在设置中调大「AI 超时」，或减小分块大小/换模型）");
+      err.isTimeout = true;
+      throw err;
+    }
+    throw new Error("网络错误：" + ((e && e.message) || e) + "（可能是 CORS 或 base_url 错误）");
+  } finally {
     clearTimeout(timer);
-    if (e.name === "AbortError") throw new Error("请求超时（可减小分块大小或换模型）");
-    throw new Error("网络错误：" + e.message + "（可能是 CORS 或 base_url 错误）");
   }
-  clearTimeout(timer);
-  let body = null;
-  try { body = await resp.json(); } catch (e) {}
   if (!resp.ok) {
     let msg = (body && body.error && body.error.message) || (body && body.message) || ("HTTP " + resp.status);
     if (resp.status === 401) msg += "（API Key 无效）";
@@ -4201,8 +4449,24 @@ async function aiGenerate(opts, onLog, target) {
     let text = "";
     let ok = false;
     for (let attempt = 1; attempt <= 2 && !ok; attempt++) {
-      try { text = await callAi(cfg, messages); ok = true; if (lastAiUsage && lastAiUsage.total) totalTokens += lastAiUsage.total; }
-      catch (e) { if (attempt === 2) onLog("[" + (i + 1) + "] 失败：" + e.message); else onLog("[" + (i + 1) + "] 第 1 次失败，重试…"); }
+      let streamLogged = false;
+      try {
+        text = await callAi(cfg, messages, undefined, function (info) {
+          if (streamLogged) return;
+          streamLogged = true;
+          onLog("[" + (i + 1) + "/" + chunks.length + "] 已连接，开始流式接收" +
+            (info && info.phase === "thinking" ? "（模型思考中）" : "") + "…");
+        });
+        ok = true;
+        if (lastAiUsage && lastAiUsage.total) totalTokens += lastAiUsage.total;
+      }
+      catch (e) {
+        if (attempt === 2 || (e && e.isTimeout)) {
+          onLog("[" + (i + 1) + "] 失败：" + e.message + (e && e.isTimeout ? "（超时不重试）" : ""));
+          break;
+        }
+        onLog("[" + (i + 1) + "] 第 1 次失败，重试…");
+      }
     }
     if (!ok) continue;
     try {
@@ -5796,6 +6060,7 @@ function openAiImport(target, initialFiles) {
     infoCard.appendChild(el("div", "ai-info-free", p.free || "—"));
     if (p.note) infoCard.appendChild(el("div", "ai-info-note", p.note));
     if (p.cors === false) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 此接口不支持浏览器直接调用（CORS 限制），需要自建代理。"));
+    if (p.cors === "native" && !aiNativeHttpAvailable()) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 浏览器环境受 CORS 限制，无法直连；请使用 Android App，或自建代理后改用「自定义」方案。"));
     if (p.oc_server) infoCard.appendChild(el("div", "ai-info-warn", "⚠ 连接失败时检查：服务器已启动且 --cors 包含本页地址；密码与 OPENCODE_SERVER_PASSWORD 一致。"));
     if (p.key_url) {
       const link = el("a", "ai-info-link", "🔑 获取 API Key →");
@@ -5965,6 +6230,13 @@ function openAiImport(target, initialFiles) {
   overlapIn.className = "edit-input"; overlapIn.type = "text"; overlapIn.value = String(cfg.chunk_overlap);
   chunkRow.appendChild(chunkIn); chunkRow.appendChild(overlapIn);
   form.appendChild(chunkRow);
+  const timeoutRow = el("div", "import-row");
+  timeoutRow.appendChild(el("div", "row-label", "AI 超时（秒）"));
+  const timeoutIn = document.createElement("input");
+  timeoutIn.className = "edit-input"; timeoutIn.type = "text"; timeoutIn.value = String(cfg.ai_timeout != null ? cfg.ai_timeout : 600);
+  timeoutRow.appendChild(timeoutIn);
+  timeoutRow.appendChild(el("div", "gh-note", "单块请求超时，建议 300~1200 秒"));
+  form.appendChild(timeoutRow);
   let currentSchemeKey = "";
   function currentModelValue() {
     return (modelSel.value === "__custom__") ? modelIn.value.trim() : (modelSel.value || "");
@@ -6003,6 +6275,7 @@ function openAiImport(target, initialFiles) {
     const maxRaw = parseInt(maxIn.value, 10);
     const chunkRaw = parseInt(chunkIn.value, 10);
     const overlapRaw = parseInt(overlapIn.value, 10);
+    const timeoutRaw = parseInt(timeoutIn.value, 10);
     return {
       version: 2,
       active: key,
@@ -6014,9 +6287,10 @@ function openAiImport(target, initialFiles) {
       custom_presets: customPresets,
       custom_models: customModels,
       temperature: isFinite(tempRaw) ? tempRaw : 0.2,
-      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
-      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
+      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 4000,
+      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 2500,
       chunk_overlap: isFinite(overlapRaw) && overlapRaw >= 0 ? overlapRaw : 300,
+      ai_timeout: isFinite(timeoutRaw) && timeoutRaw >= 30 ? Math.min(timeoutRaw, 3600) : 600,
       subject_target: (typeof subjSel !== "undefined" && subjSel) ? subjSel.value : (cfg.subject_target || ""),
       chapter_sel: (typeof chapSel !== "undefined" && chapSel) ? chapSel.value : (cfg.chapter_sel || "__keep__"),
     };
@@ -6163,9 +6437,11 @@ function openAiImport(target, initialFiles) {
       custom_presets: customPresetsPayload,
       temperature: c.temperature, max_tokens: c.max_tokens,
       chunk_size: c.chunk_size, chunk_overlap: c.chunk_overlap,
+      ai_timeout: c.ai_timeout,
       subject_target: c.subject_target, chapter_sel: c.chapter_sel,
       custom_models: customModels,
       provider: c.provider, base_url: c.base_url, model: c.model,
+      prompts: loadAiPromptOverrides(),
     };
     if (includeKeyInCloud) payload.api_key = c.api_key;
     cloudSaveBtn.disabled = true;
@@ -6173,7 +6449,9 @@ function openAiImport(target, initialFiles) {
     cloudInfo.className = "gh-status";
     try {
       await ghWriteFile(ghCfg, "data/ai-config.json", JSON.stringify(payload, null, 2), "更新 AI 配置");
-      cloudInfo.textContent = "✅ 已保存（" + (includeKeyInCloud ? "含 Key" : "不含 Key") + "）";
+      const promptCount = Object.keys(loadAiPromptOverrides()).length;
+      cloudInfo.textContent = "✅ 已保存（" + (includeKeyInCloud ? "含 Key" : "不含 Key") + "）" +
+        (promptCount ? "，含 " + promptCount + " 个自定义提示词" : "");
       cloudInfo.className = "gh-status ok";
     } catch (e) {
       cloudInfo.textContent = "❌ " + e.message;
@@ -6218,10 +6496,17 @@ function openAiImport(target, initialFiles) {
       loadScheme(provSel.value);
       currentSchemeKey = provSel.value;
       tempIn.value = String(fresh.temperature != null ? fresh.temperature : 0.2);
-      maxIn.value = String(fresh.max_tokens != null ? fresh.max_tokens : 8000);
-      chunkIn.value = String(fresh.chunk_size != null ? fresh.chunk_size : 5000);
+      maxIn.value = String(fresh.max_tokens != null ? fresh.max_tokens : 4000);
+      chunkIn.value = String(fresh.chunk_size != null ? fresh.chunk_size : 2500);
       overlapIn.value = String(fresh.chunk_overlap != null ? fresh.chunk_overlap : 300);
-      cloudInfo.textContent = "✅ 已从云端加载" + (aiConfigHasKeys(obj) ? "（含 Key）" : "（云端无 Key，沿用本地）");
+      timeoutIn.value = String(fresh.ai_timeout != null ? fresh.ai_timeout : 600);
+      const syncedPrompts = !!(obj && obj.prompts && typeof obj.prompts === "object" && !Array.isArray(obj.prompts));
+      if (syncedPrompts) {
+        mergeAiPromptOverrides(obj.prompts);
+        refreshPromptEditor(true);
+      }
+      cloudInfo.textContent = "✅ 已从云端加载" + (aiConfigHasKeys(obj) ? "（含 Key）" : "（云端无 Key，沿用本地）") +
+        (syncedPrompts ? "，提示词已同步" : "");
       cloudInfo.className = "gh-status ok";
     } catch (e) {
       cloudInfo.textContent = "❌ " + e.message;
@@ -6627,6 +6912,80 @@ function openAiImport(target, initialFiles) {
   });
   chapSel.addEventListener("change", () => saveAiConfig(readCfg()));
 
+  form.appendChild(el("div", "gh-section-title", "AI 提示词（可修改）"));
+  const promptSection = el("div", "");
+  promptSection.style.cssText = "display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--divider);border-radius:6px;background:var(--panel)";
+  const promptTitleRow = el("div", "");
+  promptTitleRow.style.cssText = "display:flex;align-items:center;gap:8px";
+  const promptLabel = isP ? "政治记忆卡" : isPQ ? "政治出题" : isQ ? "西医综合出题" : "病例整理";
+  promptTitleRow.appendChild(el("div", "edit-label", "当前模式：" + promptLabel));
+  const promptToggle = el("button", "btn", "展开");
+  promptToggle.style.cssText = "flex:none;width:auto;padding:0 10px;height:26px;font-size:.75em;margin-left:auto";
+  promptTitleRow.appendChild(promptToggle);
+  promptSection.appendChild(promptTitleRow);
+  const promptBody = el("div", "");
+  promptBody.style.cssText = "display:none;flex-direction:column;gap:6px";
+  promptSection.appendChild(promptBody);
+  const promptTa = document.createElement("textarea");
+  promptTa.className = "import-textarea"; promptTa.style.minHeight = "240px";
+  promptTa.spellcheck = false;
+  promptTa.placeholder = "在此修改本模式的 AI 提示词…";
+  promptBody.appendChild(promptTa);
+  promptBody.appendChild(el("div", "gh-note",
+    "支持占位符：{{subject}}、{{chapters}}、{{chapter_other}}、{{fields}}、{{fieldNames}}" +
+    (isPolitics ? "、{{category}}、{{categories}}" : "") +
+    "。占位符会在生成时自动替换；保存后本模式生效，点「恢复默认」清除自定义。可随上方「云端同步」一起保存 / 加载。"));
+  const promptBtnRow = el("div", "file-row");
+  const promptSaveBtn = el("button", "btn", "保存自定义提示词");
+  const promptResetBtn = el("button", "btn", "恢复默认");
+  promptSaveBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  promptResetBtn.style.cssText = "flex:none;padding:0 12px;height:36px";
+  promptBtnRow.appendChild(promptSaveBtn);
+  promptBtnRow.appendChild(promptResetBtn);
+  promptBody.appendChild(promptBtnRow);
+  const promptStatus = el("div", "gh-status", "");
+  promptBody.appendChild(promptStatus);
+  form.appendChild(promptSection);
+
+  function promptType() {
+    return isP ? "politics_card" : isPQ ? "politics_question" : isQ ? "question" : "case";
+  }
+  function promptTemplateText() {
+    const opts = { template: true };
+    if (isP) return buildPoliticsCardPrompt(targetCategory(), opts);
+    if (isPQ) return buildPoliticsQuestionPrompt(targetCategory(), opts);
+    return isQ ? buildQuestionPrompt(subjSel.value, opts) : buildCasePrompt(subjSel.value, opts);
+  }
+  function refreshPromptEditor(force) {
+    if (!force && document.activeElement === promptTa) return;
+    const custom = getAiPromptOverride(promptType());
+    promptTa.value = custom.trim() ? custom : promptTemplateText();
+    promptStatus.textContent = custom.trim() ? "当前使用：自定义提示词" : "当前使用：默认提示词";
+    promptStatus.className = "gh-status" + (custom.trim() ? " ok" : "");
+  }
+  promptToggle.addEventListener("click", () => {
+    const show = promptBody.style.display === "none";
+    promptBody.style.display = show ? "flex" : "none";
+    promptToggle.textContent = show ? "收起" : "展开";
+    if (show) refreshPromptEditor();
+  });
+  promptSaveBtn.addEventListener("click", () => {
+    const text = promptTa.value.trim();
+    if (!text) { confirmPopup("提示词不能为空；如需恢复默认请点「恢复默认」"); return; }
+    saveAiPromptOverride(promptType(), text);
+    promptStatus.textContent = "已保存自定义提示词，本模式生成时生效";
+    promptStatus.className = "gh-status ok";
+  });
+  promptResetBtn.addEventListener("click", () => {
+    clearAiPromptOverride(promptType());
+    refreshPromptEditor(true);
+    promptStatus.textContent = "已恢复默认提示词";
+    promptStatus.className = "gh-status ok";
+  });
+  subjSel.addEventListener("change", () => refreshPromptEditor());
+  if (pcatSel) pcatSel.addEventListener("change", () => refreshPromptEditor());
+  refreshPromptEditor(true);
+
   form.appendChild(el("div", "gh-section-title", (isQ ? "⑤" : "④") + " 生成结果"));
   const logEl = el("div", "gh-status", "");
   logEl.style.maxHeight = "120px"; logEl.style.overflow = "auto";
@@ -6857,6 +7216,7 @@ function openAiImport(target, initialFiles) {
     const maxRaw = parseInt(maxIn.value, 10);
     const chunkRaw = parseInt(chunkIn.value, 10);
     const overlapRaw = parseInt(overlapIn.value, 10);
+    const timeoutRaw = parseInt(timeoutIn.value, 10);
     commitScheme(provSel.value);
     return {
       version: 2,
@@ -6869,9 +7229,10 @@ function openAiImport(target, initialFiles) {
       custom_presets: customPresets,
       custom_models: customModels,
       temperature: isFinite(tempRaw) ? tempRaw : 0.2,
-      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 8000,
-      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 5000,
+      max_tokens: isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 4000,
+      chunk_size: isFinite(chunkRaw) && chunkRaw > 0 ? chunkRaw : 2500,
       chunk_overlap: isFinite(overlapRaw) && overlapRaw >= 0 ? overlapRaw : 300,
+      ai_timeout: isFinite(timeoutRaw) && timeoutRaw >= 30 ? Math.min(timeoutRaw, 3600) : 600,
       chapter_override: isPolitics ? null : chOverride,
       subject_target: isPolitics ? (cfg.subject_target || "") : subjSel.value,
       chapter_sel: isPolitics ? (cfg.chapter_sel || "__keep__") : chValue,
@@ -6880,11 +7241,11 @@ function openAiImport(target, initialFiles) {
   closeBtn.addEventListener("click", () => ov.remove());
   saveCfgBtn.addEventListener("click", () => { saveAiConfig(readCfg()); log("✅ 配置已保存"); });
 
-  function buildPromptForTarget() {
+  function buildPromptForTarget(opts) {
     const cat = targetCategory();
-    if (isP) return buildPoliticsCardPrompt(cat);
-    if (isPQ) return buildPoliticsQuestionPrompt(cat);
-    return isQ ? buildQuestionPrompt(subjSel.value) : buildCasePrompt(subjSel.value);
+    if (isP) return buildPoliticsCardPrompt(cat, opts);
+    if (isPQ) return buildPoliticsQuestionPrompt(cat, opts);
+    return isQ ? buildQuestionPrompt(subjSel.value, opts) : buildCasePrompt(subjSel.value, opts);
   }
   function sourceName() { return isPolitics ? "政治资料" : "医学资料"; }
 
@@ -6912,13 +7273,13 @@ function openAiImport(target, initialFiles) {
 
   function pendingCount() {
     let n = 0;
-    for (const f of fileQueue) if (f.status === "pending") n++;
+    for (const f of fileQueue) if (f.status === "pending" || f.status === "parsed") n++;
     return n;
   }
 
   async function runGeneration() {
     const provider = provSel.value;
-    const preset = AI_PRESETS[provider];
+    const preset = AI_PRESETS[provider] || AI_PRESETS.custom;
 
     if (preset.manual) {
       genBtn.disabled = true;
@@ -6946,6 +7307,11 @@ function openAiImport(target, initialFiles) {
       return;
     }
 
+    if (preset.cors === "native" && !aiNativeHttpAvailable()) {
+      confirmPopup("⚠ NVIDIA NIM 需要 App 内置的原生直连。\n当前为浏览器环境，会被 CORS 拦截。\n\n请安装最新 Android App；或在网页版改用「自定义」方案并填入自建代理地址。");
+      return;
+    }
+
     const c = readCfg();
     if (!c.base_url) { confirmPopup("请填写 Base URL"); return; }
     if (!c.model && !preset.oc_server) { confirmPopup("请选择或填写模型名"); return; }
@@ -6967,7 +7333,7 @@ function openAiImport(target, initialFiles) {
 
       for (let i = 0; i < fileQueue.length; i++) {
         const item = fileQueue[i];
-        if (item.status !== "pending") continue;
+        if (item.status !== "pending" && item.status !== "parsed") continue;
         if (!item.text) {
           item.status = "parsing";
           item.error = "";
@@ -7058,7 +7424,7 @@ function openAiImport(target, initialFiles) {
 
   genBtn.addEventListener("click", () => {
     const provider = provSel.value;
-    const preset = AI_PRESETS[provider];
+    const preset = AI_PRESETS[provider] || AI_PRESETS.custom;
     if (preset.manual) { runGeneration(); return; }
     const peak = getPeakStatus(provider);
     if (peak.isPeak && peak.note) {
