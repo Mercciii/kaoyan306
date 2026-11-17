@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "savedAt": "2026-11-12T12:23:31.542Z",
+    "savedAt": "2026-11-17T04:33:25.091Z",
     "version": 2
   },
   "version": 2,
-  "active": "opencode_srv",
+  "active": "custom:ea08cc0a",
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -15,7 +15,7 @@
       "model": "deepseek-flash"
     },
     "opencode_srv": {
-      "base_url": "http://127.0.0.1:4096",
+      "base_url": "http://192.168.108.171:4096",
       "model": "opencode/deepseek-v4.1-flash-free"
     },
     "manual": {
@@ -67,6 +67,15 @@
       "base_url": "",
       "model": "",
       "models": []
+    },
+    {
+      "id": "ea08cc0a",
+      "name": "Opencode iPad",
+      "base_url": "http://192.168.108.171:4096",
+      "model": "opencode/deepseek-4.1-flash-free",
+      "models": [
+        "opencode/deepseek-4.1-flash-free"
+      ]
     }
   ],
   "temperature": 0.2,
@@ -85,8 +94,8 @@
       "deepseek-ai/deepseek-v4.1-flash"
     ]
   },
-  "provider": "opencode_srv",
-  "base_url": "http://127.0.0.1:4096",
-  "model": "opencode/deepseek-v4.1-flash-free",
+  "provider": "custom",
+  "base_url": "http://192.168.108.171:4096",
+  "model": "opencode/deepseek-4.1-flash-free",
   "prompts": {}
 }
