@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "savedAt": "2026-11-17T04:33:25.091Z",
+    "savedAt": "2026-11-17T04:57:11.927Z",
     "version": 2
   },
   "version": 2,
@@ -8,47 +8,58 @@
   "providers": {
     "gemini": {
       "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-      "model": "gemini-2.5-flash"
+      "model": "gemini-2.5-flash",
+      "api_key": ""
     },
     "deepseek": {
       "base_url": "https://api.deepseek.com/v1",
-      "model": "deepseek-flash"
+      "model": "deepseek-flash",
+      "api_key": ""
     },
     "opencode_srv": {
       "base_url": "http://192.168.108.171:4096",
-      "model": "opencode/deepseek-v4.1-flash-free"
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "api_key": ""
     },
     "manual": {
       "base_url": "",
-      "model": ""
+      "model": "",
+      "api_key": ""
     },
     "ollama": {
       "base_url": "http://127.0.0.1:8081/v1",
-      "model": "qwen2.5-3b"
+      "model": "qwen2.5-3b",
+      "api_key": ""
     },
     "lmstudio": {
       "base_url": "http://localhost:1234/v1",
-      "model": "local-model"
+      "model": "local-model",
+      "api_key": ""
     },
     "siliconflow": {
       "base_url": "https://api.siliconflow.cn/v1",
-      "model": "Qwen/Qwen2.5-7B-Instruct"
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "api_key": ""
     },
     "modelscope": {
       "base_url": "https://api-inference.modelscope.cn/v1",
-      "model": "Qwen/Qwen2.5-7B-Instruct"
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "api_key": ""
     },
     "groq": {
       "base_url": "https://api.groq.com/openai/v1",
-      "model": "openai/gpt-oss-120b"
+      "model": "openai/gpt-oss-120b",
+      "api_key": ""
     },
     "nvidia": {
       "base_url": "https://integrate.api.nvidia.com/v1",
-      "model": "deepseek-ai/deepseek-v4.1-flash"
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "api_key": ""
     },
     "opencode": {
       "base_url": "https://opencode.ai/zen/v1",
-      "model": "claude-sonnet-4-5"
+      "model": "claude-sonnet-4-5",
+      "api_key": ""
     }
   },
   "custom_presets": [
@@ -59,23 +70,26 @@
       "model": "deepseek-ai/deepseek-v4.1-flash",
       "models": [
         "deepseek-ai/deepseek-v4.1-flash"
-      ]
+      ],
+      "api_key": ""
     },
     {
       "id": "e67b93c2",
       "name": "自定义方案 1",
       "base_url": "",
       "model": "",
-      "models": []
+      "models": [],
+      "api_key": ""
     },
     {
       "id": "ea08cc0a",
       "name": "Opencode iPad",
-      "base_url": "http://192.168.108.171:4096",
+      "base_url": "http://192.168.75.179:4096",
       "model": "opencode/deepseek-4.1-flash-free",
       "models": [
         "opencode/deepseek-4.1-flash-free"
-      ]
+      ],
+      "api_key": "123456"
     }
   ],
   "temperature": 0.2,
@@ -95,7 +109,8 @@
     ]
   },
   "provider": "custom",
-  "base_url": "http://192.168.108.171:4096",
+  "base_url": "http://192.168.75.179:4096",
   "model": "opencode/deepseek-4.1-flash-free",
-  "prompts": {}
+  "prompts": {},
+  "api_key": "123456"
 }
