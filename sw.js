@@ -9,7 +9,7 @@
    ========================================================= */
 "use strict";
 
-const SW_VERSION   = "1.9.0";
+const SW_VERSION   = "1.11.0";
 const CACHE_PREFIX = "kaoyan306";
 
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${SW_VERSION}`;

@@ -434,6 +434,7 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
     <button class="btn" id="recordBtn">病历</button>
     <button class="btn" id="starBtn">☆ 收藏</button>
     <button class="btn" id="ragAskBtn">🤖 问答</button>
+    <button class="btn" id="batchMnBtn" title="批量生成 AI 助记">🪄 助记</button>
   </div>
   <div class="case-only btn-row">
     <select id="statusSel">
@@ -518,6 +519,7 @@ html[data-theme=dark] .checkin-cell.l4 { background:#63d97f; border-color:#4dcc6
     <button class="btn" id="pImportBtn">导入</button>
     <button class="btn" id="pExportBtn">导出</button>
     <button class="btn" id="pUploadBtn">☁ 上传</button>
+    <button class="btn" id="pBatchMnBtn" title="批量生成 AI 助记">🪄 助记</button>
   </div>
 
   <div id="statLabel"></div>
@@ -5881,14 +5883,12 @@ function openPdfExport() {
   body.appendChild(el("div", "edit-label", "正文字号"));
   const fontSel = document.createElement("select");
   fontSel.className = "edit-select";
-  [
-    { v: "10", t: "小（10pt）" },
-    { v: "11", t: "中（11pt）" },
-    { v: "12", t: "大（12pt）" },
-  ].forEach(function (o) {
+  for (let pt = 1; pt <= 20; pt++) {
     const op = document.createElement("option");
-    op.value = o.v; op.textContent = o.t; fontSel.appendChild(op);
-  });
+    op.value = String(pt);
+    op.textContent = pt + "pt" + (pt === 11 ? "（默认）" : "");
+    fontSel.appendChild(op);
+  }
   fontSel.value = "11";
   body.appendChild(fontSel);
   const preview = el("div", "gh-status", "");
@@ -9249,6 +9249,8 @@ function updatePoliticsHeader() {
   const record = document.getElementById("pRecordBtn");
   const srsBtn = document.getElementById("pSrsBtn");
   const uploadBtn = document.getElementById("pUploadBtn");
+  const batchMnBtn = document.getElementById("pBatchMnBtn");
+  if (batchMnBtn) batchMnBtn.style.display = isQuiz ? "none" : "";
   if (studyBtn) studyBtn.textContent = isQuiz ? "▶ 开始刷题" : "▶ 开始记忆";
   if (uploadBtn) uploadBtn.textContent = isQuiz ? "📋 粘贴导入" : "☁ 上传";
   if (srsBtn) {
@@ -9848,19 +9850,8 @@ function openPoliticsMnemonic(card) {
     genBtn.disabled = true;
     status.className = "gh-status";
     status.textContent = "⏳ 正在生成助记内容…";
-    const sys = [
-      "你是考研政治的辅导老师。请围绕给定的政治记忆卡生成记忆材料，输出要求：",
-      "① 【记忆口诀】朗朗上口的口诀或关键词串联；",
-      "② 【易混辨析】列出 2~3 个最容易混淆的概念并说明区别；",
-      "③ 【答题模板】给出主观题的分点作答模板。",
-      "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；不要输出代码块。",
-      "只依据提供的卡片内容和考研政治公认知识，不要编造。",
-    ].join("\n");
     try {
-      const reply = await callAi(loadAiConfig(), [
-        { role: "system", content: sys },
-        { role: "user", content: "【政治记忆卡】\n" + politicsCardToText(card).slice(0, 5000) },
-      ], 120000);
+      const reply = await generateMnemonicText("politics", card);
       lastText = reply;
       box.innerHTML = renderRich(reply, "");
       status.className = "gh-status ok";
@@ -11750,6 +11741,34 @@ function openAiChat(opts) {
 }
 
 /* ---------- 9) AI 助记口诀 ---------- */
+const MNEMONIC_SYS_PROMPTS = {
+  case: [
+    "你是考研西医综合 306 的记忆教练。请为给定病例生成记忆材料，输出要求：",
+    "① 【记忆口诀】朗朗上口的口诀或谐音记忆法（可以有多条）；",
+    "② 【鉴别对比表】与最常混淆的 2~3 个疾病对比，使用富文本表格语法（每行以 | 开头结尾，第一行为表头）；",
+    "③ 【易错提醒】2~4 条高频错误点。",
+    "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；药名用 $$药名$$；不要输出 markdown 代码块。",
+    "只依据提供的病例资料和公认的教材知识，不要编造数值。",
+  ].join("\n"),
+  politics: [
+    "你是考研政治的辅导老师。请围绕给定的政治记忆卡生成记忆材料，输出要求：",
+    "① 【记忆口诀】朗朗上口的口诀或关键词串联；",
+    "② 【易混辨析】列出 2~3 个最容易混淆的概念并说明区别；",
+    "③ 【答题模板】给出主观题的分点作答模板。",
+    "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；不要输出代码块。",
+    "只依据提供的卡片内容和考研政治公认知识，不要编造。",
+  ].join("\n"),
+};
+function mnemonicUserContent(kind, item) {
+  if (kind === "politics") return "【政治记忆卡】\n" + politicsCardToText(item).slice(0, 5000);
+  return "【病例】\n" + stripRichMarkup(itemToPlainText(item)).slice(0, 5000);
+}
+async function generateMnemonicText(kind, item) {
+  return await callAi(loadAiConfig(), [
+    { role: "system", content: MNEMONIC_SYS_PROMPTS[kind] || MNEMONIC_SYS_PROMPTS.case },
+    { role: "user", content: mnemonicUserContent(kind, item) },
+  ], 120000);
+}
 function openMnemonic(item) {
   const ov = el("div", "overlay");
   const pop = el("div", "popup popup-lg");
@@ -11770,23 +11789,11 @@ function openMnemonic(item) {
   pop.appendChild(footer);
   let lastText = "";
   async function generate() {
-    const cfg = loadAiConfig();
     genBtn.disabled = true;
     status.className = "gh-status";
     status.textContent = "⏳ 正在生成助记内容…";
-    const sys = [
-      "你是考研西医综合 306 的记忆教练。请为给定病例生成记忆材料，输出要求：",
-      "① 【记忆口诀】朗朗上口的口诀或谐音记忆法（可以有多条）；",
-      "② 【鉴别对比表】与最常混淆的 2~3 个疾病对比，使用富文本表格语法（每行以 | 开头结尾，第一行为表头）；",
-      "③ 【易错提醒】2~4 条高频错误点。",
-      "格式要求：用「### 小节标题」分隔；关键内容用 ==高亮==；药名用 $$药名$$；不要输出 markdown 代码块。",
-      "只依据提供的病例资料和公认的教材知识，不要编造数值。",
-    ].join("\n");
     try {
-      const reply = await callAi(cfg, [
-        { role: "system", content: sys },
-        { role: "user", content: "【病例】\n" + stripRichMarkup(itemToPlainText(item)).slice(0, 5000) },
-      ], 120000);
+      const reply = await generateMnemonicText("case", item);
       lastText = reply;
       box.innerHTML = "";
       box.innerHTML = renderRich(reply, "");
@@ -11809,6 +11816,167 @@ function openMnemonic(item) {
     confirmPopup("已保存到病例「其他信息 → AI 助记口诀」");
   });
   closeBtn.addEventListener("click", () => ov.remove());
+  ov.appendChild(pop);
+  document.body.appendChild(ov);
+}
+
+let __mnBatchBusy = false;
+function openBatchMnemonic(kind) {
+  const isPolitics = kind === "politics";
+  if (isPolitics && state.pView === "quiz") {
+    confirmPopup("批量助记仅适用于「🧠 记忆卡」，请先切换到记忆卡视图");
+    return;
+  }
+  const items = isPolitics ? getFilteredPolitics() : getFiltered();
+  if (!items.length) { confirmPopup(isPolitics ? "当前筛选下没有记忆卡" : "当前筛选下没有病例"); return; }
+
+  const ov = el("div", "overlay");
+  const pop = el("div", "popup popup-lg");
+  pop.appendChild(el("div", "popup-title", isPolitics ? "🪄 批量 AI 助记 · 记忆卡" : "🪄 批量 AI 助记 · 病例"));
+  const body = el("div", "popup-body");
+  const hint = el("div", "hint-text", "当前筛选下共 " + items.length + " 张。默认只勾选尚未生成助记的；已有内容不会被覆盖，除非手动勾选。每张单独调用一次 AI，耗时与数量成正比。");
+  const tools = el("div", "");
+  tools.style.cssText = "flex:none;display:flex;gap:6px;flex-wrap:wrap";
+  const status = el("div", "gh-status", "");
+  const listBox = el("div", "");
+  listBox.style.cssText = "flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:4px;border:1px solid var(--divider);border-radius:6px;padding:6px;background:var(--panel)";
+  body.appendChild(hint);
+  body.appendChild(tools);
+  body.appendChild(status);
+  body.appendChild(listBox);
+  pop.appendChild(body);
+  const footer = el("div", "popup-footer");
+  const startBtn = el("button", "btn", "开始生成");
+  const stopBtn = el("button", "btn", "停止");
+  const closeBtn = el("button", "btn", "关闭");
+  stopBtn.disabled = true;
+  footer.appendChild(startBtn); footer.appendChild(stopBtn); footer.appendChild(closeBtn);
+  pop.appendChild(footer);
+
+  function rowMetaText(item, has) {
+    return [
+      isPolitics ? (item.category || "其他") : (item.subject || ""),
+      has ? "已有助记" : "未生成",
+      (item.tags || []).slice(0, 3).map(function (t) { return "#" + t; }).join(" "),
+    ].filter(Boolean).join(" · ");
+  }
+  const rows = [];
+  items.forEach(function (item) {
+    const has = !!String(item.ai_mnemonic || "").trim();
+    const row = el("label", "");
+    row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border:1px solid var(--divider);border-radius:4px;background:var(--bg);cursor:pointer";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !has;
+    cb.style.cssText = "flex:none;margin:3px 0 0 0;width:16px;height:16px";
+    const info = el("div", "");
+    info.style.cssText = "flex:1;min-width:0;display:flex;flex-direction:column;gap:2px";
+    const title = el("div", "", isPolitics ? (item.question || "（无题目）") : (item.title || "（无标题）"));
+    title.style.cssText = "font-size:.875em;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+    const meta = el("div", "", rowMetaText(item, has));
+    meta.style.cssText = "font-size:.72em;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+    info.appendChild(title); info.appendChild(meta);
+    const st = el("div", "", has ? "已有" : "待生成");
+    st.style.cssText = "flex:none;min-width:52px;text-align:right;font-size:.72em;color:var(--sub);padding-top:2px";
+    row.appendChild(cb); row.appendChild(info); row.appendChild(st);
+    listBox.appendChild(row);
+    rows.push({ item: item, cb: cb, st: st, meta: meta, done: false });
+  });
+
+  function updateStartLabel() {
+    const n = rows.filter(function (r) { return r.cb.checked && !r.done; }).length;
+    startBtn.textContent = n ? "开始生成（" + n + "）" : "开始生成";
+    startBtn.disabled = __mnBatchBusy || n === 0;
+  }
+  rows.forEach(function (r) { r.cb.addEventListener("change", updateStartLabel); });
+  function mkTool(label, fn) {
+    const b = el("button", "btn", label);
+    b.style.cssText = "flex:none;width:auto;min-width:0;height:30px;padding:0 10px;font-size:.75em";
+    b.addEventListener("click", fn);
+    tools.appendChild(b);
+    return b;
+  }
+  mkTool("全选", function () { rows.forEach(function (r) { if (!r.done) r.cb.checked = true; }); updateStartLabel(); });
+  mkTool("全不选", function () { rows.forEach(function (r) { r.cb.checked = false; }); updateStartLabel(); });
+  mkTool("仅未生成", function () {
+    rows.forEach(function (r) { r.cb.checked = !r.done && !String(r.item.ai_mnemonic || "").trim(); });
+    updateStartLabel();
+  });
+  updateStartLabel();
+
+  let running = false, stopFlag = false;
+  async function run() {
+    if (running || __mnBatchBusy) return;
+    const selected = rows.filter(function (r) { return r.cb.checked && !r.done; });
+    if (!selected.length) { confirmPopup("请先勾选要生成的卡片"); return; }
+    running = true; stopFlag = false; __mnBatchBusy = true;
+    startBtn.disabled = true; stopBtn.disabled = false;
+    let ok = 0, fail = 0, tokens = 0;
+    for (let i = 0; i < selected.length; i++) {
+      if (stopFlag) break;
+      const r = selected[i];
+      status.className = "gh-status";
+      status.textContent = "⏳ 正在生成 " + (i + 1) + " / " + selected.length + "：" + (isPolitics ? r.item.question : r.item.title || "");
+      r.cb.disabled = true;
+      r.st.textContent = "生成中…";
+      r.st.style.color = "var(--title)";
+      r.st.title = "";
+      try {
+        const reply = await generateMnemonicText(kind, r.item);
+        if (isPolitics) {
+          if (!politicsStore.update(r.item.id, { ai_mnemonic: reply })) throw new Error("卡片已不存在");
+        } else {
+          if (store.data.indexOf(r.item) === -1) throw new Error("病例已不存在");
+          r.item.ai_mnemonic = reply;
+          store.save();
+        }
+        r.item.ai_mnemonic = reply;
+        r.done = true;
+        r.cb.checked = false;
+        r.st.textContent = "✅ 完成";
+        r.st.style.color = "#2e9e4a";
+        r.meta.textContent = rowMetaText(r.item, true);
+        ok++;
+        if (lastAiUsage && lastAiUsage.total) tokens += lastAiUsage.total;
+      } catch (e) {
+        fail++;
+        r.cb.checked = true;
+        r.st.textContent = "❌ 失败";
+        r.st.style.color = "#d62828";
+        r.st.title = e.message;
+        status.className = "gh-status err";
+        status.textContent = "❌ " + (isPolitics ? r.item.question : r.item.title || "") + " 生成失败：" + e.message;
+      }
+      r.cb.disabled = false;
+      updateStartLabel();
+      if (i < selected.length - 1 && !stopFlag) await new Promise(function (res) { setTimeout(res, 500); });
+    }
+    running = false; __mnBatchBusy = false;
+    stopBtn.disabled = true;
+    startBtn.disabled = false;
+    updateStartLabel();
+    if (isPolitics) renderPoliticsList(); else render();
+    const stopped = stopFlag;
+    stopFlag = false;
+    status.className = "gh-status " + (fail ? "err" : "ok");
+    status.textContent = (stopped ? "⏹ 已停止。" : "✅ 批量生成完成。") + "成功 " + ok + " 张" +
+      (fail ? "，失败 " + fail + " 张（可再次勾选重试）" : "") +
+      (tokens ? "，共 " + tokens + " tokens" : "");
+  }
+  startBtn.addEventListener("click", run);
+  stopBtn.addEventListener("click", function () {
+    stopFlag = true;
+    stopBtn.disabled = true;
+    status.className = "gh-status";
+    status.textContent = "⏹ 正在停止（当前一张完成后停止）…";
+  });
+  closeBtn.addEventListener("click", function () {
+    if (!running) { ov.remove(); return; }
+    confirmPopup("正在批量生成，关闭后将停止后续生成（当前一张仍会完成），确定吗？", function () {
+      stopFlag = true;
+      ov.remove();
+    }, "停止并关闭");
+  });
   ov.appendChild(pop);
   document.body.appendChild(ov);
 }
@@ -12605,6 +12773,7 @@ function bindEvents() {
     if (state.pView === "quiz") openPoliticsQuestionImport();
     else openUpload("politics");
   });
+  document.getElementById("pBatchMnBtn").addEventListener("click", function () { openBatchMnemonic("politics"); });
   document.getElementById("pSettingsBtn").addEventListener("click", openSettings);
   document.getElementById("subjectSel").addEventListener("change", function (e) {
     state.subject = e.target.value; state.chapter = "全部";
@@ -12666,6 +12835,7 @@ function bindEvents() {
   document.getElementById("wrongBookBtn").addEventListener("click", openWrongBook);
   document.getElementById("heatmapBtn").addEventListener("click", openHeatmap);
   document.getElementById("ragAskBtn").addEventListener("click", () => openAiChat({ rag: true }));
+  document.getElementById("batchMnBtn").addEventListener("click", function () { openBatchMnemonic("case"); });
   document.getElementById("srsBtn").addEventListener("click", () => { startSrsReview(); refreshSrsBtn(); });
   document.getElementById("qImportBtn").addEventListener("click", openQuestionImport);
   document.getElementById("qAiBtn").addEventListener("click", () => openAiImport("questions"));
